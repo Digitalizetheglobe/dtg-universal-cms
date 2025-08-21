@@ -1,6 +1,8 @@
 import React from "react";  
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+
 import Home from "./pages/Home";
+
 import Notfound from "./pages/Notfound";
 import Sidebar from "./components/Sidebar";
 import BlogManagementForm from "./BlogsManagement/BlogManagementForm";
@@ -21,25 +23,35 @@ import AnnouncementForm from "./Announcement/AnnouncementForm";
 import AnnouncementList from "./Announcement/AnnouncementList";
 import AnnouncementPreview from "./Announcement/AnnouncementPreview";
 import EmailTemplateManagement from "./DynamicForms/EmailTemplateManagement";
+import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
 
 function AppWrapper() {
   const location = useLocation();
+ const isLoggedIn = Boolean(localStorage.getItem("token"));
   // const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   return (
     <div className="flex">
-       <Sidebar />
+       {/* <Sidebar /> */}
+      {isLoggedIn && <Sidebar />}
+
       <main
         className={
-             "flex-grow ml-0 md:ml-64 transition-all duration-300"
-            // "flex-grow"
+          isLoggedIn
+            ? "flex-grow ml-0 md:ml-64 transition-all duration-300"
+            : "flex-grow"
         }
       >
         <Routes>
-          <Route index element={<Home />} />
+          <Route index element={<Login />} />
+
           <Route path="*" element={<Notfound />} />
           
           {/* Blog Management Routes */}
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/signUp" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/blog-management" element={<BlogEditForm />} />
           <Route path="/blog-management/dashboard" element={<BlogManagementDashboard />} />
           <Route path="/blog-management/list" element={<BlogList />} />

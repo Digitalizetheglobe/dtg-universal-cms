@@ -156,7 +156,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    localStorage.removeItem('token');
     window.location.reload(); // Or redirect to login page
   };
 
@@ -189,7 +189,7 @@ const Sidebar = () => {
       {/* Overlay for mobile */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="fixed inset-0 z-30 bg-black bg-opacity-50"
           onClick={toggleSidebar}
         />
       )}
@@ -202,22 +202,22 @@ const Sidebar = () => {
         {isMobile && (
           <button 
             onClick={toggleSidebar}
-            className="absolute top-0 right-3 p-1 rounded-full hover:bg-gray-700 transition-colors"
+            className="absolute top-0 p-1 transition-colors rounded-full right-3 hover:bg-gray-700"
           >
             <FaTimes className="w-4 h-4" />
           </button>
         )}
 
         {/* Logo/Brand */}
-        <div className="p-4 md:p-6 pb-3 md:pb-4 border-b border-gray-700">
-          {/* <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+        <div className="p-4 pb-3 border-b border-gray-700 md:p-6 md:pb-4">
+          {/* <h1 className="text-xl font-bold text-transparent md:text-2xl bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
             Cadet Management
           </h1>
-          <p className="text-xs text-gray-400 mt-1">Leadership Development System</p> */}
+          <p className="mt-1 text-xs text-gray-400">Leadership Development System</p> */}
           <div className="flex items-center justify-center">
             {/* <img src={logo} alt="Logo" className="w-16 h-16 rounded-full" /> */}
             <img src={logo2} alt="Logo" className="w-fullrounded-full" />
-            {/* <h1 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 ml-2">
+            {/* <h1 className="ml-2 text-xl font-bold text-transparent md:text-2xl bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
               Qstudy CMS
             </h1> */}
           </div>
@@ -244,7 +244,7 @@ const Sidebar = () => {
                     <span className={`mr-2 md:mr-3 text-base md:text-lg transition-transform duration-200 ${hoveredItem === route.path ? 'scale-110' : ''}`}>
                       {route.icon}
                     </span>
-                    <span className="font-medium text-blue-900 text-sm md:text-base">{route.label}</span>
+                    <span className="text-sm font-medium text-blue-900 md:text-base">{route.label}</span>
                     
                     {/* Expandable chevron */}
                     <FaChevronRight 
@@ -253,7 +253,7 @@ const Sidebar = () => {
                     
                     {/* Active indicator */}
                     {isRouteActive(route) && (
-                      <span className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1 h-6 md:h-8 rounded-l-full bg-white"></span>
+                      <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-white rounded-l-full top-1/2 md:h-8"></span>
                     )}
                   </button>
                   
@@ -276,7 +276,7 @@ const Sidebar = () => {
                           
                           {/* Active indicator for submenu items */}
                           {location.pathname === subItem.path && (
-                            <span className="ml-auto w-1 h-4 rounded-l-full bg-white"></span>
+                            <span className="w-1 h-4 ml-auto bg-white rounded-l-full"></span>
                           )}
                         </Link>
                       ))}
@@ -299,7 +299,7 @@ const Sidebar = () => {
                   <span className={`mr-2 md:mr-3 text-base md:text-lg transition-transform duration-200 ${hoveredItem === route.path ? 'scale-110' : ''}`}>
                     {route.icon}
                   </span>
-                  <span className="font-medium text-blue-900 text-sm md:text-base">{route.label}</span>
+                  <span className="text-sm font-medium text-blue-900 md:text-base">{route.label}</span>
                   
                   {/* Animated chevron */}
                   <FaChevronRight 
@@ -308,7 +308,7 @@ const Sidebar = () => {
                   
                   {/* Active indicator */}
                   {location.pathname === route.path && (
-                    <span className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1 h-6 md:h-8 rounded-l-full bg-white"></span>
+                    <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-white rounded-l-full top-1/2 md:h-8"></span>
                   )}
                 </Link>
               )}
@@ -317,18 +317,18 @@ const Sidebar = () => {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 border-t border-gray-700 bg-gray-800">
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gray-800 border-t border-gray-700 md:p-4">
           <div 
             className="flex items-center cursor-pointer"
             onClick={() => setShowPremiumModal(true)}
           >
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="font-bold text-white text-sm md:text-base">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-purple-600">
+              <span className="text-sm font-bold text-white md:text-base">
                 {adminData?.name ? adminData.name.charAt(0).toUpperCase() : 'A'}
               </span>
             </div>
             <div className="ml-2 md:ml-3">
-              <p className="text-xs md:text-sm font-medium">
+              <p className="text-xs font-medium md:text-sm">
                 Admin Panel
               </p>
               <p className="text-xs text-gray-400">
@@ -341,9 +341,9 @@ const Sidebar = () => {
 
       {/* Premium Modal */}
       {showPremiumModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 w-full max-w-md shadow-xl">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-6 rounded-lg shadow-xl bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Admin Profile</h2>
               <button 
                 onClick={() => setShowPremiumModal(false)}
@@ -357,7 +357,7 @@ const Sidebar = () => {
               {adminData ? (
                 <>
                   <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600">
                       <span className="text-2xl font-bold text-white">
                         {adminData.name.charAt(0).toUpperCase()}
                       </span>
@@ -368,7 +368,7 @@ const Sidebar = () => {
                     </div>
                   </div>
                   
-                  <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-blue-400">Mobile Number</p>
@@ -382,12 +382,12 @@ const Sidebar = () => {
                   </div>
                 </>
               ) : (
-                <p className="text-center py-4">Loading admin data...</p>
+                <p className="py-4 text-center">Loading admin data...</p>
               )}
               
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                className="flex items-center justify-center w-full px-4 py-2 space-x-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
               >
                 <FaSignOutAlt />
                 <span>Logout</span>

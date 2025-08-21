@@ -113,6 +113,7 @@ exports.createBlog = [
       }
 
       const newBlog = new Blog({
+        
         title,
         content,
         slug,
