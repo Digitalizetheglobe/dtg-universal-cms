@@ -10,7 +10,7 @@ export const Home = () => {
       <div className="max-w-5xl w-full space-y-12 text-center">
         <div>
           <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
-            Accountant Tech Labs
+          Hare Krishna Vidya
           </h1>
           <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
             The all-in-one content management solution to manage blogs, leads, careers, testimonials,
@@ -39,7 +39,7 @@ export const Home = () => {
         </div>
 
         <p className="text-sm text-gray-400 mt-10">
-          Made with ❤️ by Digitalize The Globe
+         <a href="https://digitalizetheglobe.com/" target="_blank" className="text-blue-500 hover:text-blue-600">Made with ❤️ by Digitalize The Globe</a>
         </p>
       </div>
     </div>

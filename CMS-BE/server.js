@@ -28,6 +28,7 @@ app.use('/api/email-templates', require('./routes/emailTemplateRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/team', require('./routes/teamRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/donations', require('./routes/donationRoutes'));
 
 // Root
 app.get('/', (req, res) => {

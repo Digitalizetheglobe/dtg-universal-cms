@@ -16,7 +16,8 @@ import {
   FaHackerNewsSquare,
   FaPlus,
   FaList,
-  FaUserFriends
+  FaUserFriends,
+  FaHeart
 } from 'react-icons/fa';
 import logo from '../assets/DTG.png'
 import logo2 from '../assets/ac-logo.png'
@@ -51,7 +52,6 @@ const Sidebar = () => {
         setAdminData(data.data);
       } catch (error) {
         console.error('Error fetching admin data:', error);
-        // Handle error (e.g., redirect to login)
       }
     };
 
@@ -76,7 +76,7 @@ const Sidebar = () => {
 
   const sidebarRoutes = [
     { 
-      path: '/', 
+      path: '/dashboard', 
       icon: <FaHome className="text-blue-900" />, 
       label: 'Dashboard',
       color: 'from-blue-300 to-blue-200'
@@ -119,35 +119,17 @@ const Sidebar = () => {
       color: 'from-blue-300 to-blue-200'
     },
     { 
+      path: '/donation-management', 
+      icon: <FaHeart className="text-blue-900" />, 
+      label: 'Razorpay Donation Management',
+      color: 'from-blue-300 to-blue-200'
+    },
+    { 
       path: '/form-management', 
       icon: <FaChartBar className="text-blue-900" />, 
       label: 'Form Management',
       color: 'from-blue-300 to-blue-200'
     },
-    { 
-      path: '/outpass/management', 
-      icon: <FaYoutubeSquare className="text-blue-900" />, 
-      label: 'Media Manager',
-      color: 'from-blue-300 to-blue-200'
-    },
-    { 
-      path: '/announcement/list', 
-      icon: <FaHackerNewsSquare className="text-blue-900" />, 
-      label: 'Announcement',
-      color: 'from-blue-300 to-blue-200'
-    },
-    // { 
-    //   path: '/hostel/management', 
-    //   icon: <FaBed className="text-teal-300" />, 
-    //   label: 'Hostel Management',
-    //   color: 'from-teal-500 to-teal-700'
-    // },
-    // { 
-    //   path: '/employee/dashboard', 
-    //   icon: <FaClipboardList className="text-teal-300" />, 
-    //   label: 'Employee Management',
-    //   color: 'from-green-500 to-green-700'
-    // }, 
   ];
 
   // Mobile toggle button
@@ -157,7 +139,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.reload(); // Or redirect to login page
+    window.location.reload();
   };
 
   // Toggle submenu expansion
@@ -181,7 +163,9 @@ const Sidebar = () => {
       {/* Mobile menu button */}
       <button 
         onClick={toggleSidebar}
-        className={`md:hidden fixed top-4 left-4 z-40 p-2 rounded-md bg-gray-800 text-white shadow-lg transition-all duration-300 ${isOpen ? 'opacity-0' : 'opacity-100'}`}
+        className={`md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white shadow-lg transition-all duration-300 ${
+          isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
       >
         <FaBars className="w-5 h-5" />
       </button>
@@ -189,42 +173,36 @@ const Sidebar = () => {
       {/* Overlay for mobile */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 z-30 bg-black bg-opacity-50"
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity duration-300"
           onClick={toggleSidebar}
         />
       )}
 
       {/* Sidebar */}
       <div 
-        className={`fixed left-0 top-0 h-full w-56 md:w-64 bg-blue-100 text-white shadow-2xl z-40 transition-all duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+        className={`fixed left-0 top-0 h-full w-64 bg-blue-100 text-white shadow-2xl z-40 transition-all duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}
       >
         {/* Close button for mobile */}
         {isMobile && (
           <button 
             onClick={toggleSidebar}
-            className="absolute top-0 p-1 transition-colors rounded-full right-3 hover:bg-gray-700"
+            className="absolute top-4 right-4 p-1 transition-colors rounded-full hover:bg-gray-300"
           >
-            <FaTimes className="w-4 h-4" />
+            <FaTimes className="w-5 h-5 text-blue-900" />
           </button>
         )}
 
         {/* Logo/Brand */}
-        <div className="p-4 pb-3 border-b border-gray-700 md:p-6 md:pb-4">
-          {/* <h1 className="text-xl font-bold text-transparent md:text-2xl bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-            Cadet Management
-          </h1>
-          <p className="mt-1 text-xs text-gray-400">Leadership Development System</p> */}
+        <div className="p-4 pb-3 border-b border-gray-300">
           <div className="flex items-center justify-center">
-            {/* <img src={logo} alt="Logo" className="w-16 h-16 rounded-full" /> */}
-            <img src={logo2} alt="Logo" className="w-fullrounded-full" />
-            {/* <h1 className="ml-2 text-xl font-bold text-transparent md:text-2xl bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-              Qstudy CMS
-            </h1> */}
+            <img src={logo2} alt="Logo" className="w-full h-16 object-contain" />
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="mt-3 md:mt-4 px-2 md:px-4 overflow-y-auto h-[calc(100%-180px)]">
+        <nav className="mt-3 px-3 overflow-y-auto h-[calc(100%-180px)]">
           {sidebarRoutes.map((route) => (
             <div key={route.path}>
               {route.hasSubmenu ? (
@@ -233,7 +211,7 @@ const Sidebar = () => {
                   <button
                     onClick={() => toggleSubmenu(route.path)}
                     className={`
-                      w-full relative flex items-center p-3 my-1 md:my-2 rounded-lg transition-all duration-200
+                      w-full relative flex items-center p-3 my-1 rounded-lg transition-all duration-200
                       ${isRouteActive(route) ? 
                         `bg-gradient-to-r ${route.color} shadow-md` : 
                         'hover:bg-gray-300'}
@@ -241,24 +219,34 @@ const Sidebar = () => {
                     onMouseEnter={() => setHoveredItem(route.path)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
-                    <span className={`mr-2 md:mr-3 text-base md:text-lg transition-transform duration-200 ${hoveredItem === route.path ? 'scale-110' : ''}`}>
+                    <span className={`mr-3 text-lg transition-transform duration-200 ${
+                      hoveredItem === route.path ? 'scale-110' : ''
+                    }`}>
                       {route.icon}
                     </span>
-                    <span className="text-sm font-medium text-blue-900 md:text-base">{route.label}</span>
+                    <span className="text-sm font-medium text-blue-900">{route.label}</span>
                     
                     {/* Expandable chevron */}
                     <FaChevronRight 
-                      className={`ml-auto text-xs transition-all duration-300 ${expandedMenus[route.path] ? 'rotate-90' : ''} ${hoveredItem === route.path || isRouteActive(route) ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} 
+                      className={`ml-auto text-xs transition-all duration-300 ${
+                        expandedMenus[route.path] ? 'rotate-90' : ''
+                      } ${
+                        hoveredItem === route.path || isRouteActive(route) ? 
+                        'opacity-100 translate-x-0 text-blue-900' : 
+                        'opacity-0 -translate-x-2'
+                      }`} 
                     />
                     
                     {/* Active indicator */}
                     {isRouteActive(route) && (
-                      <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-white rounded-l-full top-1/2 md:h-8"></span>
+                      <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-blue-700 rounded-l-full top-1/2"></span>
                     )}
                   </button>
                   
                   {/* Submenu */}
-                  {expandedMenus[route.path] && (
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    expandedMenus[route.path] ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
+                  }`}>
                     <div className="ml-4 space-y-1">
                       {route.submenu.map((subItem) => (
                         <Link
@@ -267,48 +255,56 @@ const Sidebar = () => {
                           className={`
                             flex items-center p-2 rounded-lg transition-all duration-200 text-sm
                             ${location.pathname === subItem.path ? 
-                              'bg-gray-300 text-white' : 
-                              'text-gray-300 hover:bg-gray-300 hover:text-white'}
+                              'bg-gray-300' : 
+                              'text-gray-700 hover:bg-gray-300'}
                           `}
+                          onClick={() => isMobile && toggleSidebar()}
                         >
                           <span className="mr-2 text-sm">{subItem.icon}</span>
                           <span className='text-blue-900'>{subItem.label}</span>
                           
                           {/* Active indicator for submenu items */}
                           {location.pathname === subItem.path && (
-                            <span className="w-1 h-4 ml-auto bg-white rounded-l-full"></span>
+                            <span className="w-1 h-4 ml-auto bg-blue-700 rounded-l-full"></span>
                           )}
                         </Link>
                       ))}
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 // Regular menu item
                 <Link 
                   to={route.path} 
                   className={`
-                    relative flex items-center p-3 my-1 md:my-2 rounded-lg transition-all duration-200
+                    relative flex items-center p-3 my-1 rounded-lg transition-all duration-200
                     ${location.pathname === route.path ? 
                       `bg-gradient-to-r ${route.color} shadow-md` : 
                       'hover:bg-gray-300'}
                   `}
                   onMouseEnter={() => setHoveredItem(route.path)}
                   onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => isMobile && toggleSidebar()}
                 >
-                  <span className={`mr-2 md:mr-3 text-base md:text-lg transition-transform duration-200 ${hoveredItem === route.path ? 'scale-110' : ''}`}>
+                  <span className={`mr-3 text-lg transition-transform duration-200 ${
+                    hoveredItem === route.path ? 'scale-110' : ''
+                  }`}>
                     {route.icon}
                   </span>
-                  <span className="text-sm font-medium text-blue-900 md:text-base">{route.label}</span>
+                  <span className="text-sm font-medium text-blue-900">{route.label}</span>
                   
                   {/* Animated chevron */}
                   <FaChevronRight 
-                    className={`ml-auto text-xs transition-all duration-300 ${hoveredItem === route.path || location.pathname === route.path ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`} 
+                    className={`ml-auto text-xs transition-all duration-300 ${
+                      hoveredItem === route.path || location.pathname === route.path ? 
+                      'opacity-100 translate-x-0 text-blue-900' : 
+                      'opacity-0 -translate-x-2'
+                    }`} 
                   />
                   
                   {/* Active indicator */}
                   {location.pathname === route.path && (
-                    <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-white rounded-l-full top-1/2 md:h-8"></span>
+                    <span className="absolute right-0 w-1 h-6 transform -translate-y-1/2 bg-blue-700 rounded-l-full top-1/2"></span>
                   )}
                 </Link>
               )}
@@ -317,18 +313,18 @@ const Sidebar = () => {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gray-800 border-t border-gray-700 md:p-4">
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gray-800 border-t border-gray-700">
           <div 
-            className="flex items-center cursor-pointer"
+            className="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200"
             onClick={() => setShowPremiumModal(true)}
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-full md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-purple-600">
-              <span className="text-sm font-bold text-white md:text-base">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600">
+              <span className="text-sm font-bold text-white">
                 {adminData?.name ? adminData.name.charAt(0).toUpperCase() : 'A'}
               </span>
             </div>
-            <div className="ml-2 md:ml-3">
-              <p className="text-xs font-medium md:text-sm">
+            <div className="ml-3">
+              <p className="text-xs font-medium text-white">
                 Admin Panel
               </p>
               <p className="text-xs text-gray-400">
@@ -341,13 +337,13 @@ const Sidebar = () => {
 
       {/* Premium Modal */}
       {showPremiumModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300">
           <div className="w-full max-w-md p-6 rounded-lg shadow-xl bg-gradient-to-br from-gray-800 to-gray-900">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Admin Profile</h2>
               <button 
                 onClick={() => setShowPremiumModal(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white transition-colors duration-200"
               >
                 <FaTimes />
               </button>
@@ -363,7 +359,7 @@ const Sidebar = () => {
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold">{adminData.name}</h3>
+                      <h3 className="text-lg font-semibold text-white">{adminData.name}</h3>
                       <p className="text-sm text-gray-400">{adminData.role}</p>
                     </div>
                   </div>
@@ -374,20 +370,16 @@ const Sidebar = () => {
                         <p className="text-xs text-blue-400">Mobile Number</p>
                         <p className="text-sm text-white">{adminData.mobileNumber || 'N/A'}</p>
                       </div>
-                      {/* <div>
-                        <p className="text-xs text-blue-400">Admin ID</p>
-                        <p className="text-sm text-white">{adminData.id}</p>
-                      </div> */}
                     </div>
                   </div>
                 </>
               ) : (
-                <p className="py-4 text-center">Loading admin data...</p>
+                <p className="py-4 text-center text-white">Loading admin data...</p>
               )}
               
               <button
                 onClick={handleLogout}
-                className="flex items-center justify-center w-full px-4 py-2 space-x-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
+                className="flex items-center justify-center w-full px-4 py-2 space-x-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 duration-200"
               >
                 <FaSignOutAlt />
                 <span>Logout</span>

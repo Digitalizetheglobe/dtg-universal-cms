@@ -26,6 +26,11 @@ import EmailTemplateManagement from "./DynamicForms/EmailTemplateManagement";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 
+// Donation Management Components
+import DonationDashboard from "./DonationManagement/DonationDashboard";
+import DonationForm from "./DonationManagement/DonationForm";
+import DonationView from "./DonationManagement/DonationView";
+
 function AppWrapper() {
   const location = useLocation();
  const isLoggedIn = Boolean(localStorage.getItem("token"));
@@ -72,6 +77,13 @@ function AppWrapper() {
           <Route path="/announcement/list" element={<AnnouncementList />} />
           <Route path="/announcement/preview" element={<AnnouncementPreview />} />
           <Route path="/email-templates" element={<EmailTemplateManagement />} />
+          
+          {/* Donation Management Routes */}
+          <Route path="/donation-management" element={<DonationDashboard />} />
+          <Route path="/donation-management/create" element={<DonationForm />} />
+          <Route path="/donation-management/edit/:id" element={<DonationForm />} />
+          <Route path="/donation-management/view/:id" element={<DonationView />} />
+          
           {/* Public Form Route - This would typically be in your frontend app */}
           <Route path="/forms/:page" element={<FormPreviewPage />} />
         </Routes>
