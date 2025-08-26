@@ -5,14 +5,13 @@ const eventController = require('../controllers/eventController');
 // Get all events
 router.get('/', eventController.getEvents);
 
-// Get events by country
-router.get('/country/:country', eventController.getEventsByCountry);
 
-// Get events by month
-router.get('/month/:month', eventController.getEventsByMonth);
 
 // Get event by ID
 router.get('/:id', eventController.getEventById);
+
+// Get event by slug
+router.get('/slug/:slug', eventController.getEventBySlug);
 
 // Create new event
 router.post('/', eventController.createEvent);

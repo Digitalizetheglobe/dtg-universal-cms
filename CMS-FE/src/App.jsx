@@ -1,5 +1,8 @@
-import React from "react";  
+import React,{useEffect} from "react";  
+import { useNavigate } from "react-router-dom";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { isTokenExpired } from "../utils/auth"; // path as per your structure
+import {jwtDecode} from "jwt-decode";
 
 import Home from "./pages/Home";
 
@@ -25,10 +28,21 @@ import AnnouncementPreview from "./Announcement/AnnouncementPreview";
 import EmailTemplateManagement from "./DynamicForms/EmailTemplateManagement";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
+import EventManagementList from "./EventManagement/EventManagmentList";
 
 function AppWrapper() {
-  const location = useLocation();
- const isLoggedIn = Boolean(localStorage.getItem("token"));
+   const location = useLocation();
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  const isLoggedIn = token && !isTokenExpired(token);
+
+  useEffect(() => {
+    if (token && isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      navigate("/"); // redirect to login
+    }
+  }, [token, navigate]);
   // const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
 
   return (
@@ -46,8 +60,9 @@ function AppWrapper() {
         <Routes>
           <Route index element={<Login />} />
 
-          <Route path="*" element={<Notfound />} />
-          
+          {/* <Route path="*" element={<Notfound />} /> */}
+          { isLoggedIn ?(
+          <>
           {/* Blog Management Routes */}
           <Route path="/dashboard" element={<Home />} />
           <Route path="/signUp" element={<SignUp />} />
@@ -74,6 +89,13 @@ function AppWrapper() {
           <Route path="/email-templates" element={<EmailTemplateManagement />} />
           {/* Public Form Route - This would typically be in your frontend app */}
           <Route path="/forms/:page" element={<FormPreviewPage />} />
+          <Route path='/events/list' element={<EventManagementList />} />
+          </>
+          ):
+          (
+            <Route path="*" element={<Login />} />
+          )
+}
         </Routes>
       </main>
     </div>

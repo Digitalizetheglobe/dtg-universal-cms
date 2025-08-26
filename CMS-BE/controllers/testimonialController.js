@@ -3,7 +3,7 @@ const Testimonial = require('../models/Testimonial');
 const getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find();
-    console.log(testimonials); // Debugging
+     // Debugging
     res.status(200).json(testimonials);
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error });
@@ -19,15 +19,14 @@ const addTestimonial = async (req, res) => {
       res.status(201).json(testimonials);
     } else {
       // Save a single testimonial
-    const { fullName, rating, testimonialText, date, companyName, otherFields } = req.body;
+    const { fullName, rating, testimonialText, date,  location } = req.body;
 
     const testimonial = new Testimonial({
       fullName,
       rating,
       testimonialText,
         date: date || new Date(),
-      companyName,
-      otherFields,
+      location
     });
 
     const savedTestimonial = await testimonial.save();

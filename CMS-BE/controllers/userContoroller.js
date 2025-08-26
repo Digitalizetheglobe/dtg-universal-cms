@@ -32,7 +32,7 @@ exports.login=async(req,res)=>{
         if(!isMatch){
             return res.status(401).json({ message: 'please Enter Correct Password' });
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET,{expiresIn: '7d'});
         res.status(200).json({ token,
             user: {
                 id: user._id,

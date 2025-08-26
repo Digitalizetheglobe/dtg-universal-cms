@@ -86,22 +86,22 @@ const AnnouncementList = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Announcements Management</h1>
+    <div className="container px-4 py-8 mx-auto">
+      <div className="flex flex-col items-start justify-between mb-8 md:flex-row md:items-center">
+        <h1 className="mb-4 text-3xl font-bold text-gray-800 md:mb-0">Announcements Management</h1>
         <button
           onClick={() => {
             setEditingAnnouncement(null);
             setShowForm(true);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           + Create New Announcement
         </button>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="p-4 mb-6 text-red-700 bg-red-100 border border-red-400 rounded">
           {error}
         </div>
       )}
@@ -116,7 +116,7 @@ const AnnouncementList = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg md:w-1/3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <svg
             className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
@@ -147,13 +147,13 @@ const AnnouncementList = () => {
       )}
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
         </div>
       ) : announcements.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="p-8 text-center bg-white rounded-lg shadow">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="w-12 h-12 mx-auto text-gray-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -175,7 +175,7 @@ const AnnouncementList = () => {
             <div className="mt-6">
               <button
                 onClick={() => setShowForm(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 + Create New Announcement
               </button>
@@ -184,7 +184,7 @@ const AnnouncementList = () => {
         </div>
       ) : (
         <>
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="overflow-hidden bg-white shadow sm:rounded-lg">
             <ul className="divide-y divide-gray-200">
               {announcements.map((announcement) => (
                 <li key={announcement._id} className="p-4 hover:bg-gray-50">
@@ -194,12 +194,12 @@ const AnnouncementList = () => {
                         <img
                           src={announcement.imageUrl}
                           alt={announcement.title}
-                          className="h-20 w-20 rounded-md object-cover"
+                          className="object-cover w-20 h-20 rounded-md"
                         />
                       ) : (
-                        <div className="h-20 w-20 rounded-md bg-gray-200 flex items-center justify-center">
+                        <div className="flex items-center justify-center w-20 h-20 bg-gray-200 rounded-md">
                           <svg
-                            className="h-10 w-10 text-gray-400"
+                            className="w-10 h-10 text-gray-400"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -221,16 +221,16 @@ const AnnouncementList = () => {
                         </h3>
                         <div className="flex items-center space-x-2">
                           {announcement.isPublished ? (
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            <span className="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
                               Published
                             </span>
                           ) : (
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            <span className="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">
                               Draft
                             </span>
                           )}
                           {announcement.showOnFrontend && (
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                            <span className="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
                               Frontend
                             </span>
                           )}
@@ -239,7 +239,7 @@ const AnnouncementList = () => {
                       <p className="mt-1 text-sm text-gray-600 line-clamp-2">
                         {announcement.content}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center mt-2 text-sm text-gray-500">
                         <div className="flex items-center mr-4">
                           <svg
                             className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
@@ -272,19 +272,19 @@ const AnnouncementList = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 md:mt-0 flex space-x-2">
+                    <div className="flex mt-4 space-x-2 md:mt-0">
                       <button
                         onClick={() => {
                           setEditingAnnouncement(announcement);
                           setShowForm(true);
                         }}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="px-3 py-1 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(announcement._id)}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        className="px-3 py-1 text-sm font-medium text-red-600 border border-gray-300 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                       >
                         Delete
                       </button>
@@ -296,19 +296,19 @@ const AnnouncementList = () => {
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex-1 flex justify-between sm:hidden">
+            <div className="flex items-center justify-between mt-6">
+              <div className="flex justify-between flex-1 sm:hidden">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -324,15 +324,15 @@ const AnnouncementList = () => {
                   </p>
                 </div>
                 <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                     <button
                       onClick={() => handlePageChange(1)}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="sr-only">First</span>
                       <svg
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -345,7 +345,7 @@ const AnnouncementList = () => {
                         />
                       </svg>
                       <svg
-                        className="h-5 w-5 ml-1"
+                        className="w-5 h-5 ml-1"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -361,11 +361,11 @@ const AnnouncementList = () => {
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="sr-only">Previous</span>
                       <svg
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -406,11 +406,11 @@ const AnnouncementList = () => {
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="sr-only">Next</span>
                       <svg
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -426,11 +426,11 @@ const AnnouncementList = () => {
                     <button
                       onClick={() => handlePageChange(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="sr-only">Last</span>
                       <svg
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -443,7 +443,7 @@ const AnnouncementList = () => {
                         />
                       </svg>
                       <svg
-                        className="h-5 w-5 mr-1"
+                        className="w-5 h-5 mr-1"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"

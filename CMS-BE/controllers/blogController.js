@@ -80,8 +80,10 @@ exports.getBlogBySlug = async (req, res) => {
 
 // Create new blog
 // POST /api/blogs
+
+
 exports.createBlog = [
-  upload.any(), // Accept any file field name
+  upload.any(),
   (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: 'File upload error', error: err.message });
@@ -92,73 +94,119 @@ exports.createBlog = [
   },
   async (req, res) => {
     try {
-      console.log('Request Body:', req.body); // Log the request body
-      console.log('Uploaded Files:', req.files); // Log the uploaded files
-      console.log('Request Headers:', req.headers['content-type']); // Log content type
-
-      const { title, content, slug, tags, excerpt, coverImage, author, categories, metaTitle, metaDescription, ogTitle, ogDescription, ogImage, readTime } = req.body;
-
-      let uploadImage = null;
-      let coverImageUrl = coverImage; // Use coverImage from request body if provided
-      
-      if (req.files && req.files.length > 0) {
-        // Use the first uploaded file
-        const file = req.files[0];
-        uploadImage = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-        
-        // If no coverImage was provided, use the uploaded file as coverImage
-        if (!coverImageUrl) {
-          coverImageUrl = uploadImage;
-        }
-      }
-
-      const newBlog = new Blog({
-        
+      const {
         title,
-        content,
         slug,
-        tags,
+        content,
         excerpt,
-        coverImage: coverImageUrl,
         author,
+        tags,
         categories,
+        publishedAt,
+        isPublished,
         metaTitle,
         metaDescription,
         ogTitle,
         ogDescription,
         ogImage,
         readTime,
+      } = req.body;
+
+      // Handle uploaded images
+      let uploadImage = null;
+      let coverImage1 = null;
+      let coverImage2 = null;
+
+      if (req.files && req.files.length > 0) {
+        req.files.forEach((file) => {
+          const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+
+          if (file.fieldname === 'uploadImage') {
+            uploadImage = fileUrl;
+          } else if (file.fieldname === 'coverImage1') {
+            coverImage1 = fileUrl;
+          } else if (file.fieldname === 'coverImage2') {
+            coverImage2 = fileUrl;
+          }
+        });
+      }
+
+      if (!uploadImage) {
+        return res.status(400).json({ message: "uploadImage is required" });
+      }
+
+      const newBlog = new Blog({
+        title,
+        slug,
+        content,
+        excerpt,
+        author,
         uploadImage,
+        coverImage1,
+        coverImage2,
+        publishedAt,
+        metaTitle,
+        metaDescription,
+        ogTitle,
+        ogDescription,
+        ogImage,
+        // Convert stringified types:
+        tags: JSON.parse(tags || "[]"),
+        categories: JSON.parse(categories || "[]"),
+        isPublished: isPublished === "true" || isPublished === true,
+        readTime: parseInt(readTime) || 0,
       });
 
       const savedBlog = await newBlog.save();
       res.status(201).json(savedBlog);
     } catch (error) {
-      console.error('Error creating blog:', error.message); // Log the error
-      res.status(400).json({ message: 'Failed to create blog', error: error.message });
+      console.error("Error creating blog:", error.message);
+      res.status(400).json({ message: "Failed to create blog", error: error.message });
     }
   },
 ];
 
+
 // Update blog
 // PUT /api/blogs/:id
-exports.updateBlog = async (req, res) => {
-  try {
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id, 
-      req.body,
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedBlog) {
-      return res.status(404).json({ message: 'Blog not found' });
+exports.updateBlog = [
+  upload.any(), // Handle file uploads
+  async (req, res) => {
+    try {
+      const blogId = req.params.id;
+
+      const updateFields = { ...req.body };
+
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+
+          if (file.fieldname === 'uploadImage') {
+            updateFields.uploadImage = fileUrl;
+          } else if (file.fieldname === 'coverImage1') {
+            updateFields.coverImage1 = fileUrl;
+          } else if (file.fieldname === 'coverImage2') {
+            updateFields.coverImage2 = fileUrl;
+          }
+        });
+      }
+
+      const updatedBlog = await Blog.findByIdAndUpdate(
+        blogId,
+        updateFields,
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedBlog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+
+      res.status(200).json(updatedBlog);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update blog', error: error.message });
     }
-    
-    res.status(200).json(updatedBlog);
-  } catch (error) {
-    res.status(400).json({ message: 'Failed to update blog', error: error.message });
   }
-};
+];
 
 // Delete blog
 // DELETE /api/blogs/:id

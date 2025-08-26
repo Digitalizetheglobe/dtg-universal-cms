@@ -38,15 +38,15 @@ const AnnouncementPreview = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center h-32">
+        <div className="w-8 h-8 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded">
         {error}
       </div>
     );
@@ -55,7 +55,7 @@ const AnnouncementPreview = () => {
   // Now it's safe to check announcements.length
   if (announcements.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="py-8 text-center">
         <p>No announcements available.</p>
       </div>
     );
@@ -64,17 +64,17 @@ const AnnouncementPreview = () => {
   return (
     <div className="space-y-4">
       {announcements.map((announcement) => (
-        <div key={announcement._id} className="border rounded-lg p-4">
+        <div key={announcement._id} className="p-4 border rounded-lg">
           {announcement.imageUrl && (
             <img 
               src={announcement.imageUrl} 
               alt={announcement.title} 
-              className="w-full h-48 object-cover rounded mb-4"
+              className="object-cover w-full h-48 mb-4 rounded"
             />
           )}
           <h3 className="text-xl font-semibold">{announcement.title}</h3>
           <p className="text-gray-600">{announcement.description}</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm text-gray-500">
             {new Date(announcement.createdAt).toLocaleDateString()}
           </p>
         </div>

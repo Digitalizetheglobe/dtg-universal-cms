@@ -19,7 +19,7 @@ import {
   FaUserFriends
 } from 'react-icons/fa';
 import logo from '../assets/DTG.png'
-import logo2 from '../assets/ac-logo.png'
+import logo2 from '../../public/logo.png'
 
 const Sidebar = () => {
   const location = useLocation();
@@ -75,8 +75,11 @@ const Sidebar = () => {
   }, []);
 
   const sidebarRoutes = [
+  
+  
+
     { 
-      path: '/', 
+      path: '/dashboard', 
       icon: <FaHome className="text-blue-900" />, 
       label: 'Dashboard',
       color: 'from-blue-300 to-blue-200'
@@ -130,10 +133,16 @@ const Sidebar = () => {
       label: 'Media Manager',
       color: 'from-blue-300 to-blue-200'
     },
-    { 
-      path: '/announcement/list', 
+    // { 
+    //   path: '/announcement/list', 
+    //   icon: <FaHackerNewsSquare className="text-blue-900" />, 
+    //   label: 'Announcement',
+    //   color: 'from-blue-300 to-blue-200'
+    // },
+     { 
+      path: '/events/list', 
       icon: <FaHackerNewsSquare className="text-blue-900" />, 
-      label: 'Announcement',
+      label: 'Event Management',
       color: 'from-blue-300 to-blue-200'
     },
     // { 
@@ -216,7 +225,7 @@ const Sidebar = () => {
           <p className="mt-1 text-xs text-gray-400">Leadership Development System</p> */}
           <div className="flex items-center justify-center">
             {/* <img src={logo} alt="Logo" className="w-16 h-16 rounded-full" /> */}
-            <img src={logo2} alt="Logo" className="w-fullrounded-full" />
+            <img src={logo2} alt="Logo" className="w-full" />
             {/* <h1 className="ml-2 text-xl font-bold text-transparent md:text-2xl bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
               Qstudy CMS
             </h1> */}
@@ -224,7 +233,7 @@ const Sidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="mt-3 md:mt-4 px-2 md:px-4 overflow-y-auto h-[calc(100%-180px)]">
+        <nav className="mt-3 md:mt-4 px-2 md:px-4 overflow-y-auto h-[calc(100vh-280px)]">
           {sidebarRoutes.map((route) => (
             <div key={route.path}>
               {route.hasSubmenu ? (
@@ -317,8 +326,7 @@ const Sidebar = () => {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gray-800 border-t border-gray-700 md:p-4">
-          <div 
+<div className="fixed bottom-0 left-0 right-0 w-56 p-3 bg-gray-800 border-t border-gray-700 md:w-64 md:p-4">          <div 
             className="flex items-center cursor-pointer"
             onClick={() => setShowPremiumModal(true)}
           >
