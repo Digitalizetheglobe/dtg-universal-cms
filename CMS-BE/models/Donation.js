@@ -118,8 +118,8 @@ const donationSchema = new mongoose.Schema({
 
 // Indexes for better query performance
 // Remove the unique constraint from razorpayPaymentId and razorpayOrderId
-donationSchema.index({ razorpayPaymentId: 1 });
-donationSchema.index({ razorpayOrderId: 1 });
+donationSchema.index({ razorpayPaymentId: 1 }, { sparse: true });
+donationSchema.index({ razorpayOrderId: 1 }, { sparse: true });
 donationSchema.index({ donorEmail: 1 });
 donationSchema.index({ paymentStatus: 1 });
 donationSchema.index({ createdAt: -1 });

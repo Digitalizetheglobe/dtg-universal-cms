@@ -7,7 +7,7 @@ async function fixDonationIndexes() {
     console.log('=====================================\n');
 
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/test');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/test');
     console.log('✅ Connected to MongoDB');
 
     // Get the donation collection

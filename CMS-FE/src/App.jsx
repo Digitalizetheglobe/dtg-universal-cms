@@ -30,20 +30,21 @@ import Login from "./pages/Login";
 import DonationDashboard from "./DonationManagement/DonationDashboard";
 import DonationForm from "./DonationManagement/DonationForm";
 import DonationView from "./DonationManagement/DonationView";
+import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
 
 function AppWrapper() {
   const location = useLocation();
- const isLoggedIn = Boolean(localStorage.getItem("token"));
-  // const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
+  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const shouldHideSidebar = location.pathname === '/utm-tracking-dashboard';
 
   return (
     <div className="flex">
        {/* <Sidebar /> */}
-      {isLoggedIn && <Sidebar />}
+      {isLoggedIn && !shouldHideSidebar && <Sidebar />}
 
       <main
         className={
-          isLoggedIn
+          isLoggedIn && !shouldHideSidebar
             ? "flex-grow ml-0 md:ml-64 transition-all duration-300"
             : "flex-grow"
         }
@@ -83,6 +84,7 @@ function AppWrapper() {
           <Route path="/donation-management/create" element={<DonationForm />} />
           <Route path="/donation-management/edit/:id" element={<DonationForm />} />
           <Route path="/donation-management/view/:id" element={<DonationView />} />
+          <Route path="/utm-tracking-dashboard" element={<UTMTrackingDashboard />} />
           
           {/* Public Form Route - This would typically be in your frontend app */}
           <Route path="/forms/:page" element={<FormPreviewPage />} />

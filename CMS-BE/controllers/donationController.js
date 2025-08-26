@@ -2,11 +2,26 @@ const Razorpay = require('razorpay');
 const Donation = require('../models/Donation');
 const crypto = require('crypto');
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Initialize Razorpay lazily
+let razorpay = null;
+
+const getRazorpayInstance = () => {
+  if (!razorpay) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error('Razorpay credentials not configured');
+    }
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpay;
+};
+
+// Helper function to check if Razorpay is configured
+const isRazorpayConfigured = () => {
+  return !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+};
 
 // Create a new donation order
 const createDonationOrder = async (req, res) => {
@@ -15,6 +30,13 @@ const createDonationOrder = async (req, res) => {
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: 'Valid amount is required' });
+    }
+
+    // Check if Razorpay credentials are configured
+    if (!isRazorpayConfigured()) {
+      return res.status(500).json({ 
+        message: 'Payment gateway not configured. Please contact administrator.' 
+      });
     }
 
     const options = {
@@ -26,7 +48,7 @@ const createDonationOrder = async (req, res) => {
       }
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await getRazorpayInstance().orders.create(options);
 
     res.status(201).json({
       success: true,
@@ -60,7 +82,7 @@ const verifyDonationPayment = async (req, res) => {
     }
 
     // Get payment details from Razorpay
-    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const payment = await getRazorpayInstance().payments.fetch(razorpay_payment_id);
 
     // Create donation record
     const donation = new Donation({
@@ -291,12 +313,15 @@ const syncDonationsFromRazorpay = async (req, res) => {
     const { startDate, endDate } = req.query;
     
     // Check if credentials are set
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    if (!isRazorpayConfigured()) {
       return res.status(400).json({
         success: false,
         message: 'Razorpay credentials not configured. Please check your .env file.'
       });
     }
+
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
     
     const options = {
       from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
@@ -305,7 +330,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
     };
 
     console.log('Fetching payments from Razorpay with options:', options);
-    const payments = await razorpay.payments.all(options);
+    const payments = await razorpayInstance.payments.all(options);
     
     console.log(`Found ${payments.items.length} payments from Razorpay`);
     
@@ -388,7 +413,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
 const testRazorpayConnection = async (req, res) => {
   try {
     // Test if credentials are set
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    if (!isRazorpayConfigured()) {
       return res.status(400).json({
         success: false,
         message: 'Razorpay credentials not configured. Please check your .env file.',
@@ -400,7 +425,8 @@ const testRazorpayConnection = async (req, res) => {
     }
 
     // Test connection by fetching recent payments
-    const payments = await razorpay.payments.all({ count: 5 });
+    const razorpayInstance = getRazorpayInstance();
+    const payments = await razorpayInstance.payments.all({ count: 5 });
     
     res.json({
       success: true,
@@ -471,6 +497,14 @@ const submitDonationForm = async (req, res) => {
       });
     }
 
+    // Check if Razorpay credentials are configured
+    if (!isRazorpayConfigured()) {
+      return res.status(500).json({
+        success: false,
+        message: 'Payment gateway not configured. Please contact administrator.'
+      });
+    }
+
     // Create donation record with pending status
     const donation = new Donation({
       sevaName,
@@ -487,7 +521,26 @@ const submitDonationForm = async (req, res) => {
       paymentStatus: 'pending'
     });
 
-    await donation.save();
+    try {
+      await donation.save();
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      
+      // Check if it's a duplicate key error
+      if (dbError.code === 11000) {
+        return res.status(500).json({
+          success: false,
+          message: 'Database configuration error. Please contact administrator to fix donation indexes.',
+          error: 'Duplicate key error - database indexes need to be updated'
+        });
+      }
+      
+      return res.status(500).json({
+        success: false,
+        message: 'Database error occurred while saving donation',
+        error: dbError.message
+      });
+    }
 
     // Create Razorpay order
     const orderOptions = {
@@ -503,7 +556,17 @@ const submitDonationForm = async (req, res) => {
       }
     };
 
-    const order = await razorpay.orders.create(orderOptions);
+    let order;
+    try {
+      order = await getRazorpayInstance().orders.create(orderOptions);
+    } catch (razorpayError) {
+      console.error('Razorpay error:', razorpayError);
+      return res.status(500).json({
+        success: false,
+        message: 'Payment gateway error. Please try again later.',
+        error: razorpayError.message
+      });
+    }
 
     // Update donation with order ID
     donation.razorpayOrderId = order.id;
@@ -580,7 +643,7 @@ const verifyPayment = async (req, res) => {
     }
 
     // Get payment details from Razorpay
-    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const payment = await getRazorpayInstance().payments.fetch(razorpay_payment_id);
 
     // Update donation with payment details
     donation.razorpayPaymentId = razorpay_payment_id;

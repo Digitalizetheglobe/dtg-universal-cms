@@ -125,6 +125,12 @@ const Sidebar = () => {
       color: 'from-blue-300 to-blue-200'
     },
     { 
+      path: '/utm-tracking-dashboard', 
+      icon: <FaChartBar className="text-blue-900" />, 
+      label: 'UTM Tracking Dashboard',
+      color: 'from-blue-300 to-blue-200'
+    },
+    { 
       path: '/form-management', 
       icon: <FaChartBar className="text-blue-900" />, 
       label: 'Form Management',
