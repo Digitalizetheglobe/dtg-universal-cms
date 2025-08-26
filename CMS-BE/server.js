@@ -1,10 +1,15 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const path = require('path');
 const connectDB = require('./config/db');
+console.log('Environment variables loaded:');
+console.log('MONGO_URI:', process.env.MONGO_URI ? 'Set' : 'Not set');
+console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not set');
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -28,6 +33,7 @@ app.use('/api/email-templates', require('./routes/emailTemplateRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/team', require('./routes/teamRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/donations', require('./routes/donationRoutes'));
 
 // Root
 app.get('/', (req, res) => {

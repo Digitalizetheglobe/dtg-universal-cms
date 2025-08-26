@@ -10,7 +10,7 @@ export const Home = () => {
       <div className="w-full max-w-5xl space-y-12 text-center">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-800">
-            Hare Krishna Vidya
+            Accountant Tech Labs
           </h1>
           <p className="max-w-2xl mx-auto mt-4 text-xl text-gray-600">
             The all-in-one content management solution to manage blogs, leads, careers, testimonials,
