@@ -91,6 +91,28 @@ const donationSchema = new mongoose.Schema({
     trim: true
   },
 
+  // UTM Tracking Parameters
+  utmSource: {
+    type: String,
+    trim: true
+  },
+  utmMedium: {
+    type: String,
+    trim: true
+  },
+  utmCampaign: {
+    type: String,
+    trim: true
+  },
+  utmTerm: {
+    type: String,
+    trim: true
+  },
+  utmContent: {
+    type: String,
+    trim: true
+  },
+
   // Metadata
   metadata: {
     paymentMethod: String,

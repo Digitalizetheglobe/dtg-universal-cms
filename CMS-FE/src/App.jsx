@@ -35,6 +35,9 @@ import DonationForm from "./DonationManagement/DonationForm";
 import DonationView from "./DonationManagement/DonationView";
 import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
 
+// Event Management Components
+import EventManagementList from "./EventManagement/EventManagmentList";
+
 function AppWrapper() {
    const location = useLocation();
    const navigate = useNavigate();

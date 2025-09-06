@@ -470,7 +470,12 @@ const submitDonationForm = async (req, res) => {
       donorType,
       description,
       isAnonymous = false,
-      campaign
+      campaign,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent
     } = req.body;
 
     // Validate required fields
@@ -518,6 +523,11 @@ const submitDonationForm = async (req, res) => {
       description,
       isAnonymous,
       campaign,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent,
       paymentStatus: 'pending'
     });
 

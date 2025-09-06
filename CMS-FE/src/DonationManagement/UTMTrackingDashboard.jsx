@@ -108,24 +108,24 @@ const UTMTrackingDashboard = () => {
       stats.sevaNames[sevaName].count++;
       stats.sevaNames[sevaName].amount += donation.amount || 0;
 
-      // UTM Source (using campaign as source for now)
-      const utmSource = donation.campaign || 'Direct';
+      // UTM Source
+      const utmSource = donation.utmSource || 'Direct';
       if (!stats.utmSources[utmSource]) {
         stats.utmSources[utmSource] = { count: 0, amount: 0 };
       }
       stats.utmSources[utmSource].count++;
       stats.utmSources[utmSource].amount += donation.amount || 0;
 
-      // UTM Medium (using payment method as medium)
-      const utmMedium = donation.paymentMethod || 'Direct';
+      // UTM Medium
+      const utmMedium = donation.utmMedium || 'Direct';
       if (!stats.utmMediums[utmMedium]) {
         stats.utmMediums[utmMedium] = { count: 0, amount: 0 };
       }
       stats.utmMediums[utmMedium].count++;
       stats.utmMediums[utmMedium].amount += donation.amount || 0;
 
-      // UTM Campaign (using donor phone as campaign)
-      const utmCampaign = donation.donorPhone || 'Direct';
+      // UTM Campaign
+      const utmCampaign = donation.utmCampaign || 'Direct';
       if (!stats.utmCampaigns[utmCampaign]) {
         stats.utmCampaigns[utmCampaign] = { count: 0, amount: 0 };
       }
@@ -185,9 +185,9 @@ const UTMTrackingDashboard = () => {
 
     const csvData = data.map((donation, index) => [
       index + 1,
-      donation.campaign || 'Direct',
-      donation.paymentMethod || 'Direct',
-      donation.donorPhone || 'Direct',
+      donation.utmSource || 'Direct',
+      donation.utmMedium || 'Direct',
+      donation.utmCampaign || 'Direct',
       donation.sevaName || 'Unknown',
       donation.amount || 0,
       donation.razorpayOrderId || 'N/A',
@@ -207,28 +207,56 @@ const UTMTrackingDashboard = () => {
     }).format(amount);
   };
 
-  const SummaryCard = ({ title, icon: Icon, data, totalCount, totalAmount }) => (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-          <Icon className="mr-2 text-blue-600" />
+  const SummaryCard = ({ title, icon: Icon, data }) => (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3">
+        <h3 className="text-lg font-semibold flex items-center">
+          <Icon className="mr-2" />
           {title}
         </h3>
-        <div className="text-right">
-          <div className="text-sm text-gray-600">{totalCount} sevas</div>
-          <div className="text-lg font-bold text-green-600">{formatCurrency(totalAmount)}</div>
-        </div>
       </div>
-      <div className="space-y-2 max-h-32 overflow-y-auto">
-        {data.map((item, index) => (
-          <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded cursor-pointer hover:bg-blue-50 transition-colors">
-            <span className="text-sm font-medium text-gray-700">{item.name || item.source || item.medium || item.campaign}</span>
-            <div className="text-right">
-              <div className="text-xs text-gray-600">{item.count} sevas</div>
-              <div className="text-sm font-semibold text-green-600">{formatCurrency(item.amount)}</div>
-            </div>
-          </div>
-        ))}
+      
+      {/* Table Content */}
+      <div className="max-h-64 overflow-y-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {title.includes('Seva') ? 'Seva Name' : 
+                 title.includes('Source') ? 'UTM Source' :
+                 title.includes('Medium') ? 'UTM Medium' : 'UTM Campaign'}
+              </th>
+              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No. Sevas</th>
+              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.map((item, index) => (
+              <tr key={index} className="hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                  {item.name || item.source || item.medium || item.campaign}
+                </td>
+                <td className="px-4 py-2 text-sm text-gray-600 text-center">
+                  {item.count}
+                </td>
+                <td className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
+                  {item.amount}
+                </td>
+              </tr>
+            ))}
+            {/* Total Row */}
+            <tr className="bg-gray-100 border-t-2 border-gray-300">
+              <td className="px-4 py-2 text-sm font-bold text-gray-900">Total</td>
+              <td className="px-4 py-2 text-sm font-bold text-gray-900 text-center">
+                {data.reduce((sum, item) => sum + item.count, 0)}
+              </td>
+              <td className="px-4 py-2 text-sm font-bold text-gray-900 text-right">
+                {data.reduce((sum, item) => sum + item.amount, 0)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -309,29 +337,21 @@ const UTMTrackingDashboard = () => {
             title="Seva Names List"
             icon={FaMoneyBillWave}
             data={summaryStats.sevaNames}
-            totalCount={summaryStats.sevaNames.reduce((sum, item) => sum + item.count, 0)}
-            totalAmount={summaryStats.sevaNames.reduce((sum, item) => sum + item.amount, 0)}
           />
           <SummaryCard
             title="UTM Source List"
             icon={FaGlobe}
             data={summaryStats.utmSources}
-            totalCount={summaryStats.utmSources.reduce((sum, item) => sum + item.count, 0)}
-            totalAmount={summaryStats.utmSources.reduce((sum, item) => sum + item.amount, 0)}
           />
           <SummaryCard
             title="UTM Medium List"
             icon={FaFilter}
             data={summaryStats.utmMediums}
-            totalCount={summaryStats.utmMediums.reduce((sum, item) => sum + item.count, 0)}
-            totalAmount={summaryStats.utmMediums.reduce((sum, item) => sum + item.amount, 0)}
           />
           <SummaryCard
             title="UTM Campaign List"
             icon={MdCampaign}
             data={summaryStats.utmCampaigns}
-            totalCount={summaryStats.utmCampaigns.reduce((sum, item) => sum + item.count, 0)}
-            totalAmount={summaryStats.utmCampaigns.reduce((sum, item) => sum + item.amount, 0)}
           />
         </div>
 
@@ -379,9 +399,9 @@ const UTMTrackingDashboard = () => {
                 {filteredDonations.map((donation, index) => (
                   <tr key={donation._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.campaign || 'Direct'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.paymentMethod || 'Direct'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.donorPhone || 'Direct'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmSource || 'Direct'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmMedium || 'Direct'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmCampaign || 'Direct'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.sevaName || 'Unknown'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatCurrency(donation.amount || 0)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{donation.razorpayOrderId || 'N/A'}</td>
