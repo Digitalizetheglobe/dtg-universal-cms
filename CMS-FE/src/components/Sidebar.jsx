@@ -79,7 +79,7 @@ const Sidebar = () => {
   
 
     { 
-      path: '/dashboarddashboard', 
+      path: '/dashboard', 
       icon: <FaHome className="text-blue-900" />, 
       label: 'Dashboard',
       color: 'from-blue-300 to-blue-200'
