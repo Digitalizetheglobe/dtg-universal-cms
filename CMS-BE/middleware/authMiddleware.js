@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 // Middleware to check if user is authenticated
 exports.protect = async (req, res, next) => {
   let token;
-  
+  //auth changes
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
