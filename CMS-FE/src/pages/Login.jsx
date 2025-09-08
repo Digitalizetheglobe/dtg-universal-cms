@@ -25,9 +25,9 @@ const Login = () => {
 
     try {
       
-      // Login
+      // Login api is apply
       const res = await axios.post(
-        "http://localhost:5000/api/users/login",
+        "https://dtg-universal-cms.onrender.com/api/users/login",
         formData
       );
       console.log("Login successful!", res.data);

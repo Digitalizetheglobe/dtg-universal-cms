@@ -46,7 +46,7 @@ const DonationForm = () => {
   const fetchDonation = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/donations/${id}`);
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations/${id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -118,7 +118,7 @@ const DonationForm = () => {
       
       if (isEditing) {
         // Update existing donation notes
-        const response = await fetch(`http://localhost:5000/api/donations/${id}/notes`, {
+        const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations/${id}/notes`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const DonationForm = () => {
         }
       } else {
         // Create new donation order
-        const response = await fetch('http://localhost:5000/api/donations/create-order', {
+        const response = await fetch('https://dtg-universal-cms.onrender.com/api/donations/create-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

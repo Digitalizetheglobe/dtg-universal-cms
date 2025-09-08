@@ -12,7 +12,7 @@ const DonationChart = () => {
   const fetchChartData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/donations/stats');
+      const response = await fetch('https://dtg-universal-cms.onrender.com/api/donations/stats');
       const data = await response.json();
 
       if (data.success && data.stats.monthlyBreakdown) {

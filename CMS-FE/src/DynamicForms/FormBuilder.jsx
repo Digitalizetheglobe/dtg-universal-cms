@@ -41,7 +41,7 @@ const FormBuilder = () => {
       setError(null);
       
       try {
-        const response = await fetch(`http://localhost:5000/api/forms/forms/${formId}`);
+        const response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`);
         if (!response.ok) {
           throw new Error('Failed to load form data');
         }
@@ -188,7 +188,7 @@ const FormBuilder = () => {
       
       if (formId) {
         // Update existing form
-        response = await fetch(`http://localhost:5000/api/forms/forms/${formId}`, {
+        response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -197,7 +197,7 @@ const FormBuilder = () => {
         });
       } else {
         // Create new form
-        response = await fetch('http://localhost:5000/api/forms/forms', {
+        response = await fetch('https://dtg-universal-cms.onrender.com/api/forms/forms', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

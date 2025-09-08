@@ -17,7 +17,7 @@ const TestimonialManagement = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/testimonials/');
+        const response = await fetch('https://dtg-universal-cms.onrender.com/api/testimonials/');
         const data = await response.json();
         setTestimonials(data);
         setLoading(false);
@@ -53,8 +53,8 @@ const TestimonialManagement = () => {
     e.preventDefault();
     try {
       const url = currentTestimonial 
-        ? `http://localhost:5000/api/testimonials/${currentTestimonial._id}`
-        : 'http://localhost:5000/api/testimonials/';
+        ? `https://dtg-universal-cms.onrender.com/api/testimonials/${currentTestimonial._id}`
+        : 'https://dtg-universal-cms.onrender.com/api/testimonials/';
       
       const method = currentTestimonial ? 'PUT' : 'POST';
       
@@ -106,7 +106,7 @@ const TestimonialManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/testimonials/${id}`, {
+        const response = await fetch(`https://dtg-universal-cms.onrender.com/api/testimonials/${id}`, {
           method: 'DELETE'
         });
         

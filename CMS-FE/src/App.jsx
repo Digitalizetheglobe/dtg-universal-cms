@@ -1,8 +1,13 @@
-import React,{useEffect} from "react";  
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import { isTokenExpired } from "../utils/auth"; // path as per your structure
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import Home from "./pages/Home";
 
@@ -39,8 +44,8 @@ import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
 import EventManagementList from "./EventManagement/EventManagmentList";
 
 function AppWrapper() {
-   const location = useLocation();
-   const navigate = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const isLoggedIn = token && !isTokenExpired(token);
@@ -51,11 +56,11 @@ function AppWrapper() {
       navigate("/"); // redirect to login
     }
   }, [token, navigate]);
-  const shouldHideSidebar = location.pathname === '/utm-tracking-dashboard';
+  const shouldHideSidebar = location.pathname === "/utm-tracking-dashboard";
 
   return (
     <div className="flex">
-       {/* <Sidebar /> */}
+      {/* <Sidebar /> */}
       {isLoggedIn && !shouldHideSidebar && <Sidebar />}
 
       <main
@@ -69,49 +74,95 @@ function AppWrapper() {
           <Route index element={<Login />} />
 
           {/* <Route path="*" element={<Notfound />} /> */}
-          { isLoggedIn ?(
-          <>
-          {/* Blog Management Routes */}
-          <Route path="/dashboard" element={<Home />} />
-          <Route path="/signUp" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/blog-management" element={<BlogEditForm />} />
-          <Route path="/blog-management/dashboard" element={<BlogManagementDashboard />} />
-          <Route path="/blog-management/list" element={<BlogList />} />
-          <Route path="/blog-management/create" element={<BlogEditForm />} />
-          <Route path="/blog-management/edit/:blogId" element={<BlogEditForm />} />
-          <Route path="/blog-management/view/:blogId" element={<BlogView />} />
-          
-          {/* Dynamic Form Management Routes */}
-          <Route path="/form-management" element={<FormManagementDashboard />} />
-          <Route path="/form-management/create" element={<FormBuilder />} />
-          <Route path="/form-management/edit/:formId" element={<FormBuilder />} />
-          <Route path="/form-management/submissions/:formId" element={<FormSubmissionsView />} />
-          <Route path="/form-management/preview/:formId" element={<FormPreviewPage />} />
-          <Route path="/leads-management" element={<LeadsManagement />} />
-          <Route path="/teammanagement" element={<TeamManagement />} />
-          <Route path="/testimonialmanagement" element={<TestimonialManagement />}  />
-          <Route path="/announcement" element={<AnnouncementForm />} />
-          <Route path="/announcement/list" element={<AnnouncementList />} />
-          <Route path="/announcement/preview" element={<AnnouncementPreview />} />
-          <Route path="/email-templates" element={<EmailTemplateManagement />} />
-          
-          {/* Donation Management Routes */}
-          <Route path="/donation-management" element={<DonationDashboard />} />
-          <Route path="/donation-management/create" element={<DonationForm />} />
-          <Route path="/donation-management/edit/:id" element={<DonationForm />} />
-          <Route path="/donation-management/view/:id" element={<DonationView />} />
-          <Route path="/utm-tracking-dashboard" element={<UTMTrackingDashboard />} />
-          
-          {/* Public Form Route - This would typically be in your frontend app */}
-          <Route path="/forms/:page" element={<FormPreviewPage />} />
-          <Route path='/events/list' element={<EventManagementList />} />
-          </>
-          ):
-          (
+          {isLoggedIn ? (
+            <>
+              {/* Blog Management Routes */}
+              <Route path="/dashboard" element={<Home />} />
+              <Route path="/signUp" element={<SignUp />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/blog-management" element={<BlogEditForm />} />
+              <Route
+                path="/blog-management/dashboard"
+                element={<BlogManagementDashboard />}
+              />
+              <Route path="/blog-management/list" element={<BlogList />} />
+              <Route
+                path="/blog-management/create"
+                element={<BlogEditForm />}
+              />
+              <Route
+                path="/blog-management/edit/:blogId"
+                element={<BlogEditForm />}
+              />
+              <Route
+                path="/blog-management/view/:blogId"
+                element={<BlogView />}
+              />
+
+              {/* Dynamic Form Management Routes */}
+              <Route
+                path="/form-management"
+                element={<FormManagementDashboard />}
+              />
+              <Route path="/form-management/create" element={<FormBuilder />} />
+              <Route
+                path="/form-management/edit/:formId"
+                element={<FormBuilder />}
+              />
+              <Route
+                path="/form-management/submissions/:formId"
+                element={<FormSubmissionsView />}
+              />
+              <Route
+                path="/form-management/preview/:formId"
+                element={<FormPreviewPage />}
+              />
+              <Route path="/leads-management" element={<LeadsManagement />} />
+              <Route path="/teammanagement" element={<TeamManagement />} />
+              <Route
+                path="/testimonialmanagement"
+                element={<TestimonialManagement />}
+              />
+              <Route path="/announcement" element={<AnnouncementForm />} />
+              <Route path="/announcement/list" element={<AnnouncementList />} />
+              <Route
+                path="/announcement/preview"
+                element={<AnnouncementPreview />}
+              />
+              <Route
+                path="/email-templates"
+                element={<EmailTemplateManagement />}
+              />
+
+              {/* Donation Management Routes */}
+              <Route
+                path="/donation-management"
+                element={<DonationDashboard />}
+              />
+              <Route
+                path="/donation-management/create"
+                element={<DonationForm />}
+              />
+              <Route
+                path="/donation-management/edit/:id"
+                element={<DonationForm />}
+              />
+              <Route
+                path="/donation-management/view/:id"
+                element={<DonationView />}
+              />
+              <Route
+                path="/utm-tracking-dashboard"
+                element={<UTMTrackingDashboard />}
+              />
+
+              {/* Public Form Route - This would typically be in your frontend app */}
+              <Route path="/forms/:page" element={<FormPreviewPage />} />
+              <Route path="/events/list" element={<EventManagementList />} />
+            </>
+          ) : (
             <Route path="*" element={<Login />} />
-          )
-}
+          )}
         </Routes>
       </main>
     </div>

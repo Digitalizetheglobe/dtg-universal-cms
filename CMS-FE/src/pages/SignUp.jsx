@@ -28,7 +28,7 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/register', formData);
+      const res = await axios.post('https://dtg-universal-cms.onrender.com/api/users/register', formData);
       console.log('Signup successful:', res.data);
       alert('Signup successful! Please login.');
       navigate('/login'); // ✅ redirect to login after signup

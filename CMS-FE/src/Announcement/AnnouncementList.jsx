@@ -22,7 +22,7 @@ const AnnouncementList = () => {
   const fetchAnnouncements = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/announcements', {
+      const response = await axios.get('https://dtg-universal-cms.onrender.com/api/announcements', {
         params: {
           page: currentPage,
           limit: itemsPerPage,
@@ -73,7 +73,7 @@ const AnnouncementList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/announcements/${id}`);
+        await axios.delete(`https://dtg-universal-cms.onrender.com/api/announcements/${id}`);
         setAnnouncements(prev => prev.filter(ann => ann._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete announcement');

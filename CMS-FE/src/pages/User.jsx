@@ -49,7 +49,7 @@ function User() {
     const token = JSON.parse(localStorage.getItem("user")).token;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/v1/users/${username}/follow`,
+        `https://dtg-universal-cms.onrender.com/api/v1/users/${username}/follow`,
         {
           method: "POST",
           headers: {
@@ -81,7 +81,7 @@ function User() {
     const token = JSON.parse(localStorage.getItem("user")).token;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/v1/users/${username}/follow`,
+        `https://dtg-universal-cms.onrender.com/api/v1/users/${username}/follow`,
         {
           method: "POST",
           headers: {

@@ -29,7 +29,7 @@ const FormManagementDashboard = () => {
       setError(null);
       
       try {
-        const response = await fetch('http://localhost:5000/api/forms/forms');
+        const response = await fetch('https://dtg-universal-cms.onrender.com/api/forms/forms');
         if (!response.ok) {
           throw new Error('Failed to load forms');
         }
@@ -69,7 +69,7 @@ const FormManagementDashboard = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/forms/forms/${formToDelete._id}`, {
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formToDelete._id}`, {
         method: 'DELETE'
       });
       

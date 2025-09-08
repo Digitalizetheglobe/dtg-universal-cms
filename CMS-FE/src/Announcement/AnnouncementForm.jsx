@@ -79,13 +79,13 @@ const AnnouncementForm = ({ announcement, onSuccess, onCancel }) => {
 
       let response;
       if (announcement) {
-        response = await axios.put(`http://localhost:5000/api/announcements/${announcement._id}`, formDataToSend, {
+        response = await axios.put(`https://dtg-universal-cms.onrender.com/api/announcements/${announcement._id}`, formDataToSend, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
       } else {
-        response = await axios.post('http://localhost:5000/api/announcements', formDataToSend, {
+        response = await axios.post('https://dtg-universal-cms.onrender.com/api/announcements', formDataToSend, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

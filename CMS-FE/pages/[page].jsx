@@ -77,7 +77,7 @@ export async function getServerSideProps(context) {
   
   try {
     // Fetch form data from API
-    const apiUrl = `${process.env.API_BASE_URL || 'http://localhost:5000'}/api/forms/page/${page}`;
+    const apiUrl = `${process.env.API_BASE_URL || 'https://dtg-universal-cms.onrender.com'}/api/forms/page/${page}`;
     const response = await fetch(apiUrl);
     
     if (!response.ok) {

@@ -43,7 +43,7 @@ const TeamManagement = () => {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:5000/api/team');
+      const response = await fetch('https://dtg-universal-cms.onrender.com/api/team');
       if (!response.ok) {
         throw new Error('Failed to load team members');
       }
@@ -117,7 +117,7 @@ const TeamManagement = () => {
         linkedinUrl: member.linkedinUrl || '',
         isActive: member.isActive
       });
-      setPhotoPreview(member.photo ? `http://localhost:5000/uploads/team/${member.photo}` : null);
+      setPhotoPreview(member.photo ? `https://dtg-universal-cms.onrender.com/uploads/team/${member.photo}` : null);
     } else {
       setEditingMember(null);
       setFormData({
@@ -175,13 +175,13 @@ const TeamManagement = () => {
         formDataToSend.append('linkedinUrl', formData.linkedinUrl);
         formDataToSend.append('isActive', formData.isActive);
         
-        response = await fetch(`http://localhost:5000/api/team${editingMember ? `/${editingMember._id}` : ''}`, {
+        response = await fetch(`https://dtg-universal-cms.onrender.com/api/team${editingMember ? `/${editingMember._id}` : ''}`, {
           method: editingMember ? 'PUT' : 'POST',
           body: formDataToSend
         });
       } else {
         // Upload without photo
-        response = await fetch(`http://localhost:5000/api/team${editingMember ? `/${editingMember._id}` : ''}`, {
+        response = await fetch(`https://dtg-universal-cms.onrender.com/api/team${editingMember ? `/${editingMember._id}` : ''}`, {
           method: editingMember ? 'PUT' : 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ const TeamManagement = () => {
   // Confirm delete
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/team/${memberToDelete._id}`, {
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/team/${memberToDelete._id}`, {
         method: 'DELETE'
       });
       
@@ -227,7 +227,7 @@ const TeamManagement = () => {
   // Toggle active status
   const toggleStatus = async (member) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/team/${member._id}/toggle-status`, {
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/team/${member._id}/toggle-status`, {
         method: 'PATCH'
       });
       
@@ -402,7 +402,7 @@ const TeamManagement = () => {
                   <TableRow key={member._id || Math.random()} className="hover:bg-gray-50">
                     <TableCell>
                       <Avatar
-                        src={member.photo ? `http://localhost:5000/uploads/team/${member.photo}` : undefined}
+                        src={member.photo ? `https://dtg-universal-cms.onrender.com/uploads/team/${member.photo}` : undefined}
                         className="w-12 h-12"
                       >
                         {member.fullName ? member.fullName.charAt(0) : '?'}
@@ -489,7 +489,7 @@ const TeamManagement = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-4">
                 <Avatar
-                  src={selectedMember.photo ? `http://localhost:5000/uploads/team/${selectedMember.photo}` : undefined}
+                  src={selectedMember.photo ? `https://dtg-universal-cms.onrender.com/uploads/team/${selectedMember.photo}` : undefined}
                   className="w-20 h-20"
                 >
                   {selectedMember.fullName ? selectedMember.fullName.charAt(0) : '?'}

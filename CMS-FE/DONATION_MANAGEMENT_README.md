@@ -92,7 +92,7 @@ src/DonationManagement/
 
 ### Prerequisites
 - Node.js and npm installed
-- Backend server running on `http://localhost:5000`
+- Backend server running on `https://dtg-universal-cms.onrender.com`
 - Razorpay account and credentials configured
 
 ### Installation

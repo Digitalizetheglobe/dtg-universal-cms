@@ -33,7 +33,7 @@ const FormSubmissionsView = () => {
       
       try {
         // Fetch form configuration
-        const formResponse = await fetch(`http://localhost:5000/api/forms/forms/${formId}`);
+        const formResponse = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`);
         if (!formResponse.ok) {
           throw new Error('Failed to load form configuration');
         }
@@ -41,7 +41,7 @@ const FormSubmissionsView = () => {
         setFormConfig(formData.data);
         
         // Fetch submissions
-        const submissionsResponse = await fetch(`http://localhost:5000/api/forms/forms/${formId}/submissions`);
+        const submissionsResponse = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}/submissions`);
         if (!submissionsResponse.ok) {
           throw new Error('Failed to load submissions');
         }
@@ -80,7 +80,7 @@ const FormSubmissionsView = () => {
 
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/submissions/${submissionToDelete._id}`, {
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/submissions/${submissionToDelete._id}`, {
         method: 'DELETE'
       });
       

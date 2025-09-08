@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  FaCalendarAlt, 
-  FaSearch, 
-  FaUndo, 
-  FaDownload, 
+import React, { useState, useEffect } from "react";
+import {
+  FaCalendarAlt,
+  FaSearch,
+  FaUndo,
+  FaDownload,
   FaSignOutAlt,
   FaChartBar,
   FaUsers,
   FaMoneyBillWave,
   FaFilter,
-  FaGlobe
-} from 'react-icons/fa';
-import { MdCampaign } from 'react-icons/md';
+  FaGlobe,
+} from "react-icons/fa";
+import { MdCampaign } from "react-icons/md";
 
 const UTMTrackingDashboard = () => {
   const [donations, setDonations] = useState([]);
   const [filteredDonations, setFilteredDonations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [summaryStats, setSummaryStats] = useState({
     sevaNames: [],
     utmSources: [],
     utmMediums: [],
-    utmCampaigns: []
+    utmCampaigns: [],
   });
 
   useEffect(() => {
@@ -42,15 +42,17 @@ const UTMTrackingDashboard = () => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/donations?limit=1000');
+      const response = await fetch(
+        "https://dtg-universal-cms.onrender.com/api/donations?limit=1000"
+      );
       const data = await response.json();
-      
+
       if (data.success) {
         setDonations(data.donations);
         setFilteredDonations(data.donations);
       }
     } catch (error) {
-      console.error('Error fetching donations:', error);
+      console.error("Error fetching donations:", error);
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ const UTMTrackingDashboard = () => {
 
     // Filter by date range
     if (startDate || endDate) {
-      filtered = filtered.filter(donation => {
+      filtered = filtered.filter((donation) => {
         const donationDate = new Date(donation.createdAt);
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
@@ -79,12 +81,17 @@ const UTMTrackingDashboard = () => {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(donation => 
-        donation.donorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        donation.donorEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        donation.sevaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        donation.campaign?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        donation.donorPhone?.includes(searchTerm)
+      filtered = filtered.filter(
+        (donation) =>
+          donation.donorName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          donation.donorEmail
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          donation.sevaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.campaign?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.donorPhone?.includes(searchTerm)
       );
     }
 
@@ -96,12 +103,12 @@ const UTMTrackingDashboard = () => {
       sevaNames: {},
       utmSources: {},
       utmMediums: {},
-      utmCampaigns: {}
+      utmCampaigns: {},
     };
 
-    filteredDonations.forEach(donation => {
+    filteredDonations.forEach((donation) => {
       // Seva Names
-      const sevaName = donation.sevaName || 'Unknown';
+      const sevaName = donation.sevaName || "Unknown";
       if (!stats.sevaNames[sevaName]) {
         stats.sevaNames[sevaName] = { count: 0, amount: 0 };
       }
@@ -109,7 +116,7 @@ const UTMTrackingDashboard = () => {
       stats.sevaNames[sevaName].amount += donation.amount || 0;
 
       // UTM Source
-      const utmSource = donation.utmSource || 'Direct';
+      const utmSource = donation.utmSource || "Direct";
       if (!stats.utmSources[utmSource]) {
         stats.utmSources[utmSource] = { count: 0, amount: 0 };
       }
@@ -117,7 +124,7 @@ const UTMTrackingDashboard = () => {
       stats.utmSources[utmSource].amount += donation.amount || 0;
 
       // UTM Medium
-      const utmMedium = donation.utmMedium || 'Direct';
+      const utmMedium = donation.utmMedium || "Direct";
       if (!stats.utmMediums[utmMedium]) {
         stats.utmMediums[utmMedium] = { count: 0, amount: 0 };
       }
@@ -125,7 +132,7 @@ const UTMTrackingDashboard = () => {
       stats.utmMediums[utmMedium].amount += donation.amount || 0;
 
       // UTM Campaign
-      const utmCampaign = donation.utmCampaign || 'Direct';
+      const utmCampaign = donation.utmCampaign || "Direct";
       if (!stats.utmCampaigns[utmCampaign]) {
         stats.utmCampaigns[utmCampaign] = { count: 0, amount: 0 };
       }
@@ -137,73 +144,88 @@ const UTMTrackingDashboard = () => {
       sevaNames: Object.entries(stats.sevaNames).map(([name, data]) => ({
         name,
         count: data.count,
-        amount: data.amount
+        amount: data.amount,
       })),
       utmSources: Object.entries(stats.utmSources).map(([source, data]) => ({
         source,
         count: data.count,
-        amount: data.amount
+        amount: data.amount,
       })),
       utmMediums: Object.entries(stats.utmMediums).map(([medium, data]) => ({
         medium,
         count: data.count,
-        amount: data.amount
+        amount: data.amount,
       })),
-      utmCampaigns: Object.entries(stats.utmCampaigns).map(([campaign, data]) => ({
-        campaign,
-        count: data.count,
-        amount: data.amount
-      }))
+      utmCampaigns: Object.entries(stats.utmCampaigns).map(
+        ([campaign, data]) => ({
+          campaign,
+          count: data.count,
+          amount: data.amount,
+        })
+      ),
     });
   };
 
   const resetDates = () => {
-    setStartDate('');
-    setEndDate('');
+    setStartDate("");
+    setEndDate("");
   };
 
   const exportData = (type) => {
-    const dataToExport = type === 'success' 
-      ? filteredDonations.filter(d => d.paymentStatus === 'completed')
-      : filteredDonations.filter(d => d.paymentStatus !== 'completed');
+    const dataToExport =
+      type === "success"
+        ? filteredDonations.filter((d) => d.paymentStatus === "completed")
+        : filteredDonations.filter((d) => d.paymentStatus !== "completed");
 
     const csvContent = convertToCSV(dataToExport);
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${type}_donations_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `${type}_donations_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   const convertToCSV = (data) => {
     const headers = [
-      'S.No', 'Source', 'Medium', 'Campaign', 'Seva Name', 'Seva Amount', 
-      'RazorPay Order ID', 'Phone Number', 'Receipt Number', 'Date', 'Status'
+      "S.No",
+      "Source",
+      "Medium",
+      "Campaign",
+      "Seva Name",
+      "Seva Amount",
+      "RazorPay Order ID",
+      "Phone Number",
+      "Receipt Number",
+      "Date",
+      "Status",
     ];
 
     const csvData = data.map((donation, index) => [
       index + 1,
-      donation.utmSource || 'Direct',
-      donation.utmMedium || 'Direct',
-      donation.utmCampaign || 'Direct',
-      donation.sevaName || 'Unknown',
+      donation.utmSource || "Direct",
+      donation.utmMedium || "Direct",
+      donation.utmCampaign || "Direct",
+      donation.sevaName || "Unknown",
+      donation.donorName || "Unknown",
       donation.amount || 0,
-      donation.razorpayOrderId || 'N/A',
-      donation.donorPhone || 'N/A',
-      donation.razorpayPaymentId || 'N/A',
-      new Date(donation.createdAt).toLocaleDateString('en-GB'),
-      donation.paymentStatus || 'pending'
+      donation.razorpayOrderId || "N/A",
+      donation.donorPhone || "N/A",
+      donation.razorpayPaymentId || "N/A",
+      new Date(donation.createdAt).toLocaleDateString("en-GB"),
+      donation.paymentStatus || "pending",
     ]);
 
-    return [headers, ...csvData].map(row => row.join(',')).join('\n');
+    return [headers, ...csvData].map((row) => row.join(",")).join("\n");
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
 
@@ -216,19 +238,27 @@ const UTMTrackingDashboard = () => {
           {title}
         </h3>
       </div>
-      
+
       {/* Table Content */}
       <div className="max-h-64 overflow-y-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {title.includes('Seva') ? 'Seva Name' : 
-                 title.includes('Source') ? 'UTM Source' :
-                 title.includes('Medium') ? 'UTM Medium' : 'UTM Campaign'}
+                {title.includes("Seva")
+                  ? "Seva Name"
+                  : title.includes("Source")
+                  ? "UTM Source"
+                  : title.includes("Medium")
+                  ? "UTM Medium"
+                  : "UTM Campaign"}
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">No. Sevas</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                No. Sevas
+              </th>
+              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total Amount
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -247,7 +277,9 @@ const UTMTrackingDashboard = () => {
             ))}
             {/* Total Row */}
             <tr className="bg-gray-100 border-t-2 border-gray-300">
-              <td className="px-4 py-2 text-sm font-bold text-gray-900">Total</td>
+              <td className="px-4 py-2 text-sm font-bold text-gray-900">
+                Total
+              </td>
               <td className="px-4 py-2 text-sm font-bold text-gray-900 text-center">
                 {data.reduce((sum, item) => sum + item.count, 0)}
               </td>
@@ -296,7 +328,9 @@ const UTMTrackingDashboard = () => {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center">
               <FaCalendarAlt className="mr-2 text-gray-500" />
-              <label className="mr-2 text-sm font-medium text-gray-700">Start Date:</label>
+              <label className="mr-2 text-sm font-medium text-gray-700">
+                Start Date:
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -306,7 +340,9 @@ const UTMTrackingDashboard = () => {
             </div>
             <div className="flex items-center">
               <FaCalendarAlt className="mr-2 text-gray-500" />
-              <label className="mr-2 text-sm font-medium text-gray-700">End Date:</label>
+              <label className="mr-2 text-sm font-medium text-gray-700">
+                End Date:
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -358,14 +394,14 @@ const UTMTrackingDashboard = () => {
         {/* Export Buttons */}
         <div className="flex gap-4 mb-6">
           <button
-            onClick={() => exportData('success')}
+            onClick={() => exportData("success")}
             className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <FaDownload className="mr-2" />
             Export Donation Success Data
           </button>
           <button
-            onClick={() => exportData('failed')}
+            onClick={() => exportData("failed")}
             className="flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             <FaDownload className="mr-2" />
@@ -382,43 +418,94 @@ const UTMTrackingDashboard = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medium</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seva Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seva Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RazorPay Order ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    S.No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Source
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Medium
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Campaign
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Seva Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Seva Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Donor Name
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    RazorPay Order ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phone Number
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Receipt Number
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredDonations.map((donation, index) => (
                   <tr key={donation._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmSource || 'Direct'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmMedium || 'Direct'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.utmCampaign || 'Direct'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.sevaName || 'Unknown'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{formatCurrency(donation.amount || 0)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{donation.razorpayOrderId || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.donorPhone || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{donation.razorpayPaymentId || 'N/A'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(donation.createdAt).toLocaleDateString('en-GB')}
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.utmSource || "Direct"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.utmMedium || "Direct"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.utmCampaign || "Direct"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.sevaName || "Unknown"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                      {formatCurrency(donation.amount || 0)}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.donorName || "Unknown"}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      {donation.razorpayOrderId || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {donation.donorPhone || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      {donation.razorpayPaymentId || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {new Date(donation.createdAt).toLocaleDateString("en-GB")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        donation.paymentStatus === 'completed' 
-                          ? 'bg-green-100 text-green-800' 
-                          : donation.paymentStatus === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {donation.paymentStatus || 'pending'}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          donation.paymentStatus === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : donation.paymentStatus === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {donation.paymentStatus || "pending"}
                       </span>
                     </td>
                   </tr>

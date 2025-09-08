@@ -38,7 +38,7 @@ const DonationStats = () => {
       if (dateRange.startDate) queryParams.append('startDate', dateRange.startDate);
       if (dateRange.endDate) queryParams.append('endDate', dateRange.endDate);
 
-      const response = await fetch(`http://localhost:5000/api/donations/stats?${queryParams}`);
+      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations/stats?${queryParams}`);
       const data = await response.json();
 
       if (data.success) {
