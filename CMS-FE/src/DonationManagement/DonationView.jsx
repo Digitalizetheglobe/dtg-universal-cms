@@ -20,6 +20,8 @@ import {
   FaDownload,
   FaPrint
 } from 'react-icons/fa';
+import { generateDonationReceipt } from '../utils/receiptGenerator';
+import { openReceiptInNewWindow, downloadReceiptAsHTML } from '../utils/htmlReceiptGenerator';
 
 const DonationView = () => {
   const { id } = useParams();
@@ -131,9 +133,29 @@ const DonationView = () => {
     window.print();
   };
 
-  const downloadReceipt = () => {
-    // Implementation for downloading receipt
-    console.log('Downloading receipt...');
+  const downloadReceipt = async () => {
+    if (!donation) return;
+    
+    try {
+      const success = await generateDonationReceipt(donation);
+      if (success) {
+        console.log('Receipt downloaded successfully');
+      } else {
+        console.error('Failed to generate receipt');
+      }
+    } catch (error) {
+      console.error('Error downloading receipt:', error);
+    }
+  };
+
+  const openHTMLReceipt = () => {
+    if (!donation) return;
+    openReceiptInNewWindow(donation);
+  };
+
+  const downloadHTMLReceipt = () => {
+    if (!donation) return;
+    downloadReceiptAsHTML(donation);
   };
 
   if (loading) {
@@ -192,13 +214,27 @@ const DonationView = () => {
               <FaPrint className="w-4 h-4" />
               Print
             </button>
-            <button
+            {/* <button
               onClick={downloadReceipt}
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
             >
               <FaDownload className="w-4 h-4" />
-              Download Receipt
+              Download PDF
+            </button> */}
+            <button
+              onClick={openHTMLReceipt}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+            >
+              <FaEye className="w-4 h-4" />
+              View Receipt
             </button>
+            {/* <button
+              onClick={downloadHTMLReceipt}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+            >
+              <FaDownload className="w-4 h-4" />
+              Download HTML
+            </button> */}
             {/* <button
               onClick={() => navigate(`/donation-management/edit/${id}`)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
@@ -406,20 +442,28 @@ const DonationView = () => {
               
               <div className="space-y-3">
                 {/* <button
-                  onClick={() => navigate(`/donation-management/edit/${id}`)}
-                  className="w-full flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  <FaEdit className="w-4 h-4" />
-                  Edit Donation
-                </button> */}
-                
-                <button
                   onClick={downloadReceipt}
                   className="w-full flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
                 >
                   <FaDownload className="w-4 h-4" />
-                  Download Receipt
+                  Download PDF
+                </button> */}
+                
+                <button
+                  onClick={openHTMLReceipt}
+                  className="w-full flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  <FaEye className="w-4 h-4" />
+                  View  Receipt
                 </button>
+                
+                {/* <button
+                  onClick={downloadHTMLReceipt}
+                  className="w-full flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                >
+                  <FaDownload className="w-4 h-4" />
+                  Download HTML
+                </button> */}
                 
                 <button
                   onClick={printDonation}
