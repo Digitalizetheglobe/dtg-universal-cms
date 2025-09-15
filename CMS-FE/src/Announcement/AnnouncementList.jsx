@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AnnouncementForm from './AnnouncementForm';
 import { format } from 'date-fns';
-
+//test
 const AnnouncementList = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
