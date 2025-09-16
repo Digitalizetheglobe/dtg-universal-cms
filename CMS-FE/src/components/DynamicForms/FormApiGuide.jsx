@@ -44,7 +44,7 @@ const FormApiGuide = ({ formId, formConfig, onClose }) => {
   const exampleBody = generateExampleBody();
   const exampleBodyString = JSON.stringify(exampleBody, null, 2);
   
-  const apiEndpoint = `https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}/submit`;
+  const apiEndpoint = `https://api.harekrishnavidya.org/api/forms/forms/${formId}/submit`;
   
   const handleCopyCode = (text) => {
     navigator.clipboard.writeText(text);
@@ -167,12 +167,12 @@ const FormApiGuide = ({ formId, formConfig, onClose }) => {
                 <div className="flex items-center mb-2">
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded mr-2">GET</span>
                   <code className="text-sm font-mono flex-1 bg-gray-100 p-2 rounded">
-                    {`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`}
+                    {`https://api.harekrishnavidya.org/api/forms/forms/${formId}`}
                   </code>
                   <Tooltip title="Copy to clipboard">
                     <IconButton 
                       size="small" 
-                      onClick={() => handleCopyCode(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`)}
+                      onClick={() => handleCopyCode(`https://api.harekrishnavidya.org/api/forms/forms/${formId}`)}
                       className="ml-2"
                     >
                       <ContentCopy fontSize="small" />

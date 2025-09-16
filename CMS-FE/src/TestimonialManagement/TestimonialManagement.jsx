@@ -17,7 +17,7 @@ const TestimonialManagement = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await fetch('https://dtg-universal-cms.onrender.com/api/testimonials/');
+        const response = await fetch('https://api.harekrishnavidya.org/api/testimonials/');
         const data = await response.json();
         setTestimonials(data);
         setLoading(false);
@@ -53,8 +53,8 @@ const TestimonialManagement = () => {
     e.preventDefault();
     try {
       const url = currentTestimonial 
-        ? `https://dtg-universal-cms.onrender.com/api/testimonials/${currentTestimonial._id}`
-        : 'https://dtg-universal-cms.onrender.com/api/testimonials/';
+        ? `https://api.harekrishnavidya.org/api/testimonials/${currentTestimonial._id}`
+        : 'https://api.harekrishnavidya.org/api/testimonials/';
       
       const method = currentTestimonial ? 'PUT' : 'POST';
       
@@ -106,7 +106,7 @@ const TestimonialManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
       try {
-        const response = await fetch(`https://dtg-universal-cms.onrender.com/api/testimonials/${id}`, {
+        const response = await fetch(`https://api.harekrishnavidya.org/api/testimonials/${id}`, {
           method: 'DELETE'
         });
         

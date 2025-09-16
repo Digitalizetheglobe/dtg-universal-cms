@@ -75,13 +75,13 @@ const EventForm = ({ event, onSuccess, onCancel }) => {
       let response;
       if (event) {
         response = await axios.put(
-          `https://dtg-universal-cms.onrender.com/api/events/${event._id}`,
+          `http://localhost:5000/api/events/${event._id}`,
           dataToSend,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
       } else {
         response = await axios.post(
-          'https://dtg-universal-cms.onrender.com/api/events',
+          'http://localhost:5000/api/events',
           dataToSend,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );

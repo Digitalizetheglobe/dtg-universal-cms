@@ -22,7 +22,7 @@ const EventList = () => {
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://dtg-universal-cms.onrender.com/api/events', {
+      const response = await axios.get('http://localhost:5000/api/events', {
         params: { page: currentPage, limit: itemsPerPage, search: searchTerm }
       });
 
@@ -57,7 +57,7 @@ const EventList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        await axios.delete(`https://dtg-universal-cms.onrender.com/api/events/${id}`);
+        await axios.delete(`http://localhost:5000/api/events/${id}`);
         setEvents((prev) => prev.filter((ev) => ev._id !== id));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete event');

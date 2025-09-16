@@ -61,7 +61,7 @@ const DonationList = () => {
         }
       });
 
-      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations?${queryParams}`);
+      const response = await fetch(`https://api.harekrishnavidya.org/api/donations?${queryParams}`);
       const data = await response.json();
 
       if (data.success) {

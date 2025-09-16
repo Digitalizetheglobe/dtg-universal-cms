@@ -12,7 +12,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      //https://dtg-universal-cms.onrender.com 
+      //https://api.harekrishnavidya.org 
       const res = await fetch('https://api.ddabattalion.com/api/auth/register', {
         method: 'POST',
         headers: {

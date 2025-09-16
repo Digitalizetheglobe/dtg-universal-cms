@@ -27,7 +27,7 @@ const Login = () => {
       
       // Login api is apply
       const res = await axios.post(
-        "https://dtg-universal-cms.onrender.com/api/users/login",
+        "https://api.harekrishnavidya.org/api/users/login",
         formData
       );
       console.log("Login successful!", res.data);

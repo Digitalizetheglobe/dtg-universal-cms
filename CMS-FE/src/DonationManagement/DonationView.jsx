@@ -38,7 +38,7 @@ const DonationView = () => {
   const fetchDonation = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations/${id}`);
+      const response = await fetch(`https://api.harekrishnavidya.org/api/donations/${id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -54,7 +54,7 @@ const DonationView = () => {
 
   const handleUpdateNotes = async () => {
     try {
-      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/donations/${id}/notes`, {
+      const response = await fetch(`https://api.harekrishnavidya.org/api/donations/${id}/notes`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -14,9 +14,44 @@ connectDB();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+// CORS configuration - DEBUGGING VERSION
+const corsOptions = {
+  origin: true, // Allow all origins temporarily
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma'
+  ]
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Add logging to verify CORS is working
+// app.use((req, res, next) => {
+//   console.log('CORS Request:', {
+//     origin: req.headers.origin,
+//     method: req.method,
+//     url: req.url
+//   });
+//   next();
+// });
+
+// IMPORTANT: Add body size limits BEFORE other middleware
+app.use(express.json({ 
+  limit: '50mb',
+  extended: true 
+}));
+app.use(express.urlencoded({ 
+  limit: '50mb', 
+  extended: true 
+}));
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
