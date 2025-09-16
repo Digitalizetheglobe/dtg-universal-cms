@@ -104,12 +104,12 @@ export const generateDonationReceipt = async (donation) => {
     // PAN Number
     doc.setFontSize(12);
     doc.setTextColor(...darkGray);
-    doc.text('HKM PAN No.: AABTH9555J', pageWidth - 20, headerY, { align: 'right' });
+    doc.text('HKM PAN No.: AABTH4550P', pageWidth - 20, headerY, { align: 'right' });
     headerY += 8;
     
     // Branch details
     doc.setFontSize(10);
-    const branchText = 'Branch:H.No:8-2-684/39, 4th Floor, NBT Nagar, Road No#12, Banjara Hills, Hyd-34';
+    const branchText = 'Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034';
     const branchLines = doc.splitTextToSize(branchText, 130);
     doc.text(branchLines, pageWidth - 20, headerY, { align: 'right' });
     headerY += branchLines.length * 4 + 2;

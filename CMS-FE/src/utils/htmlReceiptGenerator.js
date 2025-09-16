@@ -287,8 +287,8 @@ export const generateHTMLReceipt = (donation) => {
                     <div class="organization-name">Hare Krishna Movement</div>
                     <div class="mission-statement">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
                     <div class="trust-info">A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18</div>
-                    <div class="pan-number">HKM PAN No.: AABTH9555J</div>
-                    <div class="branch-info">Branch:H.No:8-2-684/39, 4th Floor, NBT Nagar, Road No#12, Banjara Hills, Hyd-34</div>
+                    <div class="pan-number">HKM PAN No.: AABTH4550P</div>
+                    <div class="branch-info">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
                     <div class="contact-info">www.harekrishnavidya.org; Email:aikyavidya@hkmhyderabad.org: Ph:+91-9154881444</div>
                 </div>
             </div>

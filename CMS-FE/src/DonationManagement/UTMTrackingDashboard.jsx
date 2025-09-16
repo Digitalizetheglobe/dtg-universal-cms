@@ -200,6 +200,13 @@ const UTMTrackingDashboard = () => {
   const resetDates = () => {
     setStartDate("");
     setEndDate("");
+    setSearchTerm("");
+    setActiveFilters({
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      sevaName: null,
+    });
   };
 
   const handleFilterClick = (filterType, value) => {
@@ -436,19 +443,25 @@ const UTMTrackingDashboard = () => {
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <button
-                onClick={() => filterDonations()}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <FaSearch className="mr-2" />
-                Search
-              </button>
+              <div className="flex items-center">
+                <FaSearch className="mr-2 text-gray-500" />
+                <label className="mr-2 text-sm font-medium text-gray-700">
+                  Search:
+                </label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by name, email, phone..."
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                />
+              </div>
               <button
                 onClick={resetDates}
                 className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
               >
                 <FaUndo className="mr-2" />
-                Reset Dates
+                Reset All
               </button>
             </div>
           </div>
