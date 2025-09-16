@@ -16,7 +16,7 @@ const BlogView = () => {
   const fetchBlogData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`);
+      const response = await fetch(`https://api.harekrishnavidya.org/api/blogs/${blogId}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch blog data');
