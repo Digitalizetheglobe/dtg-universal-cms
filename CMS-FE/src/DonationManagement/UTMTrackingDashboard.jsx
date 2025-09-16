@@ -26,6 +26,12 @@ const UTMTrackingDashboard = () => {
     utmMediums: [],
     utmCampaigns: [],
   });
+  const [activeFilters, setActiveFilters] = useState({
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    sevaName: null,
+  });
 
   useEffect(() => {
     fetchDonations();
@@ -33,7 +39,7 @@ const UTMTrackingDashboard = () => {
 
   useEffect(() => {
     filterDonations();
-  }, [donations, startDate, endDate, searchTerm]);
+  }, [donations, startDate, endDate, searchTerm, activeFilters]);
 
   useEffect(() => {
     calculateSummaryStats();
@@ -92,6 +98,31 @@ const UTMTrackingDashboard = () => {
           donation.sevaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           donation.campaign?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           donation.donorPhone?.includes(searchTerm)
+      );
+    }
+
+    // Filter by UTM parameters
+    if (activeFilters.utmSource) {
+      filtered = filtered.filter((donation) => 
+        (donation.utmSource || "Direct") === activeFilters.utmSource
+      );
+    }
+
+    if (activeFilters.utmMedium) {
+      filtered = filtered.filter((donation) => 
+        (donation.utmMedium || "Direct") === activeFilters.utmMedium
+      );
+    }
+
+    if (activeFilters.utmCampaign) {
+      filtered = filtered.filter((donation) => 
+        (donation.utmCampaign || "Direct") === activeFilters.utmCampaign
+      );
+    }
+
+    if (activeFilters.sevaName) {
+      filtered = filtered.filter((donation) => 
+        (donation.sevaName || "Unknown") === activeFilters.sevaName
       );
     }
 
@@ -171,6 +202,26 @@ const UTMTrackingDashboard = () => {
     setEndDate("");
   };
 
+  const handleFilterClick = (filterType, value) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType] === value ? null : value
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters({
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      sevaName: null,
+    });
+  };
+
+  const getActiveFilterCount = () => {
+    return Object.values(activeFilters).filter(value => value !== null).length;
+  };
+
   const exportData = (type) => {
     const dataToExport =
       type === "success"
@@ -229,7 +280,7 @@ const UTMTrackingDashboard = () => {
     }).format(amount);
   };
 
-  const SummaryCard = ({ title, icon: Icon, data }) => (
+  const SummaryCard = ({ title, icon: Icon, data, filterType }) => (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3">
@@ -262,19 +313,35 @@ const UTMTrackingDashboard = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                  {item.name || item.source || item.medium || item.campaign}
-                </td>
-                <td className="px-4 py-2 text-sm text-gray-600 text-center">
-                  {item.count}
-                </td>
-                <td className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
-                  {item.amount}
-                </td>
-              </tr>
-            ))}
+            {data.map((item, index) => {
+              const itemValue = item.name || item.source || item.medium || item.campaign;
+              const isActive = activeFilters[filterType] === itemValue;
+              
+              return (
+                <tr 
+                  key={index} 
+                  className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                    isActive ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                  }`}
+                  onClick={() => handleFilterClick(filterType, itemValue)}
+                >
+                  <td className="px-4 py-2 text-sm font-medium text-gray-900 flex items-center">
+                    {itemValue}
+                    {isActive && (
+                      <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Active
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-gray-600 text-center">
+                    {item.count}
+                  </td>
+                  <td className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
+                    {formatCurrency(item.amount)}
+                  </td>
+                </tr>
+              );
+            })}
             {/* Total Row */}
             <tr className="bg-gray-100 border-t-2 border-gray-300">
               <td className="px-4 py-2 text-sm font-bold text-gray-900">
@@ -284,7 +351,7 @@ const UTMTrackingDashboard = () => {
                 {data.reduce((sum, item) => sum + item.count, 0)}
               </td>
               <td className="px-4 py-2 text-sm font-bold text-gray-900 text-right">
-                {data.reduce((sum, item) => sum + item.amount, 0)}
+                {formatCurrency(data.reduce((sum, item) => sum + item.amount, 0))}
               </td>
             </tr>
           </tbody>
@@ -321,6 +388,22 @@ const UTMTrackingDashboard = () => {
                 <FaChartBar className="mr-3 text-blue-600" />
                 HK Vidya UTM Tracking Dashboard
               </h1>
+              <div className="flex items-center gap-4">
+                {getActiveFilterCount() > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">
+                      {getActiveFilterCount()} filter{getActiveFilterCount() > 1 ? 's' : ''} active
+                    </span>
+                    <button
+                      onClick={clearAllFilters}
+                      className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm"
+                    >
+                      <FaFilter className="w-3 h-3" />
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -370,27 +453,84 @@ const UTMTrackingDashboard = () => {
             </div>
           </div>
 
+          {/* Active Filters Display */}
+          {getActiveFilterCount() > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">Active Filters:</h3>
+              <div className="flex flex-wrap gap-2">
+                {activeFilters.utmSource && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    UTM Source: {activeFilters.utmSource}
+                    <button
+                      onClick={() => handleFilterClick('utmSource', activeFilters.utmSource)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {activeFilters.utmMedium && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    UTM Medium: {activeFilters.utmMedium}
+                    <button
+                      onClick={() => handleFilterClick('utmMedium', activeFilters.utmMedium)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {activeFilters.utmCampaign && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    UTM Campaign: {activeFilters.utmCampaign}
+                    <button
+                      onClick={() => handleFilterClick('utmCampaign', activeFilters.utmCampaign)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {activeFilters.sevaName && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Seva Name: {activeFilters.sevaName}
+                    <button
+                      onClick={() => handleFilterClick('sevaName', activeFilters.sevaName)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Summary Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <SummaryCard
               title="Seva Names List"
               icon={FaMoneyBillWave}
               data={summaryStats.sevaNames}
+              filterType="sevaName"
             />
             <SummaryCard
               title="UTM Source List"
               icon={FaGlobe}
               data={summaryStats.utmSources}
+              filterType="utmSource"
             />
             <SummaryCard
               title="UTM Medium List"
               icon={FaFilter}
               data={summaryStats.utmMediums}
+              filterType="utmMedium"
             />
             <SummaryCard
               title="UTM Campaign List"
               icon={MdCampaign}
               data={summaryStats.utmCampaigns}
+              filterType="utmCampaign"
             />
           </div>
 
@@ -415,7 +555,17 @@ const UTMTrackingDashboard = () => {
           {/* Detailed Donation Records */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
             <div className="bg-green-600 text-white px-6 py-4">
-              <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
+                <div className="text-sm">
+                  Showing {filteredDonations.length} of {donations.length} donations
+                  {getActiveFilterCount() > 0 && (
+                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                      Filtered
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
