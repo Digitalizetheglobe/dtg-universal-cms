@@ -38,7 +38,7 @@ const Sidebar = () => {
         const token = localStorage.getItem('adminToken');
         if (!token) return;
 
-        const response = await fetch('https://dtg-universal-cms.onrender.com/api/admin/me', {
+        const response = await fetch('https://api.harekrishnavidya.org/api/admin/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

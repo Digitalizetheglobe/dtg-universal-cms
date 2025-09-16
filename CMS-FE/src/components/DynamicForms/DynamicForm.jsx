@@ -32,9 +32,9 @@ const DynamicForm = ({ formId, page, initialFormData, onSubmit, isSubmitting }) 
         let response;
         
         if (formId) {
-          response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/${formId}`);
+          response = await fetch(`https://api.harekrishnavidya.org/api/forms/${formId}`);
         } else if (page) {
-          response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/page/${page}`);
+          response = await fetch(`https://api.harekrishnavidya.org/api/forms/page/${page}`);
         } else {
           throw new Error('Either formId or page must be provided');
         }

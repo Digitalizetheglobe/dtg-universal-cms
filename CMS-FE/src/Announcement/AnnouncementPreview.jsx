@@ -10,7 +10,7 @@ const AnnouncementPreview = () => {
     const fetchAnnouncements = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://dtg-universal-cms.onrender.com/api/announcements', {
+        const response = await axios.get('https://api.harekrishnavidya.org/api/announcements', {
           params: {
             isPublished: true,
             showOnFrontend: true,

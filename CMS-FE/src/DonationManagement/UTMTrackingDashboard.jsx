@@ -43,7 +43,7 @@ const UTMTrackingDashboard = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://dtg-universal-cms.onrender.com/api/donations?limit=1000"
+        "https://api.harekrishnavidya.org/api/donations?limit=1000"
       );
       const data = await response.json();
 

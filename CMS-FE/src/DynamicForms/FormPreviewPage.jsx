@@ -27,9 +27,9 @@ const FormPreviewPage = () => {
         let response;
         
         if (formId) {
-          response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}`);
+          response = await fetch(`https://api.harekrishnavidya.org/api/forms/forms/${formId}`);
         } else if (page) {
-          response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/page/${page}`);
+          response = await fetch(`https://api.harekrishnavidya.org/api/forms/page/${page}`);
         } else {
           throw new Error('Either formId or page must be provided');
         }
@@ -61,7 +61,7 @@ const FormPreviewPage = () => {
         data: formValues
       };
 
-      const response = await fetch(`https://dtg-universal-cms.onrender.com/api/forms/forms/${formId}/submit`, {
+      const response = await fetch(`https://api.harekrishnavidya.org/api/forms/forms/${formId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

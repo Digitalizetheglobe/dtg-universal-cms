@@ -49,7 +49,7 @@ function User() {
     const token = JSON.parse(localStorage.getItem("user")).token;
     try {
       const res = await fetch(
-        `https://dtg-universal-cms.onrender.com/api/v1/users/${username}/follow`,
+        `https://api.harekrishnavidya.org/api/v1/users/${username}/follow`,
         {
           method: "POST",
           headers: {
@@ -81,7 +81,7 @@ function User() {
     const token = JSON.parse(localStorage.getItem("user")).token;
     try {
       const res = await fetch(
-        `https://dtg-universal-cms.onrender.com/api/v1/users/${username}/follow`,
+        `https://api.harekrishnavidya.org/api/v1/users/${username}/follow`,
         {
           method: "POST",
           headers: {

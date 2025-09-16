@@ -92,7 +92,7 @@ src/DonationManagement/
 
 ### Prerequisites
 - Node.js and npm installed
-- Backend server running on `https://dtg-universal-cms.onrender.com`
+- Backend server running on `https://api.harekrishnavidya.org`
 - Razorpay account and credentials configured
 
 ### Installation

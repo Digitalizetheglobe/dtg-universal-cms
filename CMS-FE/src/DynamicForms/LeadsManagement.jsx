@@ -33,7 +33,7 @@ const LeadsManagement = () => {
     setError(null);
     
     try {
-      const response = await fetch('https://dtg-universal-cms.onrender.com/api/forms/forms');
+      const response = await fetch('https://api.harekrishnavidya.org/api/forms/forms');
       if (!response.ok) {
         throw new Error('Failed to load forms');
       }
