@@ -42,7 +42,7 @@ const DonationDashboard = () => {
       setLoading(true);
       
       // Fetch stats
-      const statsResponse = await fetch('http://localhost:5000/api/donations/stats');
+      const statsResponse = await fetch('https://api.harekrishnavidya.org/api/donations/stats');
       const statsData = await statsResponse.json();
       
       if (statsData.success) {
@@ -50,7 +50,7 @@ const DonationDashboard = () => {
       }
 
       // Fetch recent donations
-      const donationsResponse = await fetch('http://localhost:5000/api/donations?limit=5');
+      const donationsResponse = await fetch('https://api.harekrishnavidya.org/api/donations?limit=5');
       const donationsData = await donationsResponse.json();
       
       if (donationsData.success) {
@@ -69,7 +69,7 @@ const DonationDashboard = () => {
       setSyncing(true);
       setSyncMessage('Syncing donations from Razorpay...');
       
-      const response = await fetch('http://localhost:5000/api/donations/sync-razorpay', {
+      const response = await fetch('https://api.harekrishnavidya.org/api/donations/sync-razorpay', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ const DonationDashboard = () => {
   // Get detailed Razorpay payment info
   const getRazorpayPaymentDetails = async (paymentId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/donations/payment/${paymentId}`);
+      const response = await fetch(`https://api.harekrishnavidya.org/api/donations/payment/${paymentId}`);
       const data = await response.json();
       return data;
     } catch (error) {
@@ -113,7 +113,7 @@ const DonationDashboard = () => {
       setSyncing(true);
       setSyncMessage('Testing Razorpay connection...');
       
-      const response = await fetch('http://localhost:5000/api/donations/test-connection');
+      const response = await fetch('https://api.harekrishnavidya.org/api/donations/test-connection');
       const data = await response.json();
       
       if (data.success) {

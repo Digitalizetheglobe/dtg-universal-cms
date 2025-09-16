@@ -43,7 +43,7 @@ const UTMTrackingDashboard = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:5000/api/donations?limit=1000"
+        "https://api.harekrishnavidya.org/api/donations?limit=1000"
       );
       const data = await response.json();
 
