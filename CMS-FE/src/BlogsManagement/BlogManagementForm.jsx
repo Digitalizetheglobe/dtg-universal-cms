@@ -100,7 +100,7 @@ const BlogManagementForm = () => {
     });
     
     try {
-      const response = await fetch('https://api.harekrishnavidya.org/api/blogs', {
+      const response = await fetch('http://localhost:5000/api/blogs', {
         method: 'POST',
         body: formDataToSend,
         // Don't set Content-Type header - let the browser set it with the correct boundary

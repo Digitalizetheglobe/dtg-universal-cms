@@ -2,6 +2,7 @@ const Blog = require('../models/Blog');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { getBaseUrl } = require('../utils/urlHelper');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -33,7 +34,13 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 1024 * 1024 * 5 }, // Limit file size to 5MB
+  limits: { 
+    fileSize: 1024 * 1024 * 5, // 5MB per file
+    files: 10, // Maximum 10 files
+    fieldSize: 1024 * 1024 * 10, // 10MB for text fields
+    fieldNameSize: 100, // Maximum field name size
+    fieldValueSize: 1024 * 1024 * 2, // 2MB for field values
+  }
 });
 // Get all blogs
 // GET /api/blogs
@@ -86,9 +93,33 @@ exports.createBlog = [
   upload.any(),
   (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
-      return res.status(400).json({ message: 'File upload error', error: err.message });
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ 
+          message: 'File too large. Maximum size is 5MB per file.',
+          error: err.message 
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(413).json({ 
+          message: 'Too many files. Maximum is 10 files.',
+          error: err.message 
+        });
+      }
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({ 
+          message: 'Unexpected field name in file upload.',
+          error: err.message 
+        });
+      }
+      return res.status(413).json({ 
+        message: 'File upload error', 
+        error: err.message 
+      });
     } else if (err) {
-      return res.status(400).json({ message: 'File validation error', error: err.message });
+      return res.status(400).json({ 
+        message: 'File validation error', 
+        error: err.message 
+      });
     }
     next();
   },
@@ -118,8 +149,11 @@ exports.createBlog = [
       let coverImage2 = null;
 
       if (req.files && req.files.length > 0) {
+        // Use environment variable for base URL, fallback to req.get('host') for development
+        const baseUrl = getBaseUrl(req);
+        
         req.files.forEach((file) => {
-          const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+          const fileUrl = `${baseUrl}/uploads/${file.filename}`;
 
           if (file.fieldname === 'uploadImage') {
             uploadImage = fileUrl;
@@ -178,8 +212,11 @@ exports.updateBlog = [
       const updateFields = { ...req.body };
 
       if (req.files && req.files.length > 0) {
+        // Use the same base URL helper as createBlog
+        const baseUrl = getBaseUrl(req);
+        
         req.files.forEach(file => {
-          const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+          const fileUrl = `${baseUrl}/uploads/${file.filename}`;
 
           if (file.fieldname === 'uploadImage') {
             updateFields.uploadImage = fileUrl;

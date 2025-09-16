@@ -4,7 +4,6 @@ import {
   FaSearch,
   FaUndo,
   FaDownload,
-  FaSignOutAlt,
   FaChartBar,
   FaUsers,
   FaMoneyBillWave,
@@ -12,6 +11,7 @@ import {
   FaGlobe,
 } from "react-icons/fa";
 import { MdCampaign } from "react-icons/md";
+import Sidebar from "../components/Sidebar";
 
 const UTMTrackingDashboard = () => {
   const [donations, setDonations] = useState([]);
@@ -295,229 +295,233 @@ const UTMTrackingDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading donation data...</p>
+      <div className="min-h-screen bg-gray-100 flex">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading donation data...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <FaChartBar className="mr-3 text-blue-600" />
-              HK Vidya UTM Tracking Dashboard
-            </h1>
-            <button className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-              <FaSignOutAlt className="mr-2" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Date Range and Search Controls */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center">
-              <FaCalendarAlt className="mr-2 text-gray-500" />
-              <label className="mr-2 text-sm font-medium text-gray-700">
-                Start Date:
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+    <div className="min-h-screen bg-gray-100 flex">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 ml-0 md:ml-64">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                <FaChartBar className="mr-3 text-blue-600" />
+                HK Vidya UTM Tracking Dashboard
+              </h1>
             </div>
-            <div className="flex items-center">
-              <FaCalendarAlt className="mr-2 text-gray-500" />
-              <label className="mr-2 text-sm font-medium text-gray-700">
-                End Date:
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Date Range and Search Controls */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center">
+                <FaCalendarAlt className="mr-2 text-gray-500" />
+                <label className="mr-2 text-sm font-medium text-gray-700">
+                  Start Date:
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-center">
+                <FaCalendarAlt className="mr-2 text-gray-500" />
+                <label className="mr-2 text-sm font-medium text-gray-700">
+                  End Date:
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                onClick={() => filterDonations()}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <FaSearch className="mr-2" />
+                Search
+              </button>
+              <button
+                onClick={resetDates}
+                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                <FaUndo className="mr-2" />
+                Reset Dates
+              </button>
             </div>
+          </div>
+
+          {/* Summary Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <SummaryCard
+              title="Seva Names List"
+              icon={FaMoneyBillWave}
+              data={summaryStats.sevaNames}
+            />
+            <SummaryCard
+              title="UTM Source List"
+              icon={FaGlobe}
+              data={summaryStats.utmSources}
+            />
+            <SummaryCard
+              title="UTM Medium List"
+              icon={FaFilter}
+              data={summaryStats.utmMediums}
+            />
+            <SummaryCard
+              title="UTM Campaign List"
+              icon={MdCampaign}
+              data={summaryStats.utmCampaigns}
+            />
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex gap-4 mb-6">
             <button
-              onClick={() => filterDonations()}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              onClick={() => exportData("success")}
+              className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
-              <FaSearch className="mr-2" />
-              Search
+              <FaDownload className="mr-2" />
+              Export Donation Success Data
             </button>
             <button
-              onClick={resetDates}
-              className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              onClick={() => exportData("failed")}
+              className="flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
-              <FaUndo className="mr-2" />
-              Reset Dates
+              <FaDownload className="mr-2" />
+              Export Donation Failed Data
             </button>
           </div>
-        </div>
 
-        {/* Summary Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <SummaryCard
-            title="Seva Names List"
-            icon={FaMoneyBillWave}
-            data={summaryStats.sevaNames}
-          />
-          <SummaryCard
-            title="UTM Source List"
-            icon={FaGlobe}
-            data={summaryStats.utmSources}
-          />
-          <SummaryCard
-            title="UTM Medium List"
-            icon={FaFilter}
-            data={summaryStats.utmMediums}
-          />
-          <SummaryCard
-            title="UTM Campaign List"
-            icon={MdCampaign}
-            data={summaryStats.utmCampaigns}
-          />
-        </div>
+          {/* Detailed Donation Records */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
+            <div className="bg-green-600 text-white px-6 py-4">
+              <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      S.No
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Source
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Medium
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Campaign
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Seva Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Seva Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Donor Name
+                    </th>
 
-        {/* Export Buttons */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => exportData("success")}
-            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <FaDownload className="mr-2" />
-            Export Donation Success Data
-          </button>
-          <button
-            onClick={() => exportData("failed")}
-            className="flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            <FaDownload className="mr-2" />
-            Export Donation Failed Data
-          </button>
-        </div>
-
-        {/* Detailed Donation Records */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
-          <div className="bg-green-600 text-white px-6 py-4">
-            <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    S.No
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Source
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Medium
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campaign
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Seva Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Seva Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Donor Name
-                  </th>
-
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    RazorPay Order ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Receipt Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDonations.map((donation, index) => (
-                  <tr key={donation._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.utmSource || "Direct"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.utmMedium || "Direct"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.utmCampaign || "Direct"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.sevaName || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                      {formatCurrency(donation.amount || 0)}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.donorName || "Unknown"}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                      {donation.razorpayOrderId || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.donorPhone || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                      {donation.razorpayPaymentId || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(donation.createdAt).toLocaleDateString("en-GB")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          donation.paymentStatus === "completed"
-                            ? "bg-green-100 text-green-800"
-                            : donation.paymentStatus === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {donation.paymentStatus || "pending"}
-                      </span>
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      RazorPay Order ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phone Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Receipt Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredDonations.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No donations found for the selected criteria.
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredDonations.map((donation, index) => (
+                    <tr key={donation._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.utmSource || "Direct"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.utmMedium || "Direct"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.utmCampaign || "Direct"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.sevaName || "Unknown"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {formatCurrency(donation.amount || 0)}
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.donorName || "Unknown"}
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        {donation.razorpayOrderId || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.donorPhone || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        {donation.razorpayPaymentId || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(donation.createdAt).toLocaleDateString("en-GB")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            donation.paymentStatus === "completed"
+                              ? "bg-green-100 text-green-800"
+                              : donation.paymentStatus === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {donation.paymentStatus || "pending"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
+            {filteredDonations.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No donations found for the selected criteria.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

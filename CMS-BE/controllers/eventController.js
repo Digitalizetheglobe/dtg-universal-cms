@@ -2,6 +2,7 @@ const Event = require('../models/Event');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { getBaseUrl } = require('../utils/urlHelper'); // Add this import
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -69,7 +70,8 @@ exports.createEvent = [
         });
       }
 
-      const baseUrl = `${req.protocol}://${req.get('host')}/uploads`;
+      // Use the same base URL helper as blogController
+      const baseUrl = getBaseUrl(req);
 
       const newEvent = new Event({
         title,
@@ -77,9 +79,9 @@ exports.createEvent = [
         end,
         description,
         slug,
-        uploadImage: `${baseUrl}/${files.image[0].filename}`,
-        coverImage1: files.coverImage1?.[0] ? `${baseUrl}/${files.coverImage1[0].filename}` : undefined,
-        coverImage2: files.coverImage2?.[0] ? `${baseUrl}/${files.coverImage2[0].filename}` : undefined
+        uploadImage: `${baseUrl}/uploads/${files.image[0].filename}`,
+        coverImage1: files.coverImage1?.[0] ? `${baseUrl}/uploads/${files.coverImage1[0].filename}` : undefined,
+        coverImage2: files.coverImage2?.[0] ? `${baseUrl}/uploads/${files.coverImage2[0].filename}` : undefined
       });
 
       const savedEvent = await newEvent.save();
@@ -161,8 +163,9 @@ exports.updateEvent = [
       event.slug = slug || event.slug;
 
       if (req.file) {
-        // Optional: delete old image if needed
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        // Use the same base URL helper as blogController
+        const baseUrl = getBaseUrl(req);
+        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
         event.uploadImage = imageUrl;
       }
 
