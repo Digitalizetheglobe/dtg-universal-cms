@@ -14,7 +14,7 @@ const BlogList = () => {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/blogs/');
+      const response = await fetch('https://api.harekrishnavidya.org/api/blogs/');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,7 +52,7 @@ const BlogList = () => {
   const handleDelete = async (blogId) => {
     if (window.confirm('Are you sure you want to delete this blog?')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/blogs/${blogId}`, {
+        const response = await fetch(`https://api.harekrishnavidya.org/api/blogs/${blogId}`, {
           method: 'DELETE',
         });
         
