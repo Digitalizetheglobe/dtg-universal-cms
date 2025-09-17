@@ -19,6 +19,7 @@ const UTMTrackingDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isDefaultView, setIsDefaultView] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [summaryStats, setSummaryStats] = useState({
     sevaNames: [],
@@ -35,6 +36,10 @@ const UTMTrackingDashboard = () => {
 
   useEffect(() => {
     fetchDonations();
+    // Set default view to today's date
+    const today = new Date().toISOString().split('T')[0];
+    setStartDate(today);
+    setEndDate(today);
   }, []);
 
   useEffect(() => {
@@ -70,16 +75,20 @@ const UTMTrackingDashboard = () => {
     // Filter by date range
     if (startDate || endDate) {
       filtered = filtered.filter((donation) => {
+        // Convert donation date to YYYY-MM-DD format for comparison
         const donationDate = new Date(donation.createdAt);
-        const start = startDate ? new Date(startDate) : null;
-        const end = endDate ? new Date(endDate) : null;
-
-        if (start && end) {
-          return donationDate >= start && donationDate <= end;
-        } else if (start) {
-          return donationDate >= start;
-        } else if (end) {
-          return donationDate <= end;
+        const donationDateStr = donationDate.toISOString().split('T')[0];
+        
+        // Handle date range filtering
+        if (startDate && endDate) {
+          // Both start and end date provided
+          return donationDateStr >= startDate && donationDateStr <= endDate;
+        } else if (startDate) {
+          // Only start date provided
+          return donationDateStr >= startDate;
+        } else if (endDate) {
+          // Only end date provided
+          return donationDateStr <= endDate;
         }
         return true;
       });
@@ -125,6 +134,11 @@ const UTMTrackingDashboard = () => {
         (donation.sevaName || "Unknown") === activeFilters.sevaName
       );
     }
+
+    // Filter out pending donations by default
+    filtered = filtered.filter((donation) => 
+      donation.paymentStatus !== "pending"
+    );
 
     setFilteredDonations(filtered);
   };
@@ -198,9 +212,12 @@ const UTMTrackingDashboard = () => {
   };
 
   const resetDates = () => {
-    setStartDate("");
-    setEndDate("");
+    // Reset to today's date (default view)
+    const today = new Date().toISOString().split('T')[0];
+    setStartDate(today);
+    setEndDate(today);
     setSearchTerm("");
+    setIsDefaultView(true);
     setActiveFilters({
       utmSource: null,
       utmMedium: null,
@@ -223,6 +240,16 @@ const UTMTrackingDashboard = () => {
       utmCampaign: null,
       sevaName: null,
     });
+  };
+
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    setIsDefaultView(false);
+  };
+
+  const handleEndDateChange = (date) => {
+    setEndDate(date);
+    setIsDefaultView(false);
   };
 
   const getActiveFilterCount = () => {
@@ -427,7 +454,7 @@ const UTMTrackingDashboard = () => {
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -439,7 +466,7 @@ const UTMTrackingDashboard = () => {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -567,14 +594,22 @@ const UTMTrackingDashboard = () => {
 
           {/* Detailed Donation Records */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
-            <div className="bg-green-600 text-white px-6 py-4">
+            <div className="bg-orange-500 text-white px-6 py-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
                 <div className="text-sm">
                   Showing {filteredDonations.length} of {donations.length} donations
-                  {getActiveFilterCount() > 0 && (
+                  {isDefaultView ? (
+                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                      Today's Donations
+                    </span>
+                  ) : getActiveFilterCount() > 0 ? (
                     <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
                       Filtered
+                    </span>
+                  ) : (
+                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                      Date Range
                     </span>
                   )}
                 </div>
@@ -681,7 +716,17 @@ const UTMTrackingDashboard = () => {
             </div>
             {filteredDonations.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                No donations found for the selected criteria.
+                {isDefaultView ? (
+                  <div>
+                    <p className="text-lg font-medium mb-2">No donations found for today</p>
+                    <p className="text-sm">Try selecting a different date range to view historical donations.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-lg font-medium mb-2">No donations found for the selected criteria</p>
+                    <p className="text-sm">Try adjusting your date range or filters.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
