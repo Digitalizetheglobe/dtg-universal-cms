@@ -698,6 +698,12 @@ const verifyPayment = async (req, res) => {
 
     // Send receipt email if payment is completed and donor email exists
     let emailResult = null;
+    console.log('Email sending check:', {
+      paymentStatus: donation.paymentStatus,
+      donorEmail: donation.donorEmail,
+      shouldSend: donation.paymentStatus === 'completed' && donation.donorEmail
+    });
+    
     if (donation.paymentStatus === 'completed' && donation.donorEmail) {
       try {
         console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
@@ -715,9 +721,14 @@ const verifyPayment = async (req, res) => {
           error: emailError.message
         };
       }
+    } else {
+      console.log('Email not sent - conditions not met:', {
+        paymentStatus: donation.paymentStatus,
+        hasEmail: !!donation.donorEmail
+      });
     }
 
-    res.json({
+    const response = {
       success: true,
       message: 'Payment verified successfully',
       donation: {
@@ -732,7 +743,10 @@ const verifyPayment = async (req, res) => {
       },
       emailSent: emailResult ? emailResult.success : false,
       emailMessage: emailResult ? emailResult.message : 'No email sent (payment not completed or no email provided)'
-    });
+    };
+
+    console.log('Payment verification response:', JSON.stringify(response, null, 2));
+    res.json(response);
   } catch (error) {
     console.error('Error verifying payment:', error);
     res.status(500).json({
