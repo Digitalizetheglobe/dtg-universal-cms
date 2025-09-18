@@ -44,10 +44,10 @@ const generatePDFReceipt = async (donation) => {
       const doc = new PDFDocument({
         size: 'A4',
         margins: {
-          top: 50,
-          bottom: 50,
-          left: 50,
-          right: 50
+          top: 40,
+          bottom: 40,
+          left: 40,
+          right: 40
         }
       });
 
@@ -64,57 +64,79 @@ const generatePDFReceipt = async (donation) => {
       const darkGray = '#404040';
       const lightGray = '#808080';
 
-      // Header Section
-      doc.fontSize(24)
-         .fillColor(primaryColor)
-         .text('HARE KRISHNA MOVEMENT', { align: 'center' });
+      // Page dimensions
+      const pageWidth = doc.page.width;
+      const pageHeight = doc.page.height;
+      const margin = 40;
 
-      doc.moveDown(0.5);
+      // Add logo at the top
+      try {
+        const logoPath = path.join(__dirname, '../public/logo.png');
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, margin, 20, { width: 60, height: 60 });
+        }
+      } catch (error) {
+        console.log('Logo not found, continuing without logo');
+      }
+
+      // Header Section - positioned to the right of logo
+      const headerX = margin + 80; // Start after logo space
+      let currentY = 25;
+
+      doc.fontSize(20)
+         .fillColor(primaryColor)
+         .font('Helvetica-Bold')
+         .text('HARE KRISHNA MOVEMENT', headerX, currentY);
+
+      currentY += 25;
 
       doc.fontSize(12)
          .fillColor(darkGray)
-         .text('Hare Krishna Vidya', { align: 'center' });
+         .font('Helvetica')
+         .text('Hare Krishna Vidya', headerX, currentY);
 
-      doc.moveDown(0.3);
-
-      doc.fontSize(10)
-         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', { align: 'center' });
-
-      doc.moveDown(0.5);
+      currentY += 20;
 
       doc.fontSize(9)
-         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', { align: 'center' });
+         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', headerX, currentY, { width: pageWidth - headerX - margin });
 
-      doc.moveDown(0.3);
-
-      doc.fontSize(12)
-         .text('HKM PAN No.: AABTH4550P', { align: 'center' });
-
-      doc.moveDown(0.5);
-
-      doc.fontSize(9)
-         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', { align: 'center' });
-
-      doc.moveDown(0.3);
+      currentY += 25;
 
       doc.fontSize(8)
-         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', { align: 'center' });
+         .text('A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18', headerX, currentY, { width: pageWidth - headerX - margin });
 
-      doc.moveDown(1);
+      currentY += 20;
+
+      doc.fontSize(11)
+         .font('Helvetica-Bold')
+         .text('HKM PAN No.: AABTH4550P', headerX, currentY);
+
+      currentY += 20;
+
+      doc.fontSize(8)
+         .font('Helvetica')
+         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', headerX, currentY, { width: pageWidth - headerX - margin });
+
+      currentY += 20;
+
+      doc.fontSize(7)
+         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-9154881444', headerX, currentY, { width: pageWidth - headerX - margin });
+
+      currentY += 30;
 
       // Receipt Title Box
-      doc.rect(0, doc.y, doc.page.width, 25)
+      doc.rect(margin, currentY, pageWidth - 2 * margin, 20)
          .fillColor('black')
          .fill();
 
       doc.fillColor('white')
-         .fontSize(16)
+         .fontSize(14)
          .font('Helvetica-Bold')
-         .text('DONATION RECEIPT', { align: 'center', y: doc.y - 15 });
+         .text('DONATION RECEIPT', margin, currentY + 5, { align: 'center', width: pageWidth - 2 * margin });
 
-      doc.moveDown(2);
+      currentY += 35;
 
-      // Receipt Details
+      // Receipt Details - better aligned table format
       const receiptNumber = generateReceiptNumber(donation);
       const formattedDate = formatReceiptDate(donation.createdAt);
 
@@ -122,82 +144,80 @@ const generatePDFReceipt = async (donation) => {
          .fontSize(10)
          .font('Helvetica');
 
-      // Receipt No and Date
-      doc.text('Receipt No:', 50, doc.y)
-         .text(receiptNumber, 150, doc.y);
+      // Define column positions for better alignment
+      const labelX = margin + 20;
+      const valueX = margin + 120;
+      const rightLabelX = margin + 300;
+      const rightValueX = margin + 380;
 
-      doc.text('Date:', doc.page.width - 150, doc.y)
-         .text(formattedDate, doc.page.width - 100, doc.y, { align: 'right' });
+      // Row 1: Receipt No and Date
+      doc.text('Receipt No:', labelX, currentY)
+         .text(receiptNumber, valueX, currentY)
+         .text('Date:', rightLabelX, currentY)
+         .text(formattedDate, rightValueX, currentY);
 
-      doc.moveDown(1);
+      currentY += 20;
 
-      // Donor Name
-      doc.text('Name of the Donor:', 50, doc.y)
-         .text(donation.isAnonymous ? 'Anonymous Donor' : donation.donorName, 150, doc.y);
+      // Row 2: Donor Name (full width)
+      doc.text('Name of the Donor:', labelX, currentY)
+         .text(donation.isAnonymous ? 'Anonymous Donor' : donation.donorName, valueX, currentY);
 
-      doc.moveDown(0.7);
+      currentY += 20;
 
-      // Address (if available)
-      if (donation.donorAddress) {
-        doc.text('Address:', 50, doc.y)
-           .text(donation.donorAddress, 150, doc.y);
-        doc.moveDown(0.7);
-      }
+      // Row 3: Email and Mobile
+      doc.text('Email:', labelX, currentY)
+         .text(donation.donorEmail || 'N/A', valueX, currentY)
+         .text('Mobile No:', rightLabelX, currentY)
+         .text(donation.donorPhone || 'N/A', rightValueX, currentY);
 
-      // Mobile and Email
-      doc.text('Mobile No:', 50, doc.y)
-         .text(donation.donorPhone || 'N/A', 150, doc.y);
+      currentY += 20;
 
-      doc.text('Email:', doc.page.width - 150, doc.y)
-         .text(donation.donorEmail, doc.page.width - 100, doc.y, { align: 'right' });
-
-      doc.moveDown(0.7);
-
-      // PAN
+      // Row 4: PAN (if available)
       if (donation.donorPAN) {
-        doc.text('Donor PAN No:', 50, doc.y)
-           .text(donation.donorPAN, 150, doc.y);
-        doc.moveDown(0.7);
+        doc.text('Donor PAN No:', labelX, currentY)
+           .text(donation.donorPAN, valueX, currentY);
+        currentY += 20;
       }
 
-      // Amount
-      doc.text('Amount:', 50, doc.y)
-         .text(`Rs. ${donation.amount.toLocaleString('en-IN')} /-`, 150, doc.y);
+      // Row 5: Amount and In Words
+      doc.text('Amount:', labelX, currentY)
+         .text(`Rs. ${donation.amount.toLocaleString('en-IN')} /-`, valueX, currentY);
 
-      doc.text('In Words:', doc.page.width - 150, doc.y)
-         .text(numberToWords(donation.amount) + ' Rupees Only', doc.page.width - 100, doc.y, { align: 'right' });
+      currentY += 20;
 
-      doc.moveDown(0.7);
+      doc.text('In Words:', labelX, currentY)
+         .text(numberToWords(donation.amount) + ' Rupees Only', valueX, currentY, { width: pageWidth - valueX - margin });
 
-      // Payment details
-      doc.text('Mode of Payment:', 50, doc.y)
-         .text(donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online', 150, doc.y);
+      currentY += 30;
 
-      doc.text('Reference No:', doc.page.width - 150, doc.y)
-         .text(donation.razorpayPaymentId || 'N/A', doc.page.width - 100, doc.y, { align: 'right' });
+      // Row 6: Payment details
+      doc.text('Mode of Payment:', labelX, currentY)
+         .text(donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online', valueX, currentY)
+         .text('Reference No:', rightLabelX, currentY)
+         .text(donation.razorpayPaymentId || 'N/A', rightValueX, currentY);
 
-      doc.moveDown(0.7);
+      currentY += 20;
 
-      // Transaction Date
-      doc.text('Trx Date:', doc.page.width - 150, doc.y)
-         .text(formattedDate, doc.page.width - 100, doc.y, { align: 'right' });
+      // Row 7: Transaction Date
+      doc.text('Trx Date:', rightLabelX, currentY)
+         .text(formattedDate, rightValueX, currentY);
 
-      doc.moveDown(0.7);
+      currentY += 20;
 
-      // Donated Seva
-      doc.text('Donated Seva:', 50, doc.y)
-         .text(donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount', 150, doc.y);
+      // Row 8: Donated Seva
+      doc.text('Donated Seva:', labelX, currentY)
+         .text(donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount', valueX, currentY, { width: pageWidth - valueX - margin });
 
-      doc.moveDown(2);
+      currentY += 40;
 
-      // Mantra
+      // Mantra section
       doc.fillColor(primaryColor)
-         .fontSize(10)
+         .fontSize(11)
          .font('Helvetica-Oblique')
          .text('Hare Krishna Hare Krishna Krishna Krishna Hare Hare', { align: 'center' })
          .text('Hare Rama Hare Rama Rama Rama Hare Hare', { align: 'center' });
 
-      doc.moveDown(1);
+      currentY += 30;
 
       // Footer
       doc.fillColor(lightGray)
