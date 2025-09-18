@@ -261,9 +261,17 @@ const sendDonationReceipt = async (donation) => {
     
     // Generate PDF receipt
     console.log('Generating PDF receipt...');
-    const pdfBuffer = await generateDonationReceiptPDF(donation);
-    const receiptNumber = generateReceiptNumber(donation);
-    const filename = `Donation_Receipt_${receiptNumber.replace(/\//g, '_')}.pdf`;
+    let pdfBuffer = null;
+    let filename = null;
+    
+    try {
+      pdfBuffer = await generateDonationReceiptPDF(donation);
+      const receiptNumber = generateReceiptNumber(donation);
+      filename = `Donation_Receipt_${receiptNumber.replace(/\//g, '_')}.pdf`;
+      console.log('PDF receipt generated successfully');
+    } catch (pdfError) {
+      console.error('PDF generation failed, sending email without attachment:', pdfError.message);
+    }
     
     const template = emailTemplates.donationReceipt(donation);
     
@@ -273,25 +281,39 @@ const sendDonationReceipt = async (donation) => {
       subject: template.subject,
       html: template.html,
       text: template.text,
-      replyTo: 'aikyavidya@hkmhyderabad.org',
-      attachments: [
+      replyTo: 'aikyavidya@hkmhyderabad.org'
+    };
+    
+    // Add PDF attachment only if PDF generation was successful
+    if (pdfBuffer && filename) {
+      mailOptions.attachments = [
         {
           filename: filename,
           content: pdfBuffer,
           contentType: 'application/pdf'
         }
-      ]
-    };
+      ];
+    }
     
     const result = await transporter.sendMail(mailOptions);
-    console.log('Donation receipt email with PDF sent successfully:', result.messageId);
     
-    return {
-      success: true,
-      messageId: result.messageId,
-      message: 'Receipt email with PDF attachment sent successfully',
-      pdfFilename: filename
-    };
+    if (pdfBuffer && filename) {
+      console.log('Donation receipt email with PDF sent successfully:', result.messageId);
+      return {
+        success: true,
+        messageId: result.messageId,
+        message: 'Receipt email with PDF attachment sent successfully',
+        pdfFilename: filename
+      };
+    } else {
+      console.log('Donation receipt email sent successfully (without PDF):', result.messageId);
+      return {
+        success: true,
+        messageId: result.messageId,
+        message: 'Receipt email sent successfully (PDF generation failed)',
+        pdfFilename: null
+      };
+    }
     
   } catch (error) {
     console.error('Error sending donation receipt email:', error);
