@@ -1,6 +1,7 @@
 const Razorpay = require('razorpay');
 const Donation = require('../models/Donation');
 const crypto = require('crypto');
+const { sendDonationReceipt, testEmailConfiguration } = require('../utils/emailService');
 
 // Initialize Razorpay lazily
 let razorpay = null;
@@ -113,6 +114,27 @@ const verifyDonationPayment = async (req, res) => {
 
     await donation.save();
 
+    // Send receipt email if payment is completed and donor email exists
+    let emailResult = null;
+    if (donation.paymentStatus === 'completed' && donation.donorEmail) {
+      try {
+        console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
+        emailResult = await sendDonationReceipt(donation);
+        
+        if (emailResult.success) {
+          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
+        } else {
+          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('Error sending receipt email:', emailError);
+        emailResult = {
+          success: false,
+          error: emailError.message
+        };
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Donation verified and saved successfully',
@@ -121,7 +143,9 @@ const verifyDonationPayment = async (req, res) => {
         amount: donation.amount,
         status: donation.paymentStatus,
         paymentId: donation.razorpayPaymentId
-      }
+      },
+      emailSent: emailResult ? emailResult.success : false,
+      emailMessage: emailResult ? emailResult.message : 'No email sent (payment not completed or no email provided)'
     });
   } catch (error) {
     console.error('Error verifying donation payment:', error);
@@ -672,6 +696,27 @@ const verifyPayment = async (req, res) => {
 
     await donation.save();
 
+    // Send receipt email if payment is completed and donor email exists
+    let emailResult = null;
+    if (donation.paymentStatus === 'completed' && donation.donorEmail) {
+      try {
+        console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
+        emailResult = await sendDonationReceipt(donation);
+        
+        if (emailResult.success) {
+          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
+        } else {
+          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('Error sending receipt email:', emailError);
+        emailResult = {
+          success: false,
+          error: emailError.message
+        };
+      }
+    }
+
     res.json({
       success: true,
       message: 'Payment verified successfully',
@@ -684,7 +729,9 @@ const verifyPayment = async (req, res) => {
         donorEmail: donation.donorEmail,
         paymentStatus: donation.paymentStatus,
         paymentId: donation.razorpayPaymentId
-      }
+      },
+      emailSent: emailResult ? emailResult.success : false,
+      emailMessage: emailResult ? emailResult.message : 'No email sent (payment not completed or no email provided)'
     });
   } catch (error) {
     console.error('Error verifying payment:', error);
@@ -823,6 +870,63 @@ const getSevaStats = async (req, res) => {
   }
 };
 
+// Test email configuration
+const testEmailService = async (req, res) => {
+  try {
+    const result = await testEmailConfiguration();
+    
+    res.json({
+      success: result.success,
+      message: result.message,
+      details: result
+    });
+  } catch (error) {
+    console.error('Error testing email service:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error testing email service',
+      error: error.message
+    });
+  }
+};
+
+// Send receipt email for existing donation
+const sendReceiptEmail = async (req, res) => {
+  try {
+    const { donationId } = req.params;
+    
+    const donation = await Donation.findById(donationId);
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Donation not found'
+      });
+    }
+    
+    if (!donation.donorEmail) {
+      return res.status(400).json({
+        success: false,
+        message: 'No email address found for this donation'
+      });
+    }
+    
+    const result = await sendDonationReceipt(donation);
+    
+    res.json({
+      success: result.success,
+      message: result.message,
+      details: result
+    });
+  } catch (error) {
+    console.error('Error sending receipt email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error sending receipt email',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createDonationOrder,
   verifyDonationPayment,
@@ -835,5 +939,7 @@ module.exports = {
   submitDonationForm,
   verifyPayment,
   getDonationByOrderId,
-  getSevaStats
+  getSevaStats,
+  testEmailService,
+  sendReceiptEmail
 };
