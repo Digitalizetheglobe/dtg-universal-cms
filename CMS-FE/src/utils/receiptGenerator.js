@@ -96,7 +96,7 @@ export const generateDonationReceipt = async (donation) => {
     doc.text(missionLines, pageWidth - 20, headerY, { align: 'right' });
     headerY += missionLines.length * 4 + 2;
     
-    const trustText = 'A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18';
+    const trustText = 'A non-profit charitable trust bearing Identification Book IV 188/2015';
     const trustLines = doc.splitTextToSize(trustText, 130);
     doc.text(trustLines, pageWidth - 20, headerY, { align: 'right' });
     headerY += trustLines.length * 4 + 2;
@@ -115,7 +115,7 @@ export const generateDonationReceipt = async (donation) => {
     headerY += branchLines.length * 4 + 2;
     
     // Contact info
-    const contactText = 'www.harekrishnavidya.org; Email:aikyavidya@hkmhyderabad.org: Ph:+91-9154881444';
+    const contactText = 'www.harekrishnavidya.org; Email:aikyavidya@hkmhyderabad.org: Ph:+91-7207619870';
     const contactLines = doc.splitTextToSize(contactText, 130);
     doc.text(contactLines, pageWidth - 20, headerY, { align: 'right' });
     

@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
+const { generateDonationReceiptPDF, generateReceiptNumber } = require('./pdfReceiptGenerator');
 
 // Email configuration
 const emailConfig = {
@@ -128,7 +129,7 @@ const emailTemplates = {
               <div class="logo">HARE KRISHNA MOVEMENT</div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
-              <div class="subtitle">A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18</div>
+              <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
               <div class="subtitle">HKM PAN No.: AABTH4550P</div>
             </div>
             
@@ -182,13 +183,20 @@ const emailTemplates = {
               Hare Rama Hare Rama Rama Rama Hare Hare
             </div>
             
+            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; border: 2px solid #0066cc;">
+              <h4 style="color: #0066cc; margin-bottom: 10px;">📧 Your Receipt is Attached</h4>
+              <p style="color: #0066cc; font-size: 14px; margin: 0;">
+                A professional PDF receipt has been attached to this email for your records and tax purposes.
+              </p>
+            </div>
+            
             <div class="footer">
               <div class="contact-info">
                 <strong>Hare Krishna Golden Temple</strong><br>
                 Road No. 12, Banjara Hills, Hyderabad-500034<br>
                 Website: www.harekrishnavidya.org<br>
                 Email: aikyavidya@hkmhyderabad.org<br>
-                Phone: +91-9154881444
+                Phone: +91-7207619870
               </div>
               <p style="margin-top: 15px; font-size: 12px;">
                 This is an auto-generated receipt and does not require any signature.
@@ -217,6 +225,9 @@ const emailTemplates = {
         Hare Krishna Hare Krishna Krishna Krishna Hare Hare
         Hare Rama Hare Rama Rama Rama Hare Hare
         
+        📧 YOUR RECEIPT IS ATTACHED
+        A professional PDF receipt has been attached to this email for your records and tax purposes.
+        
         Hare Krishna Golden Temple
         Road No. 12, Banjara Hills, Hyderabad-500034
         Website: www.harekrishnavidya.org
@@ -229,15 +240,6 @@ const emailTemplates = {
   }
 };
 
-// Helper function to generate receipt number
-const generateReceiptNumber = (donation) => {
-  const date = new Date(donation.createdAt);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const time = String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0');
-  return `HKVIDYA/${year}/${time}`;
-};
 
 // Helper function to format date
 const formatReceiptDate = (dateString) => {
@@ -257,6 +259,12 @@ const sendDonationReceipt = async (donation) => {
     await transporter.verify();
     console.log('Email service is ready to send emails');
     
+    // Generate PDF receipt
+    console.log('Generating PDF receipt...');
+    const pdfBuffer = await generateDonationReceiptPDF(donation);
+    const receiptNumber = generateReceiptNumber(donation);
+    const filename = `Donation_Receipt_${receiptNumber.replace(/\//g, '_')}.pdf`;
+    
     const template = emailTemplates.donationReceipt(donation);
     
     const mailOptions = {
@@ -265,16 +273,24 @@ const sendDonationReceipt = async (donation) => {
       subject: template.subject,
       html: template.html,
       text: template.text,
-      replyTo: 'aikyavidya@hkmhyderabad.org'
+      replyTo: 'aikyavidya@hkmhyderabad.org',
+      attachments: [
+        {
+          filename: filename,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }
+      ]
     };
     
     const result = await transporter.sendMail(mailOptions);
-    console.log('Donation receipt email sent successfully:', result.messageId);
+    console.log('Donation receipt email with PDF sent successfully:', result.messageId);
     
     return {
       success: true,
       messageId: result.messageId,
-      message: 'Receipt email sent successfully'
+      message: 'Receipt email with PDF attachment sent successfully',
+      pdfFilename: filename
     };
     
   } catch (error) {
