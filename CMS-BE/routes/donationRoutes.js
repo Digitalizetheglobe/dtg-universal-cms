@@ -12,7 +12,9 @@ const {
   submitDonationForm,
   verifyPayment,
   getDonationByOrderId,
-  getSevaStats
+  getSevaStats,
+  testEmailService,
+  sendReceiptEmail
 } = require('../controllers/donationController');
 
 // Public routes (for donation processing)
@@ -29,8 +31,10 @@ router.get('/', getAllDonations);
 router.get('/stats', getDonationStats);
 router.get('/seva-stats', getSevaStats);
 router.get('/test-connection', testRazorpayConnection);
+router.get('/test-email', testEmailService);
 router.get('/:id', getDonationById);
 router.patch('/:id/notes', updateDonationNotes);
 router.post('/sync-razorpay', syncDonationsFromRazorpay);
+router.post('/:id/send-receipt', sendReceiptEmail);
 
 module.exports = router;

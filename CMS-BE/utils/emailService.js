@@ -1,0 +1,334 @@
+const nodemailer = require('nodemailer');
+const path = require('path');
+
+// Email configuration
+const emailConfig = {
+  host: 'smtp.hostinger.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: 'noreply_donations@harekrishnavidya.org',
+    pass: 'RadhaKrishna#108'
+  }
+};
+
+// Create transporter
+const createTransporter = () => {
+  return nodemailer.createTransporter(emailConfig);
+};
+
+// Email templates
+const emailTemplates = {
+  donationReceipt: (donation) => {
+    const receiptNumber = generateReceiptNumber(donation);
+    const formattedDate = formatReceiptDate(donation.createdAt);
+    
+    return {
+      subject: `Donation Receipt - ${receiptNumber} | Hare Krishna Movement`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Donation Receipt</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #f9f9f9;
+            }
+            .container {
+              background-color: white;
+              border-radius: 10px;
+              padding: 30px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              border-bottom: 3px solid #0066cc;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #0066cc;
+              margin-bottom: 5px;
+            }
+            .subtitle {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 10px;
+            }
+            .receipt-title {
+              background-color: #0066cc;
+              color: white;
+              padding: 15px;
+              text-align: center;
+              font-size: 18px;
+              font-weight: bold;
+              border-radius: 5px;
+              margin-bottom: 25px;
+            }
+            .receipt-details {
+              background-color: #f8f9fa;
+              padding: 20px;
+              border-radius: 5px;
+              border-left: 4px solid #0066cc;
+            }
+            .detail-row {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              padding: 5px 0;
+            }
+            .detail-label {
+              font-weight: bold;
+              color: #555;
+            }
+            .detail-value {
+              color: #333;
+            }
+            .amount {
+              font-size: 18px;
+              font-weight: bold;
+              color: #28a745;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              color: #666;
+              font-size: 14px;
+            }
+            .mantra {
+              background-color: #f0f8ff;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 20px 0;
+              text-align: center;
+              font-style: italic;
+              color: #0066cc;
+            }
+            .contact-info {
+              margin-top: 15px;
+              font-size: 12px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">HARE KRISHNA MOVEMENT</div>
+              <div class="subtitle">Hare Krishna Vidya</div>
+              <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
+              <div class="subtitle">A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18</div>
+              <div class="subtitle">HKM PAN No.: AABTH4550P</div>
+            </div>
+            
+            <div class="receipt-title">DONATION RECEIPT</div>
+            
+            <div class="receipt-details">
+              <div class="detail-row">
+                <span class="detail-label">Receipt No:</span>
+                <span class="detail-value">${receiptNumber}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">${formattedDate}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Donor Name:</span>
+                <span class="detail-value">${donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}</span>
+              </div>
+              ${donation.donorEmail ? `
+              <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">${donation.donorEmail}</span>
+              </div>
+              ` : ''}
+              ${donation.donorPhone ? `
+              <div class="detail-row">
+                <span class="detail-label">Mobile No:</span>
+                <span class="detail-value">${donation.donorPhone}</span>
+              </div>
+              ` : ''}
+              <div class="detail-row">
+                <span class="detail-label">Amount:</span>
+                <span class="detail-value amount">₹ ${donation.amount.toLocaleString('en-IN')} /-</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Payment Method:</span>
+                <span class="detail-value">${donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value">${donation.razorpayPaymentId || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Donated Seva:</span>
+                <span class="detail-value">${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}</span>
+              </div>
+            </div>
+            
+            <div class="mantra">
+              Hare Krishna Hare Krishna Krishna Krishna Hare Hare<br>
+              Hare Rama Hare Rama Rama Rama Hare Hare
+            </div>
+            
+            <div class="footer">
+              <div class="contact-info">
+                <strong>Hare Krishna Golden Temple</strong><br>
+                Road No. 12, Banjara Hills, Hyderabad-500034<br>
+                Website: www.harekrishnavidya.org<br>
+                Email: aikyavidya@hkmhyderabad.org<br>
+                Phone: +91-9154881444
+              </div>
+              <p style="margin-top: 15px; font-size: 12px;">
+                This is an auto-generated receipt and does not require any signature.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        HARE KRISHNA MOVEMENT - Hare Krishna Vidya
+        (Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)
+        
+        DONATION RECEIPT
+        
+        Receipt No: ${receiptNumber}
+        Date: ${formattedDate}
+        Donor Name: ${donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}
+        ${donation.donorEmail ? `Email: ${donation.donorEmail}` : ''}
+        ${donation.donorPhone ? `Mobile No: ${donation.donorPhone}` : ''}
+        Amount: ₹ ${donation.amount.toLocaleString('en-IN')} /-
+        Payment Method: ${donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online'}
+        Transaction ID: ${donation.razorpayPaymentId || 'N/A'}
+        Donated Seva: ${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}
+        
+        Hare Krishna Hare Krishna Krishna Krishna Hare Hare
+        Hare Rama Hare Rama Rama Rama Hare Hare
+        
+        Hare Krishna Golden Temple
+        Road No. 12, Banjara Hills, Hyderabad-500034
+        Website: www.harekrishnavidya.org
+        Email: aikyavidya@hkmhyderabad.org
+        Phone: +91-9154881444
+        
+        This is an auto-generated receipt and does not require any signature.
+      `
+    };
+  }
+};
+
+// Helper function to generate receipt number
+const generateReceiptNumber = (donation) => {
+  const date = new Date(donation.createdAt);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const time = String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0');
+  return `HKVIDYA/${year}/${time}`;
+};
+
+// Helper function to format date
+const formatReceiptDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+// Send donation receipt email
+const sendDonationReceipt = async (donation) => {
+  try {
+    const transporter = createTransporter();
+    
+    // Verify transporter configuration
+    await transporter.verify();
+    console.log('Email service is ready to send emails');
+    
+    const template = emailTemplates.donationReceipt(donation);
+    
+    const mailOptions = {
+      from: '"Hare Krishna Movement" <noreply_donations@harekrishnavidya.org>',
+      to: donation.donorEmail,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+      replyTo: 'aikyavidya@hkmhyderabad.org'
+    };
+    
+    const result = await transporter.sendMail(mailOptions);
+    console.log('Donation receipt email sent successfully:', result.messageId);
+    
+    return {
+      success: true,
+      messageId: result.messageId,
+      message: 'Receipt email sent successfully'
+    };
+    
+  } catch (error) {
+    console.error('Error sending donation receipt email:', error);
+    return {
+      success: false,
+      error: error.message,
+      message: 'Failed to send receipt email'
+    };
+  }
+};
+
+// Test email configuration
+const testEmailConfiguration = async () => {
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    
+    // Send a test email
+    const testMailOptions = {
+      from: '"Hare Krishna Movement" <noreply_donations@harekrishnavidya.org>',
+      to: 'aikyavidya@hkmhyderabad.org', // Send test email to admin
+      subject: 'Email Service Test - Hare Krishna Movement',
+      html: `
+        <h2>Email Service Test</h2>
+        <p>This is a test email to verify that the email service is working correctly.</p>
+        <p>Timestamp: ${new Date().toISOString()}</p>
+        <p>Hare Krishna!</p>
+      `,
+      text: 'Email Service Test - Hare Krishna Movement\n\nThis is a test email to verify that the email service is working correctly.\n\nHare Krishna!'
+    };
+    
+    const result = await transporter.sendMail(testMailOptions);
+    console.log('Test email sent successfully:', result.messageId);
+    
+    return {
+      success: true,
+      messageId: result.messageId,
+      message: 'Test email sent successfully'
+    };
+    
+  } catch (error) {
+    console.error('Error testing email configuration:', error);
+    return {
+      success: false,
+      error: error.message,
+      message: 'Email configuration test failed'
+    };
+  }
+};
+
+module.exports = {
+  sendDonationReceipt,
+  testEmailConfiguration,
+  createTransporter,
+  emailTemplates
+};
