@@ -154,7 +154,7 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🕉️ HARE KRISHNA MOVEMENT INDIA 🕉️</div>
+              <div class="logo"> HARE KRISHNA MOVEMENT INDIA </div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
               <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
@@ -210,14 +210,7 @@ const emailTemplates = {
               Hare Krishna Hare Krishna Krishna Krishna Hare Hare<br>
               Hare Rama Hare Rama Rama Rama Hare Hare
             </div>
-            
-            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; border: 2px solid #0066cc;">
-              <h4 style="color: #0066cc; margin-bottom: 10px;">📧 Your Receipt is Attached</h4>
-              <p style="color: #0066cc; font-size: 14px; margin: 0;">
-                A professional PDF receipt has been attached to this email for your records and tax purposes.
-              </p>
-            </div>
-            
+         
             <div class="footer">
               <div class="contact-info">
                 <strong>Hare Krishna Golden Temple</strong><br>
