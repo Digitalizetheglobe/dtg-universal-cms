@@ -207,6 +207,13 @@ const emailTemplates = {
               Hare Rama Hare Rama Rama Rama Hare Hare
             </div>
             
+            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; border: 2px solid #0066cc;">
+              <h4 style="color: #0066cc; margin-bottom: 10px;">📧 Your Receipt is Attached</h4>
+              <p style="color: #0066cc; font-size: 14px; margin: 0;">
+                A professional PDF receipt has been attached to this email for your records and tax purposes.
+              </p>
+            </div>
+            
             <div class="footer">
               <div class="contact-info">
                 <strong>Hare Krishna Golden Temple</strong><br>
@@ -244,6 +251,8 @@ const emailTemplates = {
         Hare Krishna Hare Krishna Krishna Krishna Hare Hare
         Hare Rama Hare Rama Rama Rama Hare Hare
         
+        📧 YOUR RECEIPT IS ATTACHED
+        A professional PDF receipt has been attached to this email for your records and tax purposes.
         
         Hare Krishna Golden Temple
         Road No. 12, Banjara Hills, Hyderabad-500034
