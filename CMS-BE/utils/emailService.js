@@ -11,7 +11,12 @@ const emailConfig = {
   auth: {
     user: 'noreply_donations@harekrishnavidya.org',
     pass: 'RadhaKrishna#108'
-  }
+  },
+  tls: {
+    ciphers: 'SSLv3'
+  },
+  debug: false,
+  logger: false
 };
 
 // Create transporter
@@ -40,7 +45,7 @@ const emailTemplates = {
     const logoBase64 = getLogoBase64();
     
     return {
-      subject: `Donation Receipt - ${receiptNumber} | HARE KRISHNA MOVEMENT INDIA`,
+      subject: `Donation Receipt ${receiptNumber} - Hare Krishna Movement`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -308,7 +313,9 @@ const sendDonationReceipt = async (donation) => {
       text: template.text,
       replyTo: 'aikyavidya@hkmhyderabad.org',
       headers: {
-        'Content-Type': 'text/html; charset=utf-8'
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'high'
       }
     };
     
@@ -325,9 +332,14 @@ const sendDonationReceipt = async (donation) => {
         {
           filename: filename,
           content: pdfBuffer,
-          contentType: 'application/pdf'
+          contentType: 'application/pdf',
+          disposition: 'attachment',
+          cid: 'donation_receipt_pdf'
         }
       ];
+      console.log('PDF attachment added:', filename);
+    } else {
+      console.log('No PDF attachment - PDF generation may have failed');
     }
     
     const result = await transporter.sendMail(mailOptions);
