@@ -86,7 +86,7 @@ const generatePDFReceipt = async (donation) => {
       doc.fontSize(20)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text('HARE KRISHNA MOVEMENT', headerX, currentY);
+         .text('HARE KRISHNA MOVEMENT INDIA', headerX, currentY);
 
       currentY += 25;
 
@@ -103,7 +103,7 @@ const generatePDFReceipt = async (donation) => {
       currentY += 25;
 
       doc.fontSize(8)
-         .text('A non-profit charitable trust bearing Identification No:267 oh Book IV of Year 2017-18', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', headerX, currentY, { width: pageWidth - headerX - margin });
 
       currentY += 20;
 
@@ -120,7 +120,7 @@ const generatePDFReceipt = async (donation) => {
       currentY += 20;
 
       doc.fontSize(7)
-         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-9154881444', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', headerX, currentY, { width: pageWidth - headerX - margin });
 
       currentY += 30;
 

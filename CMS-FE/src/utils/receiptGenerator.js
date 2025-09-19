@@ -85,7 +85,7 @@ export const generateDonationReceipt = async (donation) => {
     // Header
     doc.setFontSize(24);
     doc.setTextColor(...primaryColor);
-    doc.text('Hare Krishna Movement', pageWidth - 20, 30, { align: 'right' });
+    doc.text('HARE KRISHNA MOVEMENT INDIA', pageWidth - 20, 30, { align: 'right' });
     
     // Mission statement
     doc.setFontSize(10);

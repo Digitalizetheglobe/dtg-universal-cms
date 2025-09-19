@@ -45,7 +45,7 @@ export const generateHTMLReceipt = (donation) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hare Krishna Movement - Donation Receipt</title>
+        <title>HARE KRISHNA MOVEMENT INDIA - Donation Receipt</title>
         <style>
             * {
                 margin: 0;
@@ -284,7 +284,7 @@ export const generateHTMLReceipt = (donation) => {
                     <img src="/ac-logo.png" alt="Hare Krishna Vidya Logo" class="logo-image"  />
                 </div>
                 <div class="organization-info">
-                    <div class="organization-name">Hare Krishna Movement</div>
+                    <div class="organization-name">HARE KRISHNA MOVEMENT INDIA</div>
                     <div class="mission-statement">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
                     <div class="trust-info">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
                     <div class="pan-number">HKM PAN No.: AABTH4550P</div>
