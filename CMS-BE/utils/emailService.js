@@ -149,8 +149,7 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              ${logoBase64 ? `<img src="${logoBase64}" alt="HARE KRISHNA MOVEMENT INDIA Logo" class="header-logo">` : ''}
-              <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
+              <div class="logo">🕉️ HARE KRISHNA MOVEMENT INDIA 🕉️</div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
               <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
@@ -307,8 +306,18 @@ const sendDonationReceipt = async (donation) => {
       subject: template.subject,
       html: template.html,
       text: template.text,
-      replyTo: 'aikyavidya@hkmhyderabad.org'
+      replyTo: 'aikyavidya@hkmhyderabad.org',
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8'
+      }
     };
+    
+    // Debug: Log template info
+    console.log('Email template info:');
+    console.log('- Subject length:', template.subject.length);
+    console.log('- HTML length:', template.html.length);
+    console.log('- Text length:', template.text.length);
+    console.log('- To:', donation.donorEmail);
     
     // Add PDF attachment only if PDF generation was successful
     if (pdfBuffer && filename) {
