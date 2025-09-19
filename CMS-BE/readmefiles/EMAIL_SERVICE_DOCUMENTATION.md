@@ -25,7 +25,7 @@ The email service automatically sends donation receipts to donors after successf
 
 ### 2. Email Template
 The receipt email includes:
-- Hare Krishna Movement branding and logo
+- HARE KRISHNA MOVEMENT INDIA branding and logo
 - Complete donation details (amount, donor info, transaction ID)
 - Receipt number with timestamp format: `HKVIDYA/YYYY/HHMM`
 - Contact information for the temple
@@ -100,7 +100,7 @@ This script will:
 ## Email Template Customization
 
 ### Template Structure
-- **Header**: Hare Krishna Movement branding
+- **Header**: HARE KRISHNA MOVEMENT INDIA branding
 - **Receipt Details**: Donation information in formatted table
 - **Mantra**: Sacred Hare Krishna mantra
 - **Footer**: Contact information and disclaimer

@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
+const fs = require('fs');
 const { generateDonationReceiptPDF, generateReceiptNumber } = require('./pdfReceiptGenerator');
 
 // Email configuration
@@ -18,14 +19,28 @@ const createTransporter = () => {
   return nodemailer.createTransport(emailConfig);
 };
 
+// Function to get logo as base64
+const getLogoBase64 = () => {
+  try {
+    const logoPath = path.join(__dirname, '..', 'public', 'logo.png');
+    const logoBuffer = fs.readFileSync(logoPath);
+    const logoBase64 = logoBuffer.toString('base64');
+    return `data:image/png;base64,${logoBase64}`;
+  } catch (error) {
+    console.error('Error reading logo file:', error);
+    return null;
+  }
+};
+
 // Email templates
 const emailTemplates = {
   donationReceipt: (donation) => {
     const receiptNumber = generateReceiptNumber(donation);
     const formattedDate = formatReceiptDate(donation.createdAt);
+    const logoBase64 = getLogoBase64();
     
     return {
-      subject: `Donation Receipt - ${receiptNumber} | Hare Krishna Movement`,
+      subject: `Donation Receipt - ${receiptNumber} | HARE KRISHNA MOVEMENT INDIA`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -54,6 +69,14 @@ const emailTemplates = {
               border-bottom: 3px solid #0066cc;
               padding-bottom: 20px;
               margin-bottom: 30px;
+            }
+            .header-logo {
+              width: 80px;
+              height: 80px;
+              margin: 0 auto 15px auto;
+              display: block;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             .logo {
               font-size: 24px;
@@ -126,7 +149,8 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HARE KRISHNA MOVEMENT</div>
+              ${logoBase64 ? `<img src="${logoBase64}" alt="HARE KRISHNA MOVEMENT INDIA Logo" class="header-logo">` : ''}
+              <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
               <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
@@ -183,13 +207,6 @@ const emailTemplates = {
               Hare Rama Hare Rama Rama Rama Hare Hare
             </div>
             
-            <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; border: 2px solid #0066cc;">
-              <h4 style="color: #0066cc; margin-bottom: 10px;">📧 Your Receipt is Attached</h4>
-              <p style="color: #0066cc; font-size: 14px; margin: 0;">
-                A professional PDF receipt has been attached to this email for your records and tax purposes.
-              </p>
-            </div>
-            
             <div class="footer">
               <div class="contact-info">
                 <strong>Hare Krishna Golden Temple</strong><br>
@@ -207,7 +224,9 @@ const emailTemplates = {
         </html>
       `,
       text: `
-        HARE KRISHNA MOVEMENT - Hare Krishna Vidya
+        [HARE KRISHNA MOVEMENT INDIA LOGO]
+        
+        HARE KRISHNA MOVEMENT INDIA - Hare Krishna Vidya
         (Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)
         
         DONATION RECEIPT
@@ -225,14 +244,12 @@ const emailTemplates = {
         Hare Krishna Hare Krishna Krishna Krishna Hare Hare
         Hare Rama Hare Rama Rama Rama Hare Hare
         
-        📧 YOUR RECEIPT IS ATTACHED
-        A professional PDF receipt has been attached to this email for your records and tax purposes.
         
         Hare Krishna Golden Temple
         Road No. 12, Banjara Hills, Hyderabad-500034
         Website: www.harekrishnavidya.org
         Email: aikyavidya@hkmhyderabad.org
-        Phone: +91-9154881444
+        Phone: +91-7207619870
         
         This is an auto-generated receipt and does not require any signature.
       `
@@ -276,7 +293,7 @@ const sendDonationReceipt = async (donation) => {
     const template = emailTemplates.donationReceipt(donation);
     
     const mailOptions = {
-      from: '"Hare Krishna Movement" <noreply_donations@harekrishnavidya.org>',
+      from: '"HARE KRISHNA MOVEMENT INDIA" <noreply_donations@harekrishnavidya.org>',
       to: donation.donorEmail,
       subject: template.subject,
       html: template.html,
@@ -333,16 +350,16 @@ const testEmailConfiguration = async () => {
     
     // Send a test email
     const testMailOptions = {
-      from: '"Hare Krishna Movement" <noreply_donations@harekrishnavidya.org>',
+      from: '"HARE KRISHNA MOVEMENT INDIA" <noreply_donations@harekrishnavidya.org>',
       to: 'aikyavidya@hkmhyderabad.org', // Send test email to admin
-      subject: 'Email Service Test - Hare Krishna Movement',
+      subject: 'Email Service Test - HARE KRISHNA MOVEMENT INDIA',
       html: `
         <h2>Email Service Test</h2>
         <p>This is a test email to verify that the email service is working correctly.</p>
         <p>Timestamp: ${new Date().toISOString()}</p>
         <p>Hare Krishna!</p>
       `,
-      text: 'Email Service Test - Hare Krishna Movement\n\nThis is a test email to verify that the email service is working correctly.\n\nHare Krishna!'
+      text: 'Email Service Test - HARE KRISHNA MOVEMENT INDIA\n\nThis is a test email to verify that the email service is working correctly.\n\nHare Krishna!'
     };
     
     const result = await transporter.sendMail(testMailOptions);
