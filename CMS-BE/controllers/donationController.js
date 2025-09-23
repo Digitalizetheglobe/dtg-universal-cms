@@ -43,7 +43,7 @@ const createDonationOrder = async (req, res) => {
     const options = {
       amount: amount * 100, // Razorpay expects amount in paise
       currency: currency,
-      receipt: receipt || `donation_${Date.now()}`,
+      receipt: receipt || `don_${Date.now().toString().slice(-8)}`,
       notes: {
         notes: notes || 'Donation payment'
       }
@@ -331,6 +331,161 @@ const updateDonationNotes = async (req, res) => {
   }
 };
 
+// Force sync all payments from Razorpay (including failed ones)
+const forceSyncAllPayments = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    // Check if credentials are set
+    if (!isRazorpayConfigured()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Razorpay credentials not configured. Please check your .env file.'
+      });
+    }
+
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    
+    // Fetch ALL payments using pagination
+    console.log('Force syncing ALL payments from Razorpay with pagination...');
+    let allPayments = [];
+    let hasMore = true;
+    let skip = 0;
+    const limit = 100; // Razorpay's maximum per request
+    
+    while (hasMore) {
+      const options = {
+        from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
+        to: endDate ? new Date(endDate).getTime() / 1000 : undefined,
+        count: limit,
+        skip: skip,
+        expand: ['card', 'emi', 'offer']
+      };
+      
+      console.log(`Fetching payments batch ${Math.floor(skip/limit) + 1} (skip: ${skip})...`);
+      const batch = await razorpayInstance.payments.all(options);
+      
+      allPayments = allPayments.concat(batch.items);
+      console.log(`Fetched ${batch.items.length} payments in this batch. Total so far: ${allPayments.length}`);
+      
+      // Check if there are more payments
+      hasMore = batch.items.length === limit;
+      skip += limit;
+      
+      // Safety break to prevent infinite loops
+      if (skip > 10000) {
+        console.log('Safety break: Stopping at 10,000 payments to prevent infinite loop');
+        break;
+      }
+    }
+    
+    console.log(`Found ${allPayments.length} total payments from Razorpay`);
+    
+    let syncedCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+    let statusCounts = {
+      captured: 0,
+      failed: 0,
+      authorized: 0,
+      other: 0
+    };
+
+    for (const payment of allPayments) {
+      try {
+        // Track payment status counts
+        if (payment.status === 'captured') {
+          statusCounts.captured++;
+        } else if (payment.status === 'failed') {
+          statusCounts.failed++;
+        } else if (payment.status === 'authorized') {
+          statusCounts.authorized++;
+        } else {
+          statusCounts.other++;
+        }
+
+        // Map Razorpay status to our status
+        let paymentStatus = 'pending';
+        if (payment.status === 'captured') {
+          paymentStatus = 'completed';
+        } else if (payment.status === 'failed') {
+          paymentStatus = 'failed';
+        } else if (payment.status === 'authorized') {
+          paymentStatus = 'pending';
+        }
+
+        // Check if donation already exists
+        const existingDonation = await Donation.findOne({ 
+          razorpayPaymentId: payment.id 
+        });
+
+        const donationData = {
+          razorpayPaymentId: payment.id,
+          razorpayOrderId: payment.order_id,
+          donorName: payment.email || payment.contact || 'Anonymous',
+          donorEmail: payment.email,
+          donorPhone: payment.contact,
+          amount: payment.amount / 100,
+          currency: payment.currency,
+          paymentStatus: paymentStatus,
+          paymentMethod: payment.method,
+          receipt: payment.receipt,
+          metadata: {
+            paymentMethod: payment.method,
+            bank: payment.bank,
+            cardId: payment.card_id,
+            wallet: payment.wallet,
+            vpa: payment.vpa,
+            email: payment.email,
+            contact: payment.contact,
+            status: payment.status,
+            syncedFromRazorpay: true
+          }
+        };
+
+        if (existingDonation) {
+          // Update existing donation with latest data
+          await Donation.findOneAndUpdate(
+            { razorpayPaymentId: payment.id },
+            donationData,
+            { new: true }
+          );
+          updatedCount++;
+          console.log(`Updated existing payment: ${payment.id}`);
+        } else {
+          // Create new donation
+          const donation = new Donation(donationData);
+          await donation.save();
+          syncedCount++;
+          console.log(`Created new payment: ${payment.id}`);
+        }
+      } catch (paymentError) {
+        console.error(`Error processing payment ${payment.id}:`, paymentError);
+      }
+    }
+
+    console.log('Force sync completed:', { syncedCount, updatedCount, skippedCount, statusCounts });
+
+    res.json({
+      success: true,
+      message: `Force sync completed: ${syncedCount} new, ${updatedCount} updated, ${skippedCount} skipped`,
+      syncedCount,
+      updatedCount,
+      skippedCount,
+      totalFound: allPayments.length,
+      statusBreakdown: statusCounts
+    });
+  } catch (error) {
+    console.error('Error force syncing payments from Razorpay:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error force syncing payments from Razorpay', 
+      error: error.message 
+    });
+  }
+};
+
 // Sync donations from Razorpay (for existing donations)
 const syncDonationsFromRazorpay = async (req, res) => {
   try {
@@ -350,13 +505,41 @@ const syncDonationsFromRazorpay = async (req, res) => {
     const options = {
       from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
       to: endDate ? new Date(endDate).getTime() / 1000 : undefined,
-      count: 1000  // Increased from 100 to 1000 to capture all payments
+      count: 100,  // Razorpay limit is 100 per request
+      expand: ['card', 'emi', 'offer']  // Get more details about payments
     };
 
-    console.log('Fetching payments from Razorpay with options:', options);
-    const payments = await razorpayInstance.payments.all(options);
+    // Fetch ALL payments using pagination
+    console.log('Fetching payments from Razorpay with pagination...');
+    let allPayments = [];
+    let hasMore = true;
+    let skip = 0;
+    const limit = 100; // Razorpay's maximum per request
     
-    console.log(`Found ${payments.items.length} payments from Razorpay`);
+    while (hasMore) {
+      const batchOptions = {
+        ...options,
+        skip: skip
+      };
+      
+      console.log(`Fetching payments batch ${Math.floor(skip/limit) + 1} (skip: ${skip})...`);
+      const batch = await razorpayInstance.payments.all(batchOptions);
+      
+      allPayments = allPayments.concat(batch.items);
+      console.log(`Fetched ${batch.items.length} payments in this batch. Total so far: ${allPayments.length}`);
+      
+      // Check if there are more payments
+      hasMore = batch.items.length === limit;
+      skip += limit;
+      
+      // Safety break to prevent infinite loops
+      if (skip > 10000) {
+        console.log('Safety break: Stopping at 10,000 payments to prevent infinite loop');
+        break;
+      }
+    }
+    
+    console.log(`Found ${allPayments.length} total payments from Razorpay`);
     console.log(`Date range: ${startDate} to ${endDate}`);
     
     let syncedCount = 0;
@@ -369,7 +552,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
       other: 0
     };
 
-    for (const payment of payments.items) {
+    for (const payment of allPayments) {
       try {
         // Track payment status counts
         if (payment.status === 'captured') {
@@ -382,12 +565,19 @@ const syncDonationsFromRazorpay = async (req, res) => {
           statusCounts.other++;
         }
 
+        // Debug: Log payment details
+        console.log(`Processing payment: ${payment.id}, Status: ${payment.status}, Amount: ${payment.amount}, Date: ${new Date(payment.created_at * 1000).toISOString()}`);
+
         // Check if donation already exists
         const existingDonation = await Donation.findOne({ 
           razorpayPaymentId: payment.id 
         });
 
-        if (!existingDonation) {
+        if (existingDonation) {
+          console.log(`Payment ${payment.id} already exists in database`);
+          skippedCount++;
+        } else {
+          console.log(`Payment ${payment.id} not found in database, creating new donation`);
           // Map Razorpay status to our status
           let paymentStatus = 'pending';
           if (payment.status === 'captured') {
@@ -417,7 +607,8 @@ const syncDonationsFromRazorpay = async (req, res) => {
               vpa: payment.vpa,
               email: payment.email,
               contact: payment.contact,
-              status: payment.status
+              status: payment.status,
+              syncedFromRazorpay: true
             }
           });
 
@@ -425,8 +616,6 @@ const syncDonationsFromRazorpay = async (req, res) => {
           newDonations.push(donation);
           syncedCount++;
           console.log(`Synced payment: ${payment.id} - ${payment.amount/100} ${payment.currency}`);
-        } else {
-          skippedCount++;
         }
       } catch (paymentError) {
         console.error(`Error processing payment ${payment.id}:`, paymentError);
@@ -434,7 +623,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
     }
 
     console.log('Payment status breakdown:', statusCounts);
-    console.log(`Total payments processed: ${payments.items.length}`);
+    console.log(`Total payments processed: ${allPayments.length}`);
     console.log(`New donations synced: ${syncedCount}`);
     console.log(`Already existed: ${skippedCount}`);
 
@@ -443,7 +632,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
       message: `Synced ${syncedCount} new donations from Razorpay (${skippedCount} already existed)`,
       syncedCount,
       skippedCount,
-      totalFound: payments.items.length,
+      totalFound: allPayments.length,
       statusBreakdown: statusCounts,
       newDonations: newDonations.slice(0, 5) // Return first 5 for preview
     });
@@ -523,7 +712,18 @@ const submitDonationForm = async (req, res) => {
       utmMedium,
       utmCampaign,
       utmTerm,
-      utmContent
+      utmContent,
+      // Address fields for Maha Prasadam and 80G
+      wantsMahaPrasadam = false,
+      wants80G = false,
+      address,
+      houseApartment,
+      village,
+      district,
+      state,
+      pinCode,
+      landmark,
+      panNumber
     } = req.body;
 
     // Validate required fields
@@ -576,6 +776,17 @@ const submitDonationForm = async (req, res) => {
       utmCampaign,
       utmTerm,
       utmContent,
+      // Address fields for Maha Prasadam and 80G
+      wantsMahaPrasadam,
+      wants80G,
+      address,
+      houseApartment,
+      village,
+      district,
+      state,
+      pinCode,
+      landmark,
+      panNumber,
       paymentStatus: 'pending'
     });
 
@@ -600,35 +811,69 @@ const submitDonationForm = async (req, res) => {
       });
     }
 
-    // Create Razorpay order
-    const orderOptions = {
-      amount: sevaAmount * 100, // Convert to paise
-      currency: 'INR',
-      receipt: `donation_${donation._id}`,
-      notes: {
-        donationId: donation._id.toString(),
-        sevaName,
-        sevaType,
-        donorName,
-        donorEmail
-      }
-    };
+    // Initialize order variable
+    let order = null;
 
-    let order;
-    try {
-      order = await getRazorpayInstance().orders.create(orderOptions);
-    } catch (razorpayError) {
-      console.error('Razorpay error:', razorpayError);
+    // Ensure Razorpay is configured
+    if (!isRazorpayConfigured()) {
       return res.status(500).json({
         success: false,
-        message: 'Payment gateway error. Please try again later.',
-        error: razorpayError.message
+        message: 'Payment gateway not configured. Please contact administrator.',
+        error: 'Razorpay credentials missing'
       });
     }
 
-    // Update donation with order ID
-    donation.razorpayOrderId = order.id;
-    await donation.save();
+    // Check if order already exists for this donation
+    if (donation.razorpayOrderId) {
+      // If order already exists, try to fetch it
+      try {
+        const razorpayInstance = getRazorpayInstance();
+        const existingOrder = await razorpayInstance.orders.fetch(donation.razorpayOrderId);
+        if (existingOrder.status === 'paid') {
+          return res.status(400).json({
+            success: false,
+            message: 'This donation has already been paid. Please create a new donation.',
+            error: 'Order already paid'
+          });
+        }
+        // If order exists but not paid, use it
+        order = existingOrder;
+      } catch (fetchError) {
+        // If fetch fails, create new order
+        console.log('Existing order not found, creating new one...');
+      }
+    }
+
+    // Create new Razorpay order if none exists
+    if (!order) {
+      const orderOptions = {
+        amount: sevaAmount * 100, // Convert to paise
+        currency: 'INR',
+        receipt: `don_${donation._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
+        notes: {
+          donationId: donation._id.toString(),
+          sevaName,
+          sevaType,
+          donorName,
+          donorEmail
+        }
+      };
+
+      try {
+        const razorpayInstance = getRazorpayInstance();
+        order = await razorpayInstance.orders.create(orderOptions);
+        // Save the order ID to the donation
+        donation.razorpayOrderId = order.id;
+        await donation.save();
+      } catch (razorpayError) {
+        console.error('Razorpay error:', razorpayError);
+        return res.status(500).json({
+          success: false,
+          message: 'Payment gateway error. Please try again later.',
+          error: razorpayError.message
+        });
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -973,6 +1218,7 @@ module.exports = {
   getDonationStats,
   updateDonationNotes,
   syncDonationsFromRazorpay,
+  forceSyncAllPayments,
   testRazorpayConnection,
   submitDonationForm,
   verifyPayment,
