@@ -76,9 +76,9 @@ const emailTemplates = {
               margin-bottom: 30px;
             }
             .header-logo {
-              width: 80px;
-              height: 80px;
-              margin: 0 auto 15px auto;
+              width: 120px;
+              height: 120px;
+              margin: 0 auto 20px auto;
               display: block;
               border-radius: 8px;
               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -154,11 +154,14 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
+              ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
               <div class="logo"> HARE KRISHNA MOVEMENT INDIA </div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
               <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
               <div class="subtitle">HKM PAN No.: AABTH4550P</div>
+              <div class="subtitle">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
+              <div class="subtitle">www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870</div>
             </div>
             
             <div class="receipt-title">DONATION RECEIPT</div>
@@ -204,6 +207,14 @@ const emailTemplates = {
                 <span class="detail-label">Donated Seva:</span>
                 <span class="detail-value">${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}</span>
               </div>
+              <div class="detail-row">
+                <span class="detail-label">Required 80G:</span>
+                <span class="detail-value">${donation.wants80G ? 'Yes' : 'No'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Donor PAN Details:</span>
+                <span class="detail-value">${donation.wants80G && donation.panNumber ? donation.panNumber : 'Not Applicable'}</span>
+              </div>
             </div>
             
             <div class="mantra">
@@ -244,6 +255,8 @@ const emailTemplates = {
         Payment Method: ${donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online'}
         Transaction ID: ${donation.razorpayPaymentId || 'N/A'}
         Donated Seva: ${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}
+        Required 80G: ${donation.wants80G ? 'Yes' : 'No'}
+        Donor PAN Details: ${donation.wants80G && donation.panNumber ? donation.panNumber : 'Not Applicable'}
         
         Hare Krishna Hare Krishna Krishna Krishna Hare Hare
         Hare Rama Hare Rama Rama Rama Hare Hare

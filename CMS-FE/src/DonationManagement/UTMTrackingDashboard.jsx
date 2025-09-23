@@ -258,7 +258,10 @@ const UTMTrackingDashboard = () => {
     let totalAmount = 0;
     let totalDonations = 0;
 
-    filteredDonations.forEach((donation) => {
+    // Only process successful donations (completed status)
+    const successfulDonations = filteredDonations.filter(donation => donation.paymentStatus === "completed");
+
+    successfulDonations.forEach((donation) => {
       const donationAmount = donation.amount || 0;
       totalAmount += donationAmount;
       totalDonations++;
@@ -818,18 +821,6 @@ const UTMTrackingDashboard = () => {
                       <p className="text-3xl font-bold">{summaryStats.totalDonations}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FaChartBar className="text-2xl" />
-                    <div>
-                      <p className="text-green-100 text-sm">Average per Donation</p>
-                      <p className="text-3xl font-bold">
-                        {summaryStats.totalDonations > 0 
-                          ? formatCurrency(summaryStats.totalAmount / summaryStats.totalDonations)
-                          : formatCurrency(0)
-                        }
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -888,7 +879,7 @@ const UTMTrackingDashboard = () => {
                 <div>
                   <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
                   <div className="mt-1 flex items-center gap-4 text-sm">
-                    <span>Showing {filteredDonations.length} of {donations.length} donations</span>
+                    <span>Showing {filteredDonations.filter(donation => donation.paymentStatus === "completed").length} successful donations of {filteredDonations.length} total donations</span>
                     <span className="font-semibold">
                       Total: {formatCurrency(summaryStats.totalAmount)}
                     </span>
@@ -990,7 +981,7 @@ const UTMTrackingDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredDonations.map((donation, index) => (
+                  {filteredDonations.filter(donation => donation.paymentStatus === "completed").map((donation, index) => (
                     <tr key={donation._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
@@ -1089,16 +1080,16 @@ const UTMTrackingDashboard = () => {
                 </tbody>
               </table>
             </div>
-            {filteredDonations.length === 0 && (
+            {filteredDonations.filter(donation => donation.paymentStatus === "completed").length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 {isDefaultView ? (
                   <div>
-                    <p className="text-lg font-medium mb-2">No donations found for today</p>
+                    <p className="text-lg font-medium mb-2">No successful donations found for today</p>
                     <p className="text-sm">Try selecting a different date range to view historical donations.</p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-lg font-medium mb-2">No donations found for the selected criteria</p>
+                    <p className="text-lg font-medium mb-2">No successful donations found for the selected criteria</p>
                     <p className="text-sm">Try adjusting your date range or filters.</p>
                   </div>
                 )}

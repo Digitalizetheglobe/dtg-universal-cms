@@ -73,54 +73,53 @@ const generatePDFReceipt = async (donation) => {
       try {
         const logoPath = path.join(__dirname, '../public/logo.png');
         if (fs.existsSync(logoPath)) {
-          doc.image(logoPath, margin, 20, { width: 60, height: 60 });
+          doc.image(logoPath, margin, 20, { width: 100, height: 100 });
         }
       } catch (error) {
         console.log('Logo not found, continuing without logo');
       }
 
-      // Header Section - positioned to the right of logo
-      const headerX = margin + 80; // Start after logo space
-      let currentY = 25;
+      // Header Section - centered
+      let currentY = 130; // Start below logo
 
       doc.fontSize(20)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text('HARE KRISHNA MOVEMENT INDIA', headerX, currentY);
+         .text('HARE KRISHNA MOVEMENT INDIA', { align: 'center' });
 
       currentY += 25;
 
       doc.fontSize(12)
          .fillColor(darkGray)
          .font('Helvetica')
-         .text('Hare Krishna Vidya', headerX, currentY);
+         .text('Hare Krishna Vidya', { align: 'center' });
 
       currentY += 20;
 
       doc.fontSize(9)
-         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', { align: 'center' });
 
       currentY += 25;
 
       doc.fontSize(8)
-         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', { align: 'center' });
 
       currentY += 20;
 
       doc.fontSize(11)
          .font('Helvetica-Bold')
-         .text('HKM PAN No.: AABTH4550P', headerX, currentY);
+         .text('HKM PAN No.: AABTH4550P', { align: 'center' });
 
       currentY += 20;
 
       doc.fontSize(8)
          .font('Helvetica')
-         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', { align: 'center' });
 
       currentY += 20;
 
       doc.fontSize(7)
-         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', headerX, currentY, { width: pageWidth - headerX - margin });
+         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', { align: 'center' });
 
       currentY += 30;
 
@@ -207,6 +206,18 @@ const generatePDFReceipt = async (donation) => {
       // Row 8: Donated Seva
       doc.text('Donated Seva:', labelX, currentY)
          .text(donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount', valueX, currentY, { width: pageWidth - valueX - margin });
+
+      currentY += 20;
+
+      // Row 9: Required 80G
+      doc.text('Required 80G:', labelX, currentY)
+         .text(donation.wants80G ? 'Yes' : 'No', valueX, currentY);
+
+      currentY += 20;
+
+      // Row 10: Donor PAN Details
+      doc.text('Donor PAN Details:', labelX, currentY)
+         .text(donation.wants80G && donation.panNumber ? donation.panNumber : 'Not Applicable', valueX, currentY);
 
       currentY += 40;
 
