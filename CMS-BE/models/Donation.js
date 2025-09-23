@@ -4,17 +4,17 @@ const donationSchema = new mongoose.Schema({
   // Seva Details
   sevaName: {
     type: String,
-    required: true,
+    required: false, // Made optional for Razorpay sync
     trim: true
   },
   sevaType: {
     type: String,
-    required: true,
+    required: false, // Made optional for Razorpay sync
     trim: true
   },
   sevaAmount: {
     type: Number,
-    required: true,
+    required: false, // Made optional for Razorpay sync
     min: 1
   },
 
@@ -38,7 +38,7 @@ const donationSchema = new mongoose.Schema({
   donorType: {
     type: String,
     enum: ['Indian Citizen', 'Foreign Citizen'],
-    required: true
+    required: false // Made optional for Razorpay sync
   },
 
   // Payment Details
@@ -89,6 +89,57 @@ const donationSchema = new mongoose.Schema({
   campaign: {
     type: String,
     trim: true
+  },
+
+  // Address fields for Maha Prasadam delivery and 80G tax exemption (optional)
+  wantsMahaPrasadam: {
+    type: Boolean,
+    default: false
+  },
+  wants80G: {
+    type: Boolean,
+    default: false
+  },
+  address: {
+    type: String,
+    trim: true,
+    required: false // Optional for Razorpay sync compatibility
+  },
+  houseApartment: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  village: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  district: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  state: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  pinCode: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  landmark: {
+    type: String,
+    trim: true,
+    required: false
+  },
+  panNumber: {
+    type: String,
+    trim: true,
+    required: false,
+    uppercase: true
   },
 
   // UTM Tracking Parameters

@@ -58,6 +58,7 @@ const UTMTrackingDashboard = () => {
       setLoading(true);
       // Fetch all donations by setting a very high limit
       const response = await fetch(
+        //https://api.harekrishnavidya.org
         "https://api.harekrishnavidya.org/api/donations?limit=10000"
       );
       const data = await response.json();
@@ -120,6 +121,52 @@ const UTMTrackingDashboard = () => {
     }
   };
 
+  const forceSyncAllPayments = async () => {
+    try {
+      setSyncing(true);
+      console.log("Force syncing ALL payments from Razorpay...");
+      
+      // Use current date range or default to last 7 days
+      const syncStartDate = startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const syncEndDate = endDate || new Date().toISOString().split('T')[0];
+      
+      console.log(`Force syncing from ${syncStartDate} to ${syncEndDate}`);
+      
+      const response = await fetch(
+        `https://api.harekrishnavidya.org/api/donations/force-sync-razorpay?startDate=${syncStartDate}&endDate=${syncEndDate}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`Force sync completed: ${data.syncedCount} new, ${data.updatedCount} updated`);
+        console.log('Status breakdown:', data.statusBreakdown);
+        
+        const statusText = data.statusBreakdown ? 
+          `\nPayment Status Breakdown:\n• Captured: ${data.statusBreakdown.captured}\n• Failed: ${data.statusBreakdown.failed}\n• Authorized: ${data.statusBreakdown.authorized}\n• Other: ${data.statusBreakdown.other}` : '';
+        
+        alert(`Force sync completed!\n${data.syncedCount} new donations created\n${data.updatedCount} existing donations updated\n\nTotal found: ${data.totalFound}${statusText}`);
+        
+        // Refresh the donations list
+        await fetchDonations();
+      } else {
+        console.error("Force sync failed:", data.message);
+        alert(`Force sync failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error force syncing donations:", error);
+      alert("Error force syncing donations. Please try again.");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const filterDonations = () => {
     let filtered = [...donations];
 
@@ -157,7 +204,13 @@ const UTMTrackingDashboard = () => {
             .includes(searchTerm.toLowerCase()) ||
           donation.sevaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           donation.campaign?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          donation.donorPhone?.includes(searchTerm)
+          donation.donorPhone?.includes(searchTerm) ||
+          donation.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.village?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          donation.pinCode?.includes(searchTerm) ||
+          donation.panNumber?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -323,7 +376,12 @@ const UTMTrackingDashboard = () => {
         : filteredDonations.filter((d) => d.paymentStatus !== "completed");
 
     const csvContent = convertToCSV(dataToExport);
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    
+    // Add BOM (Byte Order Mark) for proper UTF-8 encoding in Excel
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+    
+    const blob = new Blob([csvWithBOM], { type: "text/csv;charset=utf-8" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -337,32 +395,87 @@ const UTMTrackingDashboard = () => {
   const convertToCSV = (data) => {
     const headers = [
       "S.No",
-      "Source",
-      "Medium",
-      "Campaign",
       "Seva Name",
       "Seva Amount",
+      "Seva Type",
+      "Donor Name",
+      "Donor Mobile",
+      "Donor Email",
+      "Nationality",
+      "Need Maha Prasadam",
+      "Need 80G",
+      "PAN Number",
+      "Address",
+      "House/Apartment",
+      "Village/City",
+      "District",
+      "State",
+      "PIN Code",
+      "Landmark",
+      "UTM Source",
+      "UTM Medium",
+      "UTM Campaign",
       "RazorPay Order ID",
-      "Phone Number",
       "Receipt Number",
+      "Payment Method",
       "Date",
       "Status",
     ];
 
-    const csvData = data.map((donation, index) => [
-      index + 1,
-      donation.utmSource || "Direct",
-      donation.utmMedium || "Direct",
-      donation.utmCampaign || "Direct",
-      donation.sevaName || "Unknown",
-      donation.donorName || "Unknown",
-      donation.amount || 0,
-      donation.razorpayOrderId || "N/A",
-      donation.donorPhone || "N/A",
-      donation.razorpayPaymentId || "N/A",
-      new Date(donation.createdAt).toLocaleDateString("en-GB"),
-      donation.paymentStatus || "pending",
-    ]);
+    const csvData = data.map((donation, index) => {
+      // Helper function to escape CSV values
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "N/A";
+        const str = String(value);
+        // If the value contains comma, newline, or quote, wrap it in quotes and escape internal quotes
+        if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      // Debug log for first few records to check data integrity
+      if (index < 3) {
+        console.log(`Donation ${index + 1} data:`, {
+          sevaName: donation.sevaName,
+          donorName: donation.donorName,
+          donorPhone: donation.donorPhone,
+          address: donation.address,
+          wantsMahaPrasadam: donation.wantsMahaPrasadam,
+          wants80G: donation.wants80G,
+          panNumber: donation.panNumber
+        });
+      }
+
+      return [
+        index + 1,
+        escapeCSV(donation.sevaName),
+        escapeCSV(donation.amount),
+        escapeCSV(donation.sevaType),
+        escapeCSV(donation.donorName),
+        escapeCSV(donation.donorPhone),
+        escapeCSV(donation.donorEmail),
+        escapeCSV(donation.donorType),
+        donation.wantsMahaPrasadam ? "Yes" : "No",
+        donation.wants80G ? "Yes" : "No",
+        escapeCSV(donation.panNumber),
+        escapeCSV(donation.address),
+        escapeCSV(donation.houseApartment),
+        escapeCSV(donation.village),
+        escapeCSV(donation.district),
+        escapeCSV(donation.state),
+        escapeCSV(donation.pinCode),
+        escapeCSV(donation.landmark),
+        escapeCSV(donation.utmSource),
+        escapeCSV(donation.utmMedium),
+        escapeCSV(donation.utmCampaign),
+        escapeCSV(donation.razorpayOrderId),
+        escapeCSV(donation.razorpayPaymentId),
+        escapeCSV(donation.paymentMethod),
+        escapeCSV(new Date(donation.createdAt).toLocaleDateString("en-GB")),
+        escapeCSV(donation.paymentStatus),
+      ];
+    });
 
     return [headers, ...csvData].map((row) => row.join(",")).join("\n");
   };
@@ -558,7 +671,7 @@ const UTMTrackingDashboard = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name, email, phone..."
+                  placeholder="Search by name, email, phone, address, PAN..."
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
                 />
               </div>
@@ -596,6 +709,18 @@ const UTMTrackingDashboard = () => {
                   <FaDownload className="mr-2" />
                 )}
                 {syncing ? 'Syncing...' : 'Sync Sep 21st'}
+              </button>
+              <button
+                onClick={forceSyncAllPayments}
+                disabled={syncing}
+                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncing ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <FaDownload className="mr-2" />
+                )}
+                {syncing ? 'Force Syncing...' : 'Force Sync All'}
               </button>
             </div>
           </div>
@@ -811,12 +936,47 @@ const UTMTrackingDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Donor Name
                     </th>
-
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      RazorPay Order ID
-                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Phone Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nationality
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Need Maha Prasadam
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Need 80G
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      PAN Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Address
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      House/Apartment
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Village/City
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      District
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      State
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      PIN Code
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Landmark
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      RazorPay Order ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Receipt Number
@@ -850,16 +1010,60 @@ const UTMTrackingDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                         {formatCurrency(donation.amount || 0)}
                       </td>
-
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {donation.donorName || "Unknown"}
                       </td>
-
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                        {donation.razorpayOrderId || "N/A"}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {donation.donorPhone || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.donorEmail || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.donorType || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          donation.wantsMahaPrasadam ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {donation.wantsMahaPrasadam ? "Yes" : "No"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          donation.wants80G ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {donation.wants80G ? "Yes" : "No"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        {donation.panNumber || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                        <div className="truncate" title={donation.address || "N/A"}>
+                          {donation.address || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.houseApartment || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.village || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.district || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.state || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.pinCode || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {donation.landmark || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        {donation.razorpayOrderId || "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {donation.razorpayPaymentId || "N/A"}

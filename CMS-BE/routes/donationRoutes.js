@@ -8,6 +8,7 @@ const {
   getDonationStats,
   updateDonationNotes,
   syncDonationsFromRazorpay,
+  forceSyncAllPayments,
   testRazorpayConnection,
   submitDonationForm,
   verifyPayment,
@@ -35,6 +36,7 @@ router.get('/test-email', testEmailService);
 router.get('/:id', getDonationById);
 router.patch('/:id/notes', updateDonationNotes);
 router.post('/sync-razorpay', syncDonationsFromRazorpay);
+router.post('/force-sync-razorpay', forceSyncAllPayments);
 router.post('/:id/send-receipt', sendReceiptEmail);
 
 module.exports = router;
