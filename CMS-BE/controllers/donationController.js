@@ -350,20 +350,38 @@ const syncDonationsFromRazorpay = async (req, res) => {
     const options = {
       from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
       to: endDate ? new Date(endDate).getTime() / 1000 : undefined,
-      count: 100
+      count: 1000  // Increased from 100 to 1000 to capture all payments
     };
 
     console.log('Fetching payments from Razorpay with options:', options);
     const payments = await razorpayInstance.payments.all(options);
     
     console.log(`Found ${payments.items.length} payments from Razorpay`);
+    console.log(`Date range: ${startDate} to ${endDate}`);
     
     let syncedCount = 0;
     let newDonations = [];
     let skippedCount = 0;
+    let statusCounts = {
+      captured: 0,
+      failed: 0,
+      authorized: 0,
+      other: 0
+    };
 
     for (const payment of payments.items) {
       try {
+        // Track payment status counts
+        if (payment.status === 'captured') {
+          statusCounts.captured++;
+        } else if (payment.status === 'failed') {
+          statusCounts.failed++;
+        } else if (payment.status === 'authorized') {
+          statusCounts.authorized++;
+        } else {
+          statusCounts.other++;
+        }
+
         // Check if donation already exists
         const existingDonation = await Donation.findOne({ 
           razorpayPaymentId: payment.id 
@@ -415,12 +433,18 @@ const syncDonationsFromRazorpay = async (req, res) => {
       }
     }
 
+    console.log('Payment status breakdown:', statusCounts);
+    console.log(`Total payments processed: ${payments.items.length}`);
+    console.log(`New donations synced: ${syncedCount}`);
+    console.log(`Already existed: ${skippedCount}`);
+
     res.json({
       success: true,
       message: `Synced ${syncedCount} new donations from Razorpay (${skippedCount} already existed)`,
       syncedCount,
       skippedCount,
       totalFound: payments.items.length,
+      statusBreakdown: statusCounts,
       newDonations: newDonations.slice(0, 5) // Return first 5 for preview
     });
   } catch (error) {
