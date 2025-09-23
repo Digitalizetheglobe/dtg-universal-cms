@@ -17,6 +17,7 @@ const UTMTrackingDashboard = () => {
   const [donations, setDonations] = useState([]);
   const [filteredDonations, setFilteredDonations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isDefaultView, setIsDefaultView] = useState(true);
@@ -26,6 +27,8 @@ const UTMTrackingDashboard = () => {
     utmSources: [],
     utmMediums: [],
     utmCampaigns: [],
+    totalAmount: 0,
+    totalDonations: 0,
   });
   const [activeFilters, setActiveFilters] = useState({
     utmSource: null,
@@ -53,12 +56,14 @@ const UTMTrackingDashboard = () => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
+      // Fetch all donations by setting a very high limit
       const response = await fetch(
-        "https://api.harekrishnavidya.org/api/donations?limit=1000"
+        "https://api.harekrishnavidya.org/api/donations?limit=10000"
       );
       const data = await response.json();
 
       if (data.success) {
+        console.log(`Fetched ${data.donations.length} donations from database`);
         setDonations(data.donations);
         setFilteredDonations(data.donations);
       }
@@ -66,6 +71,52 @@ const UTMTrackingDashboard = () => {
       console.error("Error fetching donations:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncDonationsFromRazorpay = async () => {
+    try {
+      setSyncing(true);
+      console.log("Syncing donations from Razorpay...");
+      
+      // Use current date range or default to last 7 days
+      const syncStartDate = startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const syncEndDate = endDate || new Date().toISOString().split('T')[0];
+      
+      console.log(`Syncing from ${syncStartDate} to ${syncEndDate}`);
+      
+      const response = await fetch(
+        `https://api.harekrishnavidya.org/api/donations/sync-razorpay?startDate=${syncStartDate}&endDate=${syncEndDate}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`Sync completed: ${data.syncedCount} new donations synced`);
+        console.log('Status breakdown:', data.statusBreakdown);
+        
+        const statusText = data.statusBreakdown ? 
+          `\nPayment Status Breakdown:\n• Captured: ${data.statusBreakdown.captured}\n• Failed: ${data.statusBreakdown.failed}\n• Authorized: ${data.statusBreakdown.authorized}\n• Other: ${data.statusBreakdown.other}` : '';
+        
+        alert(`Sync completed!\n${data.syncedCount} new donations synced from Razorpay\n${data.skippedCount} donations already existed\n\nTotal found: ${data.totalFound}${statusText}`);
+        
+        // Refresh the donations list
+        await fetchDonations();
+      } else {
+        console.error("Sync failed:", data.message);
+        alert(`Sync failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error syncing donations:", error);
+      alert("Error syncing donations. Please try again.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -151,14 +202,21 @@ const UTMTrackingDashboard = () => {
       utmCampaigns: {},
     };
 
+    let totalAmount = 0;
+    let totalDonations = 0;
+
     filteredDonations.forEach((donation) => {
+      const donationAmount = donation.amount || 0;
+      totalAmount += donationAmount;
+      totalDonations++;
+
       // Seva Names
       const sevaName = donation.sevaName || "Unknown";
       if (!stats.sevaNames[sevaName]) {
         stats.sevaNames[sevaName] = { count: 0, amount: 0 };
       }
       stats.sevaNames[sevaName].count++;
-      stats.sevaNames[sevaName].amount += donation.amount || 0;
+      stats.sevaNames[sevaName].amount += donationAmount;
 
       // UTM Source
       const utmSource = donation.utmSource || "Direct";
@@ -166,7 +224,7 @@ const UTMTrackingDashboard = () => {
         stats.utmSources[utmSource] = { count: 0, amount: 0 };
       }
       stats.utmSources[utmSource].count++;
-      stats.utmSources[utmSource].amount += donation.amount || 0;
+      stats.utmSources[utmSource].amount += donationAmount;
 
       // UTM Medium
       const utmMedium = donation.utmMedium || "Direct";
@@ -174,7 +232,7 @@ const UTMTrackingDashboard = () => {
         stats.utmMediums[utmMedium] = { count: 0, amount: 0 };
       }
       stats.utmMediums[utmMedium].count++;
-      stats.utmMediums[utmMedium].amount += donation.amount || 0;
+      stats.utmMediums[utmMedium].amount += donationAmount;
 
       // UTM Campaign
       const utmCampaign = donation.utmCampaign || "Direct";
@@ -182,7 +240,7 @@ const UTMTrackingDashboard = () => {
         stats.utmCampaigns[utmCampaign] = { count: 0, amount: 0 };
       }
       stats.utmCampaigns[utmCampaign].count++;
-      stats.utmCampaigns[utmCampaign].amount += donation.amount || 0;
+      stats.utmCampaigns[utmCampaign].amount += donationAmount;
     });
 
     setSummaryStats({
@@ -208,6 +266,8 @@ const UTMTrackingDashboard = () => {
           amount: data.amount,
         })
       ),
+      totalAmount,
+      totalDonations,
     });
   };
 
@@ -418,10 +478,29 @@ const UTMTrackingDashboard = () => {
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <FaChartBar className="mr-3 text-blue-600" />
-                HK Vidya UTM Tracking Dashboard
-              </h1>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <FaChartBar className="mr-3 text-blue-600" />
+                  HK Vidya UTM Tracking Dashboard
+                </h1>
+                {/* Total Amount Display */}
+                <div className="mt-2 flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <FaMoneyBillWave className="text-green-600" />
+                    <span className="text-sm text-gray-600">Total Amount:</span>
+                    <span className="text-lg font-bold text-green-600">
+                      {formatCurrency(summaryStats.totalAmount)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaUsers className="text-blue-600" />
+                    <span className="text-sm text-gray-600">Total Donations:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {summaryStats.totalDonations}
+                    </span>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center gap-4">
                 {getActiveFilterCount() > 0 && (
                   <div className="flex items-center gap-2">
@@ -490,6 +569,34 @@ const UTMTrackingDashboard = () => {
                 <FaUndo className="mr-2" />
                 Reset All
               </button>
+              <button
+                onClick={syncDonationsFromRazorpay}
+                disabled={syncing}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncing ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <FaDownload className="mr-2" />
+                )}
+                {syncing ? 'Syncing...' : 'Sync from Razorpay'}
+              </button>
+              <button
+                onClick={() => {
+                  setStartDate('2025-09-21');
+                  setEndDate('2025-09-21');
+                  syncDonationsFromRazorpay();
+                }}
+                disabled={syncing}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncing ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <FaDownload className="mr-2" />
+                )}
+                {syncing ? 'Syncing...' : 'Sync Sep 21st'}
+              </button>
             </div>
           </div>
 
@@ -546,6 +653,63 @@ const UTMTrackingDashboard = () => {
             </div>
           )}
 
+          {/* Missing Donations Warning */}
+          {donations.length < 400 && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">
+                    <strong>Warning:</strong> Only {donations.length} donations found in database. 
+                    If you're expecting more donations (e.g., 430+ for Sep 21st), 
+                    please use the "Sync from Razorpay" button to fetch missing transactions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Total Amount Summary Card */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 mb-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Total Collection Summary</h2>
+                <div className="flex items-center gap-8">
+                  <div className="flex items-center gap-2">
+                    <FaMoneyBillWave className="text-2xl" />
+                    <div>
+                      <p className="text-green-100 text-sm">Total Amount Collected</p>
+                      <p className="text-3xl font-bold">{formatCurrency(summaryStats.totalAmount)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaUsers className="text-2xl" />
+                    <div>
+                      <p className="text-green-100 text-sm">Total Donations</p>
+                      <p className="text-3xl font-bold">{summaryStats.totalDonations}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaChartBar className="text-2xl" />
+                    <div>
+                      <p className="text-green-100 text-sm">Average per Donation</p>
+                      <p className="text-3xl font-bold">
+                        {summaryStats.totalDonations > 0 
+                          ? formatCurrency(summaryStats.totalAmount / summaryStats.totalDonations)
+                          : formatCurrency(0)
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Summary Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <SummaryCard
@@ -596,19 +760,26 @@ const UTMTrackingDashboard = () => {
           <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
             <div className="bg-orange-500 text-white px-6 py-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
+                <div>
+                  <h2 className="text-xl font-semibold">Detailed Donation Records</h2>
+                  <div className="mt-1 flex items-center gap-4 text-sm">
+                    <span>Showing {filteredDonations.length} of {donations.length} donations</span>
+                    <span className="font-semibold">
+                      Total: {formatCurrency(summaryStats.totalAmount)}
+                    </span>
+                  </div>
+                </div>
                 <div className="text-sm">
-                  Showing {filteredDonations.length} of {donations.length} donations
                   {isDefaultView ? (
-                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded-full">
                       Today's Donations
                     </span>
                   ) : getActiveFilterCount() > 0 ? (
-                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded-full">
                       Filtered
                     </span>
                   ) : (
-                    <span className="ml-2 px-2 py-1 bg-white bg-opacity-20 rounded-full">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded-full">
                       Date Range
                     </span>
                   )}
