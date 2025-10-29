@@ -1299,9 +1299,24 @@ const createPayUOrder = async (req, res) => {
     // Get base URL for callback URLs
     const getBaseUrl = (req) => {
       if (process.env.BASE_URL) {
-        return process.env.BASE_URL;
+        // Ensure BASE_URL uses HTTPS in production
+        const baseUrl = process.env.BASE_URL;
+        // If BASE_URL doesn't specify protocol but we're in production, use HTTPS
+        if (process.env.NODE_ENV === 'production' && !baseUrl.startsWith('http')) {
+          return `https://${baseUrl}`;
+        }
+        // Ensure HTTPS in production
+        if (process.env.NODE_ENV === 'production' && baseUrl.startsWith('http://')) {
+          return baseUrl.replace('http://', 'https://');
+        }
+        return baseUrl;
       }
-      return `${req.protocol}://${req.get('host')}`;
+      // In production, force HTTPS
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+      // Also check for forwarded protocol (from proxy/load balancer)
+      const forwardedProto = req.get('x-forwarded-proto');
+      const finalProtocol = forwardedProto || protocol;
+      return `${finalProtocol}://${req.get('host')}`;
     };
     const baseUrl = getBaseUrl(req);
 
@@ -1461,27 +1476,29 @@ const payuSuccess = async (req, res) => {
 
     if (calculatedHash !== hash) {
       console.error('PayU hash verification failed');
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      if (process.env.NODE_ENV === 'production' && frontendUrl.startsWith('http://')) {
+        frontendUrl = frontendUrl.replace('http://', 'https://');
+      }
       const redirectUrl = `${frontendUrl}/donate?payment=error&reason=verification_failed`;
       return res.status(400).send(`
+        <!DOCTYPE html>
         <html>
           <head>
-            <meta http-equiv="refresh" content="5;url=${redirectUrl}">
-            <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-              .error { color: red; }
-            </style>
+            <title>Payment Verification Failed - Redirecting...</title>
+            <script>
+              window.location.replace('${redirectUrl}');
+            </script>
+            <noscript>
+              <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+            </noscript>
           </head>
           <body>
-            <h2 class="error">Payment Verification Failed</h2>
-            <p>Invalid payment signature. Please contact support.</p>
-            <p>Redirecting...</p>
-            <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
-            <script>
-              setTimeout(function() {
-                window.location.href = '${redirectUrl}';
-              }, 5000);
-            </script>
+            <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+              Redirecting...
+              <br><br>
+              <a href="${redirectUrl}">Click here if you are not redirected</a>
+            </p>
           </body>
         </html>
       `);
@@ -1550,67 +1567,68 @@ const payuSuccess = async (req, res) => {
     console.log('Donation saved/updated:', donation._id);
 
     // Get frontend URL for redirect - pass donationId so frontend can verify payment
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Ensure HTTPS in production
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    if (process.env.NODE_ENV === 'production') {
+      // Force HTTPS in production
+      if (!frontendUrl.startsWith('http')) {
+        frontendUrl = `https://${frontendUrl}`;
+      } else if (frontendUrl.startsWith('http://')) {
+        frontendUrl = frontendUrl.replace('http://', 'https://');
+      }
+    }
     const redirectUrl = `${frontendUrl}/donate?payment=success&paymentMethod=payu&donationId=${donation._id}&txnid=${txnid}`;
 
-    // Send success response with auto-redirect
+    // Send success response with immediate redirect (no page shown)
+    // Use window.location.replace() to avoid showing backend URL in history
     res.send(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Payment Successful</title>
-          <meta http-equiv="refresh" content="3;url=${redirectUrl}">
-          <style>
-            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-            .success { color: green; }
-            .details { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
-            .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          </style>
+          <title>Payment Successful - Redirecting...</title>
+          <script>
+            // Immediate redirect without showing this page
+            window.location.replace('${redirectUrl}');
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+          </noscript>
         </head>
         <body>
-          <h2 class="success">✓ Payment Successful!</h2>
-          <div class="details">
-            <p><strong>Transaction ID:</strong> ${txnid}</p>
-            <p><strong>Amount:</strong> ₹${amount}</p>
-            <p><strong>Name:</strong> ${firstname}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Status:</strong> ${status}</p>
-          </div>
-          <p>Thank you for your donation! Redirecting...</p>
-          <div class="loader"></div>
-          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
-          <script>
-            setTimeout(function() {
-              window.location.href = '${redirectUrl}';
-            }, 3000);
-          </script>
+          <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            Payment successful! Redirecting...
+            <br><br>
+            <a href="${redirectUrl}">Click here if you are not redirected</a>
+          </p>
         </body>
       </html>
     `);
 
   } catch (error) {
     console.error('Error processing PayU success:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    if (process.env.NODE_ENV === 'production' && frontendUrl.startsWith('http://')) {
+      frontendUrl = frontendUrl.replace('http://', 'https://');
+    }
     const redirectUrl = `${frontendUrl}/donate?payment=error&reason=processing_error`;
     res.status(500).send(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
-          <style>
-            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-            .error { color: red; }
-          </style>
+          <title>Payment Error - Redirecting...</title>
+          <script>
+            window.location.replace('${redirectUrl}');
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+          </noscript>
         </head>
         <body>
-          <h2 class="error">Payment Processing Error</h2>
-          <p>There was an error processing your payment. Please contact support.</p>
-          <p>Redirecting...</p>
-          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
-          <script>
-            setTimeout(function() {
-              window.location.href = '${redirectUrl}';
-            }, 5000);
-          </script>
+          <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            Redirecting...
+            <br><br>
+            <a href="${redirectUrl}">Click here if you are not redirected</a>
+          </p>
         </body>
       </html>
     `);
@@ -1733,63 +1751,59 @@ const payuFailure = async (req, res) => {
     });
 
     // Get frontend URL for redirect
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    if (process.env.NODE_ENV === 'production' && frontendUrl.startsWith('http://')) {
+      frontendUrl = frontendUrl.replace('http://', 'https://');
+    }
     const redirectUrl = `${frontendUrl}/donate?payment=failed&txnid=${txnid || 'N/A'}`;
 
     res.send(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Payment Failed</title>
-          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
-          <style>
-            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-            .error { color: red; }
-            .details { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
-          </style>
+          <title>Payment Failed - Redirecting...</title>
+          <script>
+            window.location.replace('${redirectUrl}');
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+          </noscript>
         </head>
         <body>
-          <h2 class="error">✗ Payment Failed</h2>
-          <div class="details">
-            <p><strong>Transaction ID:</strong> ${txnid || 'N/A'}</p>
-            <p><strong>Amount:</strong> ${amount ? `₹${amount}` : 'N/A'}</p>
-            <p><strong>Name:</strong> ${firstname || 'N/A'}</p>
-            <p><strong>Email:</strong> ${email || 'N/A'}</p>
-          </div>
-          <p>Your payment could not be processed. Please try again.</p>
-          <p>Redirecting to donation page...</p>
-          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
-          <script>
-            setTimeout(function() {
-              window.location.href = '${redirectUrl}';
-            }, 5000);
-          </script>
+          <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            Redirecting...
+            <br><br>
+            <a href="${redirectUrl}">Click here if you are not redirected</a>
+          </p>
         </body>
       </html>
     `);
 
   } catch (error) {
     console.error('Error processing PayU failure:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    if (process.env.NODE_ENV === 'production' && frontendUrl.startsWith('http://')) {
+      frontendUrl = frontendUrl.replace('http://', 'https://');
+    }
     const redirectUrl = `${frontendUrl}/donate?payment=error&reason=server_error`;
     res.status(500).send(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
-          <style>
-            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-            .error { color: red; }
-          </style>
+          <title>Payment Error - Redirecting...</title>
+          <script>
+            window.location.replace('${redirectUrl}');
+          </script>
+          <noscript>
+            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+          </noscript>
         </head>
         <body>
-          <h2 class="error">Error Processing Payment</h2>
-          <p>There was an error processing your payment failure. Please contact support.</p>
-          <p>Redirecting...</p>
-          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
-          <script>
-            setTimeout(function() {
-              window.location.href = '${redirectUrl}';
-            }, 5000);
-          </script>
+          <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            Redirecting...
+            <br><br>
+            <a href="${redirectUrl}">Click here if you are not redirected</a>
+          </p>
         </body>
       </html>
     `);
