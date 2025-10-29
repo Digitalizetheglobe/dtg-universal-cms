@@ -1569,6 +1569,20 @@ const payuSuccess = async (req, res) => {
     // Get frontend URL for redirect - pass donationId so frontend can verify payment
     // Ensure HTTPS in production
     let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    
+    // If FRONTEND_URL is not set, try to infer from request host
+    if (!process.env.FRONTEND_URL) {
+      console.warn('⚠️ WARNING: FRONTEND_URL environment variable not set!');
+      console.warn('⚠️ Using default or inferring from request...');
+      // Try to infer frontend URL from backend URL (remove 'api.' subdomain)
+      const host = req.get('host') || req.headers.host;
+      if (host && host.includes('api.')) {
+        frontendUrl = host.replace('api.', '');
+        frontendUrl = `https://${frontendUrl}`;
+        console.warn(`⚠️ Inferred frontend URL: ${frontendUrl}`);
+      }
+    }
+    
     if (process.env.NODE_ENV === 'production') {
       // Force HTTPS in production
       if (!frontendUrl.startsWith('http')) {
@@ -1577,32 +1591,47 @@ const payuSuccess = async (req, res) => {
         frontendUrl = frontendUrl.replace('http://', 'https://');
       }
     }
+    
+    // Build redirect URL with payment success parameters
     const redirectUrl = `${frontendUrl}/donate?payment=success&paymentMethod=payu&donationId=${donation._id}&txnid=${txnid}`;
+    
+    console.log('PayU Success: Redirecting to frontend:', redirectUrl);
+    console.log('PayU Success: Frontend URL from env:', process.env.FRONTEND_URL);
+    console.log('PayU Success: Request host:', req.get('host'));
 
-    // Send success response with immediate redirect (no page shown)
-    // Use window.location.replace() to avoid showing backend URL in history
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Payment Successful - Redirecting...</title>
-          <script>
-            // Immediate redirect without showing this page
-            window.location.replace('${redirectUrl}');
-          </script>
-          <noscript>
+    // Use HTTP 302 redirect for immediate redirect (better than HTML redirect)
+    // If PayU sent POST, we'll still send a redirect and the browser will handle it
+    // Some browsers may show the redirect URL briefly, but it's more reliable than HTML+JS
+    
+    // For POST requests, send HTML with immediate redirect (browsers don't auto-follow 302 on POST)
+    // For GET requests, use HTTP 302 redirect
+    if (req.method === 'POST') {
+      // POST request - send HTML with immediate JavaScript redirect
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Payment Successful - Redirecting...</title>
             <meta http-equiv="refresh" content="0;url=${redirectUrl}">
-          </noscript>
-        </head>
-        <body>
-          <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-            Payment successful! Redirecting...
-            <br><br>
-            <a href="${redirectUrl}">Click here if you are not redirected</a>
-          </p>
-        </body>
-      </html>
-    `);
+            <script>
+              // Immediate redirect - multiple methods for maximum compatibility
+              window.location.href = '${redirectUrl}';
+              window.location.replace('${redirectUrl}');
+            </script>
+          </head>
+          <body>
+            <p style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+              Payment successful! Redirecting to frontend...
+              <br><br>
+              <a href="${redirectUrl}">Click here if you are not redirected automatically</a>
+            </p>
+          </body>
+        </html>
+      `);
+    } else {
+      // GET request - use proper HTTP 302 redirect
+      res.redirect(302, redirectUrl);
+    }
 
   } catch (error) {
     console.error('Error processing PayU success:', error);
