@@ -68,11 +68,29 @@ app.use('/api/email-templates', require('./routes/emailTemplateRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/team', require('./routes/teamRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+
+// Add debugging middleware for donation routes
+app.use('/api/donations', (req, res, next) => {
+  if (req.url === '/payu-success' || req.url === '/payu-failure') {
+    console.log(`[Route Debug] ${req.method} ${req.url} - Route matched, forwarding to handler`);
+  }
+  next();
+});
+
 app.use('/api/donations', require('./routes/donationRoutes'));
 
 // Root
 app.get('/', (req, res) => {
   res.send('Universal CMS Backend Running');
+});
+
+// 404 handler - must be after all routes
+app.use((req, res, next) => {
+  console.log(`[404] ${req.method} ${req.url} - Route not found`);
+  res.status(404).json({ 
+    error: `Cannot ${req.method} ${req.url}`,
+    message: 'Route not found. Please check the URL and method.'
+  });
 });
 
 // Error handling middleware

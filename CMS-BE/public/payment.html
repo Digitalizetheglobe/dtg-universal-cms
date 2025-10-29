@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation Payment - Choose Gateway</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .amount-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .amount-display .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .gateway-selection {
+            margin-bottom: 20px;
+        }
+
+        .gateway-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .gateway-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gateway-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .gateway-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .gateway-option input[type="radio"] {
+            display: none;
+        }
+
+        .gateway-option label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .pay-button:hover {
+            background: #218838;
+        }
+
+        .pay-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🙏 Donation Payment</h1>
+            <p>Support our mission with your generous contribution</p>
+        </div>
+
+        <form id="donationForm">
+            <div class="amount-display">
+                <div class="amount">₹499</div>
+                <small>Donation Amount</small>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+
+            <div class="form-group">
+                <label for="sevaType">Seva Type</label>
+                <select id="sevaType" name="sevaType">
+                    <option value="General">General Donation</option>
+                    <option value="Temple">Temple Maintenance</option>
+                    <option value="Education">Education</option>
+                    <option value="Food">Food Distribution</option>
+                    <option value="Medical">Medical Aid</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="donorType">Donor Type</label>
+                <select id="donorType" name="donorType">
+                    <option value="Individual">Individual</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Trust">Trust</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description (Optional)</label>
+                <textarea id="description" name="description" rows="3" placeholder="Any specific purpose for your donation..."></textarea>
+            </div>
+
+            <div class="form-group gateway-selection">
+                <label>Choose Payment Gateway</label>
+                <div class="gateway-options">
+                    <div class="gateway-option" onclick="selectGateway('razorpay')">
+                        <input type="radio" id="razorpay" name="gateway" value="razorpay">
+                        <label for="razorpay">Razorpay</label>
+                    </div>
+                    <div class="gateway-option" onclick="selectGateway('payu')">
+                        <input type="radio" id="payu" name="gateway" value="payu">
+                        <label for="payu">PayU</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="pay-button" id="payButton" disabled>
+                Pay Now
+            </button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing payment...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+        </form>
+    </div>
+
+    <!-- Razorpay Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        // Gateway selection
+        function selectGateway(gateway) {
+            // Remove selected class from all options
+            document.querySelectorAll('.gateway-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById(gateway).checked = true;
+            
+            // Enable pay button
+            document.getElementById('payButton').disabled = false;
+        }
+
+        // Form submission
+        document.getElementById('donationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            const selectedGateway = data.gateway;
+            
+            if (!selectedGateway) {
+                showError('Please select a payment gateway');
+                return;
+            }
+
+            showLoading(true);
+            hideMessages();
+
+            try {
+                if (selectedGateway === 'razorpay') {
+                    await processRazorpayPayment(data);
+                } else if (selectedGateway === 'payu') {
+                    await processPayUPayment(data);
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('Payment failed. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // Razorpay payment processing
+        async function processRazorpayPayment(data) {
+            try {
+                // Create Razorpay order
+                const orderResponse = await fetch('/api/donations/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: 499,
+                        currency: 'INR',
+                        receipt: `don_${Date.now()}`,
+                        notes: {
+                            name: data.name,
+                            email: data.email,
+                            phone: data.phone,
+                            sevaType: data.sevaType,
+                            donorType: data.donorType,
+                            description: data.description
+                        }
+                    })
+                });
+
+                const orderData = await orderResponse.json();
+                
+                if (!orderData.success) {
+                    throw new Error(orderData.message || 'Failed to create order');
+                }
+
+                // Razorpay options
+                const options = {
+                    key: 'rzp_test_1DP5mmOlF5G5ag', // Replace with your Razorpay key
+                    amount: orderData.order.amount,
+                    currency: orderData.order.currency,
+                    name: 'ISKCON Donation',
+                    description: 'Donation Payment',
+                    order_id: orderData.order.id,
+                    handler: async function (response) {
+                        try {
+                            // Verify payment
+                            const verifyResponse = await fetch('/api/donations/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    donorData: {
+                                        name: data.name,
+                                        email: data.email,
+                                        phone: data.phone,
+                                        sevaType: data.sevaType,
+                                        donorType: data.donorType,
+                                        description: data.description
+                                    }
+                                })
+                            });
+
+                            const verifyData = await verifyResponse.json();
+                            
+                            if (verifyData.success) {
+                                showSuccess('Payment successful! Thank you for your donation.');
+                            } else {
+                                showError('Payment verification failed. Please contact support.');
+                            }
+                        } catch (error) {
+                            console.error('Verification error:', error);
+                            showError('Payment verification failed. Please contact support.');
+                        }
+                    },
+                    prefill: {
+                        name: data.name,
+                        email: data.email,
+                        contact: data.phone
+                    },
+                    theme: {
+                        color: '#667eea'
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
+            } catch (error) {
+                console.error('Razorpay error:', error);
+                throw error;
+            }
+        }
+
+        // PayU payment processing
+        async function processPayUPayment(data) {
+            try {
+                // Create PayU order
+                const orderResponse = await fetch('/api/donations/create-payu-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: 499,
+                        firstname: data.name,
+                        email: data.email,
+                        phone: data.phone,
+                        productinfo: data.description || 'Donation',
+                        sevaType: data.sevaType,
+                        donorType: data.donorType
+                    })
+                });
+
+                const orderData = await orderResponse.json();
+                
+                if (!orderData.success) {
+                    throw new Error(orderData.message || 'Failed to create PayU order');
+                }
+
+                // Create and submit PayU form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = orderData.payuUrl;
+                form.target = '_blank';
+
+                Object.keys(orderData.payuData).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = orderData.payuData[key];
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+
+            } catch (error) {
+                console.error('PayU error:', error);
+                throw error;
+            }
+        }
+
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('payButton').disabled = show;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function hideMessages() {
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
