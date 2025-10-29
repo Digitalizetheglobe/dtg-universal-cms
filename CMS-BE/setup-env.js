@@ -25,6 +25,17 @@ RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
 # Optional: Webhook Secret (if using Razorpay webhooks)
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_here
 
+# PayU Configuration
+PAYU_KEY=your_live_payu_merchant_key_here
+PAYU_SALT=your_live_payu_salt_key_here
+PAYU_MODE=live
+
+# Base URL (for callbacks - use production URL in production)
+BASE_URL=http://localhost:5000
+
+# Frontend URL (for redirects after payment)
+FRONTEND_URL=http://localhost:3000
+
 # File Upload Configuration
 UPLOAD_PATH=./uploads
 MAX_FILE_SIZE=5242880
@@ -47,6 +58,10 @@ if (fs.existsSync(envPath)) {
   console.log('   - JWT_SECRET: A secure random string for JWT tokens');
   console.log('   - RAZORPAY_KEY_ID: Your Razorpay test/live key ID');
   console.log('   - RAZORPAY_KEY_SECRET: Your Razorpay test/live key secret');
+  console.log('   - PAYU_KEY: Your PayU live merchant key');
+  console.log('   - PAYU_SALT: Your PayU live salt key');
+  console.log('   - BASE_URL: Your backend server URL (for production)');
+  console.log('   - FRONTEND_URL: Your frontend website URL (for production)');
 }
 
 console.log('\n🔧 To fix the MongoDB connection issue:');

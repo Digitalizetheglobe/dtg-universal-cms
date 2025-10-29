@@ -1210,6 +1210,592 @@ const sendReceiptEmail = async (req, res) => {
   }
 };
 
+// PayU Payment Gateway Functions
+
+// Create PayU order
+const createPayUOrder = async (req, res) => {
+  try {
+    const { 
+      amount, 
+      firstname, 
+      email, 
+      phone, 
+      productinfo, 
+      description,
+      sevaType,
+      donorType,
+      donationId  // Donation ID from submit-form
+    } = req.body;
+
+    // Validate required fields
+    if (!amount || !firstname || !email) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Amount, name, and email are required' 
+      });
+    }
+
+    // Validate and format amount for PayU
+    // PayU requires amount to be a valid number (can be float or integer)
+    let payuAmount;
+    try {
+      // Convert amount to number and validate
+      const numAmount = parseFloat(amount);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Invalid amount. Amount must be a positive number.' 
+        });
+      }
+      
+      // PayU accepts amount as number or string with 2 decimal places
+      // Format to 2 decimal places to avoid precision issues
+      payuAmount = numAmount.toFixed(2);
+    } catch (error) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid amount format.' 
+      });
+    }
+
+    // Validate minimum amount (PayU minimum is usually ₹1)
+    if (parseFloat(payuAmount) < 1) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Amount must be at least ₹1.' 
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid email format.' 
+      });
+    }
+
+    // Validate firstname (should not be empty and should be trimmed)
+    const trimmedFirstname = firstname.trim();
+    if (!trimmedFirstname || trimmedFirstname.length < 2) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Name must be at least 2 characters long.' 
+      });
+    }
+
+    // Check if PayU credentials are configured
+    if (!process.env.PAYU_KEY || !process.env.PAYU_SALT) {
+      return res.status(500).json({ 
+        success: false,
+        message: 'PayU credentials not configured. Please contact administrator.' 
+      });
+    }
+
+    // Determine PayU mode (test or live) - default to live if not specified
+    const payuMode = process.env.PAYU_MODE || 'live';
+    const isTestMode = payuMode === 'test';
+
+    // Get base URL for callback URLs
+    const getBaseUrl = (req) => {
+      if (process.env.BASE_URL) {
+        return process.env.BASE_URL;
+      }
+      return `${req.protocol}://${req.get('host')}`;
+    };
+    const baseUrl = getBaseUrl(req);
+
+    // Generate transaction ID (must be unique, max 30 chars for PayU)
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substr(2, 9);
+    const txnid = `TXN_${timestamp}_${randomStr}`.substring(0, 30);
+    
+    // Sanitize productinfo (remove special characters that might break hash)
+    const sanitizedProductinfo = (productinfo || 'Donation')
+      .replace(/[|]/g, '') // Remove pipe characters as they're used in hash
+      .substring(0, 100); // PayU limit is 100 chars
+    
+    // Prepare hash string for SHA-512
+    // Format: key|txnid|amount|productinfo|firstname|email|||||||||||salt
+    const hashString = `${process.env.PAYU_KEY}|${txnid}|${payuAmount}|${sanitizedProductinfo}|${trimmedFirstname}|${email}|||||||||||${process.env.PAYU_SALT}`;
+    
+    // Generate SHA-512 hash
+    const hash = crypto.createHash('sha512').update(hashString).digest('hex');
+
+    // Store donationId with txnid for retrieval in callback (if provided)
+    // This allows us to link the PayU payment back to the original donation
+    let storedDonationId = null;
+    if (donationId) {
+      // Store donationId temporarily (you could use Redis here, or just pass it in URL)
+      storedDonationId = donationId;
+    }
+
+    // PayU form data (all fields must be present and correctly formatted)
+    // Pass donationId in callback URLs as query param
+    const callbackParams = storedDonationId ? `?donationId=${storedDonationId}` : '';
+    const payuData = {
+      key: process.env.PAYU_KEY,
+      txnid: txnid,
+      amount: payuAmount, // Formatted amount with 2 decimal places
+      productinfo: sanitizedProductinfo,
+      firstname: trimmedFirstname,
+      email: email,
+      phone: phone ? String(phone).substring(0, 15) : '', // Max 15 digits
+      surl: `${baseUrl}/api/donations/payu-success${callbackParams}`,
+      furl: `${baseUrl}/api/donations/payu-failure${callbackParams}`,
+      hash: hash,
+      service_provider: 'payu_paisa'
+    };
+
+    // PayU gateway URL - use production URL for live mode, test URL for test mode
+    const payuUrl = isTestMode 
+      ? 'https://test.payu.in/_payment' 
+      : 'https://secure.payu.in/_payment';
+
+    // Log PayU order creation (without sensitive data)
+    console.log('PayU Order Created:', {
+      mode: payuMode,
+      txnid: txnid,
+      amount: payuAmount,
+      firstname: trimmedFirstname,
+      email: email,
+      phone: phone ? 'provided' : 'not provided',
+      productinfo: sanitizedProductinfo,
+      baseUrl: baseUrl
+    });
+
+    // Log hash string for debugging (DO NOT log actual hash or salt in production)
+    if (isTestMode) {
+      console.log('PayU Hash String (TEST MODE ONLY):', hashString);
+      console.log('PayU Generated Hash:', hash);
+    }
+
+    // Return PayU form data
+    res.json({
+      success: true,
+      message: 'PayU order created successfully',
+      payuData: payuData,
+      payuUrl: payuUrl
+    });
+
+  } catch (error) {
+    console.error('Error creating PayU order:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error creating PayU order', 
+      error: error.message 
+    });
+  }
+};
+
+// PayU success verification
+const payuSuccess = async (req, res) => {
+  try {
+    console.log('=== PayU Success Route Hit ===');
+    console.log('Request Method:', req.method);
+    console.log('Request URL:', req.url);
+    console.log('Request Body:', req.body);
+    console.log('Request Query:', req.query);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('==============================');
+    
+    // PayU sends POST data as form-encoded, check both body and query
+    // Sometimes PayU might send as query params in redirect, sometimes as POST body
+    const params = req.method === 'POST' ? (req.body || req.query) : req.query;
+    
+    // Get donationId from query params (passed in callback URL)
+    const donationId = req.query.donationId || req.body.donationId;
+    
+    // Log what we receive from PayU (for debugging)
+    console.log('PayU Success Callback - Extracted Params:', {
+      method: req.method,
+      paramsReceived: Object.keys(params || {}),
+      hasBody: !!req.body && Object.keys(req.body).length > 0,
+      hasQuery: !!req.query && Object.keys(req.query).length > 0
+    });
+    
+    const { 
+      mihpayid, 
+      status, 
+      txnid, 
+      amount, 
+      productinfo, 
+      firstname, 
+      email, 
+      phone, 
+      hash 
+    } = params;
+
+    // Validate required fields
+    if (!txnid || !status || !hash) {
+      console.error('PayU Success: Missing required fields', { txnid, status, hash: !!hash });
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const redirectUrl = `${frontendUrl}/donate?payment=error&reason=missing_data`;
+      return res.status(400).send(`
+        <html>
+          <head>
+            <meta http-equiv="refresh" content="5;url=${redirectUrl}">
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              .error { color: red; }
+            </style>
+          </head>
+          <body>
+            <h2 class="error">Payment Data Missing</h2>
+            <p>Required payment data was not received. Please contact support.</p>
+            <p>Redirecting...</p>
+            <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+            <script>
+              setTimeout(function() {
+                window.location.href = '${redirectUrl}';
+              }, 5000);
+            </script>
+          </body>
+        </html>
+      `);
+    }
+
+    // Verify hash
+    const hashString = `${process.env.PAYU_SALT}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${process.env.PAYU_KEY}`;
+    const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
+
+    if (calculatedHash !== hash) {
+      console.error('PayU hash verification failed');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const redirectUrl = `${frontendUrl}/donate?payment=error&reason=verification_failed`;
+      return res.status(400).send(`
+        <html>
+          <head>
+            <meta http-equiv="refresh" content="5;url=${redirectUrl}">
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              .error { color: red; }
+            </style>
+          </head>
+          <body>
+            <h2 class="error">Payment Verification Failed</h2>
+            <p>Invalid payment signature. Please contact support.</p>
+            <p>Redirecting...</p>
+            <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+            <script>
+              setTimeout(function() {
+                window.location.href = '${redirectUrl}';
+              }, 5000);
+            </script>
+          </body>
+        </html>
+      `);
+    }
+
+    // Log successful payment
+    console.log('PayU Payment Success:', {
+      mihpayid,
+      status,
+      txnid,
+      amount,
+      firstname,
+      email,
+      donationId
+    });
+
+    // Find or create donation record
+    let donation;
+    
+    // If donationId is provided, find and update existing donation
+    if (donationId) {
+      try {
+        donation = await Donation.findById(donationId);
+        if (!donation) {
+          console.warn(`Donation ${donationId} not found, creating new record`);
+          donation = null;
+        } else {
+          console.log(`Found existing donation ${donationId}, updating with payment details`);
+        }
+      } catch (error) {
+        console.error('Error finding donation:', error);
+        donation = null;
+      }
+    }
+
+    // Create new donation if not found
+    if (!donation) {
+      donation = new Donation({
+        razorpayPaymentId: mihpayid, // Using same field for PayU payment ID
+        razorpayOrderId: txnid, // Using same field for PayU transaction ID
+        donorName: firstname,
+        donorEmail: email,
+        donorPhone: phone,
+        amount: parseFloat(amount),
+        currency: 'INR',
+        paymentStatus: status === 'success' ? 'completed' : 'pending',
+        paymentMethod: 'payu',
+        description: productinfo,
+        sevaType: params.sevaType || req.query.sevaType || 'General',
+        donorType: params.donorType || req.query.donorType || 'Individual'
+      });
+    } else {
+      // Update existing donation
+      donation.razorpayPaymentId = mihpayid;
+      donation.razorpayOrderId = txnid;
+      donation.paymentStatus = status === 'success' ? 'completed' : 'pending';
+      donation.paymentMethod = 'payu';
+      donation.metadata = {
+        payuPaymentId: mihpayid,
+        payuTransactionId: txnid,
+        paymentMethod: 'payu'
+      };
+    }
+
+    await donation.save();
+    console.log('Donation saved/updated:', donation._id);
+
+    // Get frontend URL for redirect - pass donationId so frontend can verify payment
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/donate?payment=success&paymentMethod=payu&donationId=${donation._id}&txnid=${txnid}`;
+
+    // Send success response with auto-redirect
+    res.send(`
+      <html>
+        <head>
+          <title>Payment Successful</title>
+          <meta http-equiv="refresh" content="3;url=${redirectUrl}">
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .success { color: green; }
+            .details { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
+            .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        </head>
+        <body>
+          <h2 class="success">✓ Payment Successful!</h2>
+          <div class="details">
+            <p><strong>Transaction ID:</strong> ${txnid}</p>
+            <p><strong>Amount:</strong> ₹${amount}</p>
+            <p><strong>Name:</strong> ${firstname}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Status:</strong> ${status}</p>
+          </div>
+          <p>Thank you for your donation! Redirecting...</p>
+          <div class="loader"></div>
+          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+          <script>
+            setTimeout(function() {
+              window.location.href = '${redirectUrl}';
+            }, 3000);
+          </script>
+        </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error('Error processing PayU success:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/donate?payment=error&reason=processing_error`;
+    res.status(500).send(`
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: red; }
+          </style>
+        </head>
+        <body>
+          <h2 class="error">Payment Processing Error</h2>
+          <p>There was an error processing your payment. Please contact support.</p>
+          <p>Redirecting...</p>
+          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+          <script>
+            setTimeout(function() {
+              window.location.href = '${redirectUrl}';
+            }, 5000);
+          </script>
+        </body>
+      </html>
+    `);
+  }
+};
+
+// Verify PayU payment (similar to Razorpay verification)
+const verifyPayUPayment = async (req, res) => {
+  try {
+    const {
+      donationId,
+      txnid
+    } = req.body;
+
+    // Validate required fields
+    if (!donationId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Donation ID is required'
+      });
+    }
+
+    // Find the donation record
+    const donation = await Donation.findById(donationId);
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Donation not found'
+      });
+    }
+
+    // Verify donation has PayU payment
+    if (!donation.razorpayPaymentId || donation.paymentMethod !== 'payu') {
+      return res.status(400).json({
+        success: false,
+        message: 'This donation does not have a PayU payment'
+      });
+    }
+
+    // If txnid is provided, verify it matches
+    if (txnid && donation.razorpayOrderId !== txnid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Transaction ID mismatch'
+      });
+    }
+
+    // Send receipt email if payment is completed and donor email exists
+    let emailResult = null;
+    if (donation.paymentStatus === 'completed' && donation.donorEmail) {
+      try {
+        console.log(`Sending receipt email to ${donation.donorEmail} for PayU donation ${donation._id}`);
+        emailResult = await sendDonationReceipt(donation);
+        
+        if (emailResult.success) {
+          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
+        } else {
+          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('Error sending receipt email:', emailError);
+        emailResult = {
+          success: false,
+          message: 'Error sending email: ' + emailError.message
+        };
+      }
+    }
+
+    const response = {
+      success: true,
+      message: 'PayU payment verified successfully',
+      donation: {
+        id: donation._id,
+        sevaName: donation.sevaName,
+        sevaType: donation.sevaType,
+        amount: donation.amount,
+        donorName: donation.donorName,
+        donorEmail: donation.donorEmail,
+        paymentStatus: donation.paymentStatus,
+        paymentId: donation.razorpayPaymentId,
+        transactionId: donation.razorpayOrderId
+      },
+      emailSent: emailResult ? emailResult.success : false,
+      emailMessage: emailResult ? emailResult.message : 'No email sent (payment not completed or no email provided)'
+    };
+
+    console.log('PayU payment verification response:', JSON.stringify(response, null, 2));
+    res.json(response);
+  } catch (error) {
+    console.error('Error verifying PayU payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying PayU payment',
+      error: error.message
+    });
+  }
+};
+
+// PayU failure handler
+const payuFailure = async (req, res) => {
+  try {
+    console.log('=== PayU Failure Route Hit ===');
+    console.log('Request Method:', req.method);
+    console.log('Request URL:', req.url);
+    console.log('Request Body:', req.body);
+    console.log('Request Query:', req.query);
+    console.log('==============================');
+    
+    // PayU sends POST data, but also check query params for GET requests (testing/debugging)
+    // Sometimes PayU might send as query params in redirect, sometimes as POST body
+    const params = req.method === 'POST' ? (req.body || req.query) : req.query;
+    
+    const { txnid, amount, firstname, email } = params;
+
+    console.log('PayU Payment Failed:', {
+      txnid,
+      amount,
+      firstname,
+      email
+    });
+
+    // Get frontend URL for redirect
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/donate?payment=failed&txnid=${txnid || 'N/A'}`;
+
+    res.send(`
+      <html>
+        <head>
+          <title>Payment Failed</title>
+          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: red; }
+            .details { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
+          </style>
+        </head>
+        <body>
+          <h2 class="error">✗ Payment Failed</h2>
+          <div class="details">
+            <p><strong>Transaction ID:</strong> ${txnid || 'N/A'}</p>
+            <p><strong>Amount:</strong> ${amount ? `₹${amount}` : 'N/A'}</p>
+            <p><strong>Name:</strong> ${firstname || 'N/A'}</p>
+            <p><strong>Email:</strong> ${email || 'N/A'}</p>
+          </div>
+          <p>Your payment could not be processed. Please try again.</p>
+          <p>Redirecting to donation page...</p>
+          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+          <script>
+            setTimeout(function() {
+              window.location.href = '${redirectUrl}';
+            }, 5000);
+          </script>
+        </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error('Error processing PayU failure:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/donate?payment=error&reason=server_error`;
+    res.status(500).send(`
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="5;url=${redirectUrl}">
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+            .error { color: red; }
+          </style>
+        </head>
+        <body>
+          <h2 class="error">Error Processing Payment</h2>
+          <p>There was an error processing your payment failure. Please contact support.</p>
+          <p>Redirecting...</p>
+          <p><a href="${redirectUrl}">Click here if you are not redirected automatically</a></p>
+          <script>
+            setTimeout(function() {
+              window.location.href = '${redirectUrl}';
+            }, 5000);
+          </script>
+        </body>
+      </html>
+    `);
+  }
+};
+
 module.exports = {
   createDonationOrder,
   verifyDonationPayment,
@@ -1225,5 +1811,9 @@ module.exports = {
   getDonationByOrderId,
   getSevaStats,
   testEmailService,
-  sendReceiptEmail
+  sendReceiptEmail,
+  createPayUOrder,
+  payuSuccess,
+  payuFailure,
+  verifyPayUPayment
 };
