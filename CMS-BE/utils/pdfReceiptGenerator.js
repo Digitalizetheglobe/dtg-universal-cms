@@ -68,52 +68,78 @@ const generatePDFReceipt = async (donation) => {
       const pageWidth = doc.page.width;
    //   const pageHeight = doc.page.height;
       const margin = 40;
+      const logoWidth = 60;
+      const logoHeight = 60;
+      const logoX = margin;
+      const logoY = 25;
       
-      // Logo is hidden - header text is centered
-      let currentY = 25; // Start position for header text
-      const headerTextWidthActual = pageWidth - 2 * margin;
+      // Calculate text area - start text after logo with proper spacing to avoid overlap
+      const headerTextStartX = margin + logoWidth + 20; // 20px gap after logo
+      const headerTextWidth = pageWidth - headerTextStartX - margin;
+
+      // Add logo at the top left
+      let logoExists = false;
+      try {
+        const logoPath = path.join(__dirname, '../public/logo.png');
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, logoX, logoY, { width: logoWidth, height: logoHeight });
+          logoExists = true;
+        }
+      } catch (error) {
+        console.log('Logo not found, continuing without logo');
+      }
+
+      // Header Section - text positioned to the right of logo to avoid overlap
+      let currentY = logoY; // Start at same Y as logo
+      const headerStartX = logoExists ? headerTextStartX : margin;
+      const headerTextWidthActual = logoExists ? headerTextWidth : pageWidth - 2 * margin;
 
       doc.fontSize(20)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text('HARE KRISHNA MOVEMENT INDIA', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('HARE KRISHNA MOVEMENT INDIA', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 18;
 
       doc.fontSize(12)
          .fillColor(darkGray)
          .font('Helvetica')
-         .text('Hare Krishna Vidya', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('Hare Krishna Vidya', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 14;
 
       doc.fontSize(9)
-         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 16;
 
       doc.fontSize(8)
-         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 14;
 
       doc.fontSize(11)
          .font('Helvetica-Bold')
-         .text('HKM PAN No.: AABTH4550P', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('HKM PAN No.: AABTH4550P', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 14;
 
       doc.fontSize(8)
          .font('Helvetica')
-         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', headerStartX, currentY, { width: headerTextWidthActual });
 
       currentY += 14;
 
       doc.fontSize(7)
-         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', margin, currentY, { align: 'center', width: headerTextWidthActual });
+         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', headerStartX, currentY, { width: headerTextWidthActual });
 
-      // Minimal spacing before receipt title
-      currentY += 8;
+      // Ensure we're below the logo if it exists, and add spacing before receipt title
+      if (logoExists) {
+        const minY = logoY + logoHeight + 15; // Ensure below logo with spacing
+        currentY = Math.max(currentY + 12, minY);
+      } else {
+        currentY += 15; // Spacing between header and receipt title
+      }
 
       // Receipt Title Box
       doc.rect(margin, currentY, pageWidth - 2 * margin, 20)
