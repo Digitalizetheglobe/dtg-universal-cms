@@ -66,62 +66,54 @@ const generatePDFReceipt = async (donation) => {
 
       // Page dimensions
       const pageWidth = doc.page.width;
-      const pageHeight = doc.page.height;
+   //   const pageHeight = doc.page.height;
       const margin = 40;
-
-      // Add logo at the top
-      try {
-        const logoPath = path.join(__dirname, '../public/logo.png');
-        if (fs.existsSync(logoPath)) {
-          doc.image(logoPath, margin, 20, { width: 100, height: 100 });
-        }
-      } catch (error) {
-        console.log('Logo not found, continuing without logo');
-      }
-
-      // Header Section - centered
-      let currentY = 130; // Start below logo
+      
+      // Logo is hidden - header text is centered
+      let currentY = 25; // Start position for header text
+      const headerTextWidthActual = pageWidth - 2 * margin;
 
       doc.fontSize(20)
          .fillColor(primaryColor)
          .font('Helvetica-Bold')
-         .text('HARE KRISHNA MOVEMENT INDIA', { align: 'center' });
+         .text('HARE KRISHNA MOVEMENT INDIA', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 25;
+      currentY += 18;
 
       doc.fontSize(12)
          .fillColor(darkGray)
          .font('Helvetica')
-         .text('Hare Krishna Vidya', { align: 'center' });
+         .text('Hare Krishna Vidya', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 20;
+      currentY += 14;
 
       doc.fontSize(9)
-         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', { align: 'center' });
+         .text('(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 25;
+      currentY += 16;
 
       doc.fontSize(8)
-         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', { align: 'center' });
+         .text('A non-profit charitable trust bearing Identification Book IV 188/2015', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 20;
+      currentY += 14;
 
       doc.fontSize(11)
          .font('Helvetica-Bold')
-         .text('HKM PAN No.: AABTH4550P', { align: 'center' });
+         .text('HKM PAN No.: AABTH4550P', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 20;
+      currentY += 14;
 
       doc.fontSize(8)
          .font('Helvetica')
-         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', { align: 'center' });
+         .text('Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 20;
+      currentY += 14;
 
       doc.fontSize(7)
-         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', { align: 'center' });
+         .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', margin, currentY, { align: 'center', width: headerTextWidthActual });
 
-      currentY += 30;
+      // Minimal spacing before receipt title
+      currentY += 8;
 
       // Receipt Title Box
       doc.rect(margin, currentY, pageWidth - 2 * margin, 20)
@@ -248,12 +240,23 @@ const generatePDFReceipt = async (donation) => {
 // Generate PDF receipt and return as buffer
 const generateDonationReceiptPDF = async (donation) => {
   try {
-    console.log('Generating PDF receipt for donation:', donation._id);
+    console.log('Generating PDF receipt for donation:', donation._id || donation.id);
+    console.log('Donation details:', {
+      donorName: donation.donorName,
+      donorEmail: donation.donorEmail,
+      amount: donation.amount,
+      paymentStatus: donation.paymentStatus
+    });
+    
     const pdfBuffer = await generatePDFReceipt(donation);
-    console.log('PDF receipt generated successfully');
+    console.log('PDF receipt generated successfully, buffer size:', pdfBuffer.length, 'bytes');
     return pdfBuffer;
   } catch (error) {
-    console.error('Error generating PDF receipt:', error);
+    console.error('Error generating PDF receipt:', {
+      message: error.message,
+      stack: error.stack,
+      donationId: donation._id || donation.id
+    });
     throw error;
   }
 };

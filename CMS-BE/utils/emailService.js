@@ -70,39 +70,33 @@ const emailTemplates = {
               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
             .header {
-              text-align: center;
               border-bottom: 3px solid #0066cc;
-              padding-bottom: 20px;
-              margin-bottom: 30px;
-            }
-            .header-logo {
-              width: 120px;
-              height: 120px;
-              margin: 0 auto 20px auto;
-              display: block;
-              border-radius: 8px;
-              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              padding-bottom: 10px;
+              margin-bottom: 8px;
+              text-align: center;
             }
             .logo {
-              font-size: 24px;
+              font-size: 20px;
               font-weight: bold;
               color: #0066cc;
-              margin-bottom: 5px;
+              margin-bottom: 2px;
             }
             .subtitle {
-              font-size: 14px;
+              font-size: 13px;
               color: #666;
-              margin-bottom: 10px;
+              margin-bottom: 4px;
+              line-height: 1.3;
             }
             .receipt-title {
               background-color: #0066cc;
               color: white;
-              padding: 15px;
+              padding: 12px;
               text-align: center;
               font-size: 18px;
               font-weight: bold;
               border-radius: 5px;
-              margin-bottom: 25px;
+              margin-bottom: 20px;
+              margin-top: 8px;
             }
             .receipt-details {
               background-color: #f8f9fa;
@@ -154,12 +148,11 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
-              <div class="logo"> HARE KRISHNA MOVEMENT INDIA </div>
+              <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
               <div class="subtitle">Hare Krishna Vidya</div>
               <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
               <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
-              <div class="subtitle">HKM PAN No.: AABTH4550P</div>
+              <div class="subtitle"><strong>HKM PAN No.: AABTH4550P</strong></div>
               <div class="subtitle">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
               <div class="subtitle">www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870</div>
             </div>
@@ -289,13 +282,16 @@ const formatReceiptDate = (dateString) => {
 // Send donation receipt email
 const sendDonationReceipt = async (donation) => {
   try {
+    console.log('Starting email sending process for donation:', donation._id || donation.id);
+    console.log('Donation email:', donation.donorEmail);
+    
     const transporter = createTransporter();
     
     // Verify transporter configuration
     await transporter.verify();
     console.log('Email service is ready to send emails');
     
-    // Generate PDF receipt
+    // Generate PDF receipt - with better error handling
     console.log('Generating PDF receipt...');
     let pdfBuffer = null;
     let filename = null;
@@ -304,12 +300,26 @@ const sendDonationReceipt = async (donation) => {
       pdfBuffer = await generateDonationReceiptPDF(donation);
       const receiptNumber = generateReceiptNumber(donation);
       filename = `Donation_Receipt_${receiptNumber.replace(/\//g, '_')}.pdf`;
-      console.log('PDF receipt generated successfully');
+      console.log('PDF receipt generated successfully:', filename);
     } catch (pdfError) {
-      console.error('PDF generation failed, sending email without attachment:', pdfError.message);
+      console.error('PDF generation failed, sending email without attachment');
+      console.error('PDF Error details:', {
+        message: pdfError.message,
+        stack: pdfError.stack,
+        donationId: donation._id || donation.id
+      });
+      // Continue without PDF - email will still be sent
     }
     
-    const template = emailTemplates.donationReceipt(donation);
+    // Generate email template
+    let template;
+    try {
+      template = emailTemplates.donationReceipt(donation);
+      console.log('Email template generated successfully');
+    } catch (templateError) {
+      console.error('Email template generation failed:', templateError.message);
+      throw new Error('Failed to generate email template: ' + templateError.message);
+    }
     
     const mailOptions = {
       from: '"HARE KRISHNA MOVEMENT INDIA" <noreply_donations@harekrishnavidya.org>',
@@ -348,7 +358,21 @@ const sendDonationReceipt = async (donation) => {
       console.log('No PDF attachment - PDF generation may have failed');
     }
     
-    const result = await transporter.sendMail(mailOptions);
+    // Send email
+    console.log('Attempting to send email to:', donation.donorEmail);
+    let result;
+    try {
+      result = await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully, messageId:', result.messageId);
+    } catch (sendError) {
+      console.error('Failed to send email:', {
+        message: sendError.message,
+        code: sendError.code,
+        response: sendError.response,
+        responseCode: sendError.responseCode
+      });
+      throw sendError;
+    }
     
     if (pdfBuffer && filename) {
       console.log('Donation receipt email with PDF sent successfully:', result.messageId);
@@ -369,11 +393,16 @@ const sendDonationReceipt = async (donation) => {
     }
     
   } catch (error) {
-    console.error('Error sending donation receipt email:', error);
+    console.error('Error sending donation receipt email:', {
+      message: error.message,
+      stack: error.stack,
+      donationId: donation._id || donation.id,
+      donorEmail: donation.donorEmail
+    });
     return {
       success: false,
       error: error.message,
-      message: 'Failed to send receipt email'
+      message: 'Failed to send receipt email: ' + error.message
     };
   }
 };
