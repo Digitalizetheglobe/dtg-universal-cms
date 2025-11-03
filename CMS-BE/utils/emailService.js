@@ -72,8 +72,23 @@ const emailTemplates = {
             .header {
               border-bottom: 3px solid #0066cc;
               padding-bottom: 10px;
-              margin-bottom: 8px;
-              text-align: center;
+              margin-bottom: 15px;
+            }
+            .header-content {
+              display: flex;
+              align-items: flex-start;
+              gap: 20px;
+            }
+            .header-logo {
+              width: 70px;
+              height: 70px;
+              flex-shrink: 0;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .header-text {
+              flex: 1;
+              min-width: 0;
             }
             .logo {
               font-size: 20px;
@@ -96,7 +111,7 @@ const emailTemplates = {
               font-weight: bold;
               border-radius: 5px;
               margin-bottom: 20px;
-              margin-top: 8px;
+              margin-top: 15px;
             }
             .receipt-details {
               background-color: #f8f9fa;
@@ -148,13 +163,18 @@ const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
-              <div class="subtitle">Hare Krishna Vidya</div>
-              <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
-              <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
-              <div class="subtitle"><strong>HKM PAN No.: AABTH4550P</strong></div>
-              <div class="subtitle">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
-              <div class="subtitle">www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870</div>
+              <div class="header-content">
+                ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
+                <div class="header-text">
+                  <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
+                  <div class="subtitle">Hare Krishna Vidya</div>
+                  <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
+                  <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
+                  <div class="subtitle"><strong>HKM PAN No.: AABTH4550P</strong></div>
+                  <div class="subtitle">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
+                  <div class="subtitle">www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870</div>
+                </div>
+              </div>
             </div>
             
             <div class="receipt-title">DONATION RECEIPT</div>
