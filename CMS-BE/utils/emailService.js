@@ -44,6 +44,21 @@ const emailTemplates = {
     const formattedDate = formatReceiptDate(donation.createdAt);
     const logoBase64 = getLogoBase64();
     
+    // Format full address from donation fields
+    const formatAddress = (donation) => {
+      const addressParts = [];
+      if (donation.houseApartment) addressParts.push(donation.houseApartment);
+      if (donation.address) addressParts.push(donation.address);
+      if (donation.village) addressParts.push(donation.village);
+      if (donation.district) addressParts.push(donation.district);
+      if (donation.state) addressParts.push(donation.state);
+      if (donation.pinCode) addressParts.push(donation.pinCode);
+      return addressParts.join(', ') || 'N/A';
+    };
+    
+    const fullAddress = formatAddress(donation);
+    const donorName = donation.isAnonymous ? 'Anonymous Donor' : donation.donorName;
+    
     return {
       subject: `Donation Receipt ${receiptNumber} - Hare Krishna Movement`,
       html: `
@@ -55,235 +70,244 @@ const emailTemplates = {
           <title>Donation Receipt</title>
           <style>
             body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-family: Arial, sans-serif;
               line-height: 1.6;
               color: #333;
-              max-width: 600px;
+              max-width: 700px;
               margin: 0 auto;
               padding: 20px;
-              background-color: #f9f9f9;
+              background-color: #ffffff;
             }
             .container {
               background-color: white;
-              border-radius: 10px;
-              padding: 30px;
-              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              padding: 20px;
             }
-            .header {
-              border-bottom: 3px solid #0066cc;
-              padding-bottom: 10px;
-              margin-bottom: 15px;
-            }
-            .header-content {
+            .header-section {
               display: flex;
               align-items: flex-start;
-              gap: 20px;
+              gap: 25px;
+              margin-bottom: 30px;
             }
             .header-logo {
-              width: 70px;
-              height: 70px;
+              width: 120px;
+              height: 120px;
               flex-shrink: 0;
-              border-radius: 8px;
-              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             .header-text {
               flex: 1;
-              min-width: 0;
+              padding-top: 10px;
             }
-            .logo {
-              font-size: 20px;
-              font-weight: bold;
-              color: #0066cc;
-              margin-bottom: 2px;
-            }
-            .subtitle {
-              font-size: 13px;
-              color: #666;
-              margin-bottom: 4px;
-              line-height: 1.3;
-            }
-            .receipt-title {
-              background-color: #0066cc;
-              color: white;
-              padding: 12px;
+            .greeting {
               text-align: center;
               font-size: 18px;
               font-weight: bold;
-              border-radius: 5px;
-              margin-bottom: 20px;
-              margin-top: 15px;
+              margin: 20px 0;
+              color: #333;
             }
-            .receipt-details {
-              background-color: #f8f9fa;
-              padding: 20px;
-              border-radius: 5px;
-              border-left: 4px solid #0066cc;
+            .message-section {
+              margin: 20px 0;
             }
-            .detail-row {
-              display: flex;
-              justify-content: space-between;
+            .message-text {
+              font-size: 14px;
+              line-height: 1.8;
               margin-bottom: 10px;
-              padding: 5px 0;
+            }
+            .transaction-success {
+              background-color: #E3F2FD;
+              padding: 12px;
+              border-radius: 4px;
+              margin: 15px 0;
+              font-size: 14px;
+              color: #1976D2;
+            }
+            .details-box {
+              background-color: #E3F2FD;
+              padding: 15px;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .details-title {
+              font-weight: bold;
+              font-size: 16px;
+              margin-bottom: 12px;
+              color: #1976D2;
+            }
+            .detail-item {
+              margin-bottom: 8px;
+              font-size: 14px;
             }
             .detail-label {
               font-weight: bold;
-              color: #555;
+              display: inline-block;
+              min-width: 120px;
             }
             .detail-value {
               color: #333;
             }
-            .amount {
-              font-size: 18px;
-              font-weight: bold;
-              color: #28a745;
+            .seva-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 10px;
             }
-            .footer {
+            .seva-table th {
+              background-color: #BBDEFB;
+              padding: 8px;
+              text-align: left;
+              font-weight: bold;
+              border: 1px solid #90CAF9;
+            }
+            .seva-table td {
+              padding: 8px;
+              border: 1px solid #90CAF9;
+              background-color: white;
+            }
+            .footer-section {
               margin-top: 30px;
-              text-align: center;
-              padding-top: 20px;
-              border-top: 1px solid #ddd;
-              color: #666;
               font-size: 14px;
             }
-            .mantra {
-              background-color: #f0f8ff;
-              padding: 15px;
-              border-radius: 5px;
-              margin: 20px 0;
-              text-align: center;
-              font-style: italic;
-              color: #0066cc;
+            .footer-title {
+              font-weight: bold;
+              margin-bottom: 10px;
             }
-            .contact-info {
-              margin-top: 15px;
-              font-size: 12px;
+            .contact-links {
+              margin-top: 10px;
+            }
+            .contact-links a {
+              color: #1976D2;
+              text-decoration: none;
+            }
+            .contact-links a:hover {
+              text-decoration: underline;
             }
           </style>
         </head>
         <body>
           <div class="container">
-            <div class="header">
-              <div class="header-content">
-                ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
-                <div class="header-text">
-                  <div class="logo">HARE KRISHNA MOVEMENT INDIA</div>
-                  <div class="subtitle">Hare Krishna Vidya</div>
-                  <div class="subtitle">(Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)</div>
-                  <div class="subtitle">A non-profit charitable trust bearing Identification Book IV 188/2015</div>
-                  <div class="subtitle"><strong>HKM PAN No.: AABTH4550P</strong></div>
-                  <div class="subtitle">Address: Hare Krishna Golden Temple, Road No. 12, Banjara Hills, Hyderabad-500034</div>
-                  <div class="subtitle">www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870</div>
+            <!-- Logo and Header -->
+            <div class="header-section">
+              ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
+              <div class="header-text">
+                <div style="font-size: 16px; font-weight: bold; color: #0066CC; margin-bottom: 5px;">
+                  SRILA PRABHUPADA'S<br>
+                  <span style="font-size: 24px;">HARE KRISHNA</span><br>
+                  MOVEMENT INDIA
                 </div>
               </div>
             </div>
             
-            <div class="receipt-title">DONATION RECEIPT</div>
-            
-            <div class="receipt-details">
-              <div class="detail-row">
-                <span class="detail-label">Receipt No:</span>
-                <span class="detail-value">${receiptNumber}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Date:</span>
-                <span class="detail-value">${formattedDate}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Donor Name:</span>
-                <span class="detail-value">${donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}</span>
-              </div>
-              ${donation.donorEmail ? `
-              <div class="detail-row">
-                <span class="detail-label">Email:</span>
-                <span class="detail-value">${donation.donorEmail}</span>
-              </div>
-              ` : ''}
-              ${donation.donorPhone ? `
-              <div class="detail-row">
-                <span class="detail-label">Mobile No:</span>
-                <span class="detail-value">${donation.donorPhone}</span>
-              </div>
-              ` : ''}
-              <div class="detail-row">
-                <span class="detail-label">Amount:</span>
-                <span class="detail-value amount">₹ ${donation.amount.toLocaleString('en-IN')} /-</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Payment Method:</span>
-                <span class="detail-value">${donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Transaction ID:</span>
-                <span class="detail-value">${donation.razorpayPaymentId || 'N/A'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Donated Seva:</span>
-                <span class="detail-value">${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Required 80G:</span>
-                <span class="detail-value">${donation.wants80G ? 'Yes' : 'No'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Donor PAN Details:</span>
-                <span class="detail-value">${donation.wants80G && donation.panNumber ? donation.panNumber : 'Not Applicable'}</span>
-              </div>
+            <!-- Greeting - Center Aligned -->
+            <div class="greeting">
+              Hare Krishna!
             </div>
             
-            <div class="mantra">
-              Hare Krishna Hare Krishna Krishna Krishna Hare Hare<br>
-              Hare Rama Hare Rama Rama Rama Hare Hare
-            </div>
-         
-            <div class="footer">
-              <div class="contact-info">
-                <strong>Hare Krishna Golden Temple</strong><br>
-                Road No. 12, Banjara Hills, Hyderabad-500034<br>
-                Website: www.harekrishnavidya.org<br>
-                Email: aikyavidya@hkmhyderabad.org<br>
-                Phone: +91-7207619870
-              </div>
-              <p style="margin-top: 15px; font-size: 12px;">
-                This is an auto-generated receipt and does not require any signature.
+            <!-- Message Section -->
+            <div class="message-section">
+              <p class="message-text">
+                Dear <strong>${donorName.toUpperCase()}</strong>, Please accept the blessings of Sri Sri Lakshmi Narasimha Swamy.
               </p>
+              
+              <p class="message-text">
+                Thanks for Donating <strong>HARE KRISHNA VIDYA - HARE KRISHNA MOVEMENT INDIA</strong>
+              </p>
+              
+              <div class="transaction-success">
+                Your transaction has been completed successfully.
+              </div>
+            </div>
+            
+            <!-- Donor Details Box -->
+            <div class="details-box">
+              <div class="details-title">Donor Details</div>
+              <div class="detail-item">
+                <span class="detail-label">Name:</span>
+                <span class="detail-value">${donorName.toUpperCase()}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Mobile Number:</span>
+                <span class="detail-value">${donation.donorPhone || 'N/A'}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Email ID:</span>
+                <span class="detail-value">
+                  ${donation.donorEmail ? `<a href="mailto:${donation.donorEmail}" style="color: #1976D2;">${donation.donorEmail}</a>` : 'N/A'}
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Address:</span>
+                <span class="detail-value">${fullAddress}</span>
+              </div>
+            </div>
+            
+            <!-- Seva Details Box -->
+            <div class="details-box">
+              <div class="details-title">Seva Details</div>
+              <table class="seva-table">
+                <thead>
+                  <tr>
+                    <th>Seva Name</th>
+                    <th>Seva Date</th>
+                    <th>Seva Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${donation.sevaName || donation.campaign || 'ANNADAAN-Donate any other Amount'}</td>
+                    <td>${formattedDate}</td>
+                    <td>Rs. ${donation.amount.toLocaleString('en-IN')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer-section">
+              <p class="footer-title">Regards,</p>
+              <p class="footer-title">HARE KRISHNA VIDYA - HARE KRISHNA MOVEMENT INDIA</p>
+              
+              <p style="margin-top: 20px; font-weight: bold;">Questions?</p>
+              <p style="margin-top: 5px;">Contact us between 9.30 am and 9:00 pm via any of the options below</p>
+              
+              <div class="contact-links" style="margin-top: 10px;">
+                <p><strong>Phone:</strong> <a href="tel:+917207619870">+91 720 761 9870</a></p>
+                <p><strong>E-mail:</strong> <a href="mailto:aikyavidya@hkmhyderabad.org">aikyavidya@hkmhyderabad.org</a></p>
+              </div>
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-        [HARE KRISHNA MOVEMENT INDIA LOGO]
+        SRILA PRABHUPADA'S
+        HARE KRISHNA
+        MOVEMENT INDIA
         
-        HARE KRISHNA MOVEMENT INDIA - Hare Krishna Vidya
-        (Serving the Mission of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada)
+        Hare Krishna!
         
-        DONATION RECEIPT
+        Dear ${donorName.toUpperCase()}, Please accept the blessings of Sri Sri Lakshmi Narasimha Swamy.
         
-        Receipt No: ${receiptNumber}
-        Date: ${formattedDate}
-        Donor Name: ${donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}
-        ${donation.donorEmail ? `Email: ${donation.donorEmail}` : ''}
-        ${donation.donorPhone ? `Mobile No: ${donation.donorPhone}` : ''}
-        Amount: ₹ ${donation.amount.toLocaleString('en-IN')} /-
-        Payment Method: ${donation.paymentMethod ? donation.paymentMethod.toUpperCase() : 'Online'}
-        Transaction ID: ${donation.razorpayPaymentId || 'N/A'}
-        Donated Seva: ${donation.sevaName || donation.campaign || 'ANNADAAN - Donate any other Amount'}
-        Required 80G: ${donation.wants80G ? 'Yes' : 'No'}
-        Donor PAN Details: ${donation.wants80G && donation.panNumber ? donation.panNumber : 'Not Applicable'}
+        Thanks for Donating HARE KRISHNA VIDYA - HARE KRISHNA MOVEMENT INDIA
         
-        Hare Krishna Hare Krishna Krishna Krishna Hare Hare
-        Hare Rama Hare Rama Rama Rama Hare Hare
+        Your transaction has been completed successfully.
         
-        📧 YOUR RECEIPT IS ATTACHED
-        A professional PDF receipt has been attached to this email for your records and tax purposes.
+        Donor Details:
+        Name: ${donorName.toUpperCase()}
+        Mobile Number: ${donation.donorPhone || 'N/A'}
+        Email ID: ${donation.donorEmail || 'N/A'}
+        Address: ${fullAddress}
         
-        Hare Krishna Golden Temple
-        Road No. 12, Banjara Hills, Hyderabad-500034
-        Website: www.harekrishnavidya.org
-        Email: aikyavidya@hkmhyderabad.org
-        Phone: +91-7207619870
+        Seva Details:
+        Seva Name: ${donation.sevaName || donation.campaign || 'ANNADAAN-Donate any other Amount'}
+        Seva Date: ${formattedDate}
+        Seva Amount: Rs. ${donation.amount.toLocaleString('en-IN')}
         
-        This is an auto-generated receipt and does not require any signature.
+        Regards,
+        HARE KRISHNA VIDYA - HARE KRISHNA MOVEMENT INDIA
+        
+        Questions?
+        Contact us between 9.30 am and 9:00 pm via any of the options below
+        
+        Phone: +91 720 761 9870
+        E-mail: aikyavidya@hkmhyderabad.org
       `
     };
   }
@@ -472,3 +496,4 @@ module.exports = {
   createTransporter,
   emailTemplates
 };
+

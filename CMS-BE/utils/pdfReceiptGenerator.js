@@ -68,13 +68,14 @@ const generatePDFReceipt = async (donation) => {
       const pageWidth = doc.page.width;
    //   const pageHeight = doc.page.height;
       const margin = 40;
-      const logoWidth = 60;
-      const logoHeight = 60;
+      // Increased logo size
+      const logoWidth = 100;
+      const logoHeight = 100;
       const logoX = margin;
       const logoY = 25;
       
       // Calculate text area - start text after logo with proper spacing to avoid overlap
-      const headerTextStartX = margin + logoWidth + 20; // 20px gap after logo
+      const headerTextStartX = margin + logoWidth + 25; // 25px gap after larger logo
       const headerTextWidth = pageWidth - headerTextStartX - margin;
 
       // Add logo at the top left
@@ -134,9 +135,10 @@ const generatePDFReceipt = async (donation) => {
          .text('www.harekrishnavidya.org; Email: aikyavidya@hkmhyderabad.org; Ph: +91-7207619870', headerStartX, currentY, { width: headerTextWidthActual });
 
       // Ensure we're below the logo if it exists, and add spacing before receipt title
+      // With larger logo (100px), we need more spacing
       if (logoExists) {
-        const minY = logoY + logoHeight + 15; // Ensure below logo with spacing
-        currentY = Math.max(currentY + 12, minY);
+        const minY = logoY + logoHeight + 20; // Ensure below larger logo with adequate spacing
+        currentY = Math.max(currentY + 15, minY);
       } else {
         currentY += 15; // Spacing between header and receipt title
       }
@@ -239,12 +241,19 @@ const generatePDFReceipt = async (donation) => {
 
       currentY += 40;
 
-      // Mantra section
+      // Mantra section - explicitly center aligned
       doc.fillColor(primaryColor)
          .fontSize(11)
          .font('Helvetica-Oblique')
-         .text('Hare Krishna Hare Krishna Krishna Krishna Hare Hare', { align: 'center' })
-         .text('Hare Rama Hare Rama Rama Rama Hare Hare', { align: 'center' });
+         .text('Hare Krishna Hare Krishna Krishna Krishna Hare Hare', margin, currentY, { 
+           align: 'center', 
+           width: pageWidth - 2 * margin 
+         });
+      currentY += 15;
+      doc.text('Hare Rama Hare Rama Rama Rama Hare Hare', margin, currentY, { 
+         align: 'center', 
+         width: pageWidth - 2 * margin 
+       });
 
       currentY += 30;
 
