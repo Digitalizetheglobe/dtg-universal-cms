@@ -24,17 +24,16 @@ const createTransporter = () => {
   return nodemailer.createTransport(emailConfig);
 };
 
-// Function to get logo as base64
-const getLogoBase64 = () => {
-  try {
-    const logoPath = path.join(__dirname, '..', 'public', 'logo.png');
-    const logoBuffer = fs.readFileSync(logoPath);
-    const logoBase64 = logoBuffer.toString('base64');
-    return `data:image/png;base64,${logoBase64}`;
-  } catch (error) {
-    console.error('Error reading logo file:', error);
-    return null;
-  }
+// Function to get logo URL (hosted instead of base64 to reduce email size)
+// This prevents Gmail from clipping the email due to size limits (~102KB)
+const getLogoUrl = () => {
+  // Use hosted logo URL instead of base64 to keep email size under Gmail's limit
+  // Replace with your actual hosted logo URL
+  const baseUrl = process.env.FRONTEND_URL || process.env.BASE_URL || 'https://harekrishnavidya.org';
+  return `${baseUrl}/logo.png`;
+  
+  // Alternative: If logo is hosted on a CDN or static hosting
+  // return 'https://harekrishnavidya.org/images/logo.png';
 };
 
 // Email templates
@@ -42,7 +41,8 @@ const emailTemplates = {
   donationReceipt: (donation) => {
     const receiptNumber = generateReceiptNumber(donation);
     const formattedDate = formatReceiptDate(donation.createdAt);
-    const logoBase64 = getLogoBase64();
+    // Use hosted logo URL instead of base64 to prevent Gmail clipping
+    const logoUrl = getLogoUrl();
     
     // Format full address from donation fields
     const formatAddress = (donation) => {
@@ -92,6 +92,13 @@ const emailTemplates = {
               width: 120px;
               height: 120px;
               flex-shrink: 0;
+              max-width: 120px;
+            }
+            /* Fallback for email clients that don't support flexbox */
+            img.header-logo {
+              border: 0;
+              outline: none;
+              text-decoration: none;
             }
             .header-text {
               flex: 1;
@@ -185,7 +192,7 @@ const emailTemplates = {
           <div class="container">
             <!-- Logo and Header -->
             <div class="header-section">
-              ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo">` : ''}
+              <img src="${logoUrl}" alt="Hare Krishna Movement Logo" class="header-logo" style="width: 120px; height: 120px; display: block;" onerror="this.style.display='none';">
               <div class="header-text">
                 <div style="font-size: 16px; font-weight: bold; color: #0066CC; margin-bottom: 5px;">
                   SRILA PRABHUPADA'S<br>
