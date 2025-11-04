@@ -24,16 +24,44 @@ const createTransporter = () => {
   return nodemailer.createTransport(emailConfig);
 };
 
-// Function to get logo URL (hosted instead of base64 to reduce email size)
-// This prevents Gmail from clipping the email due to size limits (~102KB)
-const getLogoUrl = () => {
-  // Use hosted logo URL instead of base64 to keep email size under Gmail's limit
-  // Replace with your actual hosted logo URL
-  const baseUrl = process.env.FRONTEND_URL || process.env.BASE_URL || 'https://harekrishnavidya.org';
-  return `${baseUrl}/logo.png`;
-  
-  // Alternative: If logo is hosted on a CDN or static hosting
-  // return 'https://harekrishnavidya.org/images/logo.png';
+// Function to get logo as base64 for inline embedding (CID attachment)
+// This ensures logo shows in all email clients without external URL dependency
+const getLogoAsAttachment = () => {
+  try {
+    const logoPath = path.join(__dirname, '..', 'public', 'logo.png');
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      return {
+        filename: 'logo.png',
+        path: logoPath,
+        cid: 'harekrishna_logo', // Content-ID for inline embedding
+        content: logoBuffer
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error reading logo file:', error);
+    return null;
+  }
+};
+
+// Fallback: Get logo as base64 (smaller version for email clients that don't support CID well)
+const getLogoBase64 = () => {
+  try {
+    const logoPath = path.join(__dirname, '..', 'public', 'logo.png');
+    if (fs.existsSync(logoPath)) {
+      const logoBuffer = fs.readFileSync(logoPath);
+      // Only use base64 if logo is small enough (< 50KB)
+      if (logoBuffer.length < 50000) {
+        const logoBase64 = logoBuffer.toString('base64');
+        return `data:image/png;base64,${logoBase64}`;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error reading logo file for base64:', error);
+    return null;
+  }
 };
 
 // Email templates
@@ -41,8 +69,8 @@ const emailTemplates = {
   donationReceipt: (donation) => {
     const receiptNumber = generateReceiptNumber(donation);
     const formattedDate = formatReceiptDate(donation.createdAt);
-    // Use hosted logo URL instead of base64 to prevent Gmail clipping
-    const logoUrl = getLogoUrl();
+    // Get logo as base64 for inline embedding (fallback if CID doesn't work)
+    const logoBase64 = getLogoBase64();
     
     // Format full address from donation fields
     const formatAddress = (donation) => {
@@ -192,7 +220,7 @@ const emailTemplates = {
           <div class="container">
             <!-- Logo and Header -->
             <div class="header-section">
-              <img src="${logoUrl}" alt="Hare Krishna Movement Logo" class="header-logo" style="width: 120px; height: 120px; display: block;" onerror="this.style.display='none';">
+              ${logoBase64 ? `<img src="${logoBase64}" alt="Hare Krishna Movement Logo" class="header-logo" style="width: 120px; height: 120px; display: block;">` : '<img src="cid:harekrishna_logo" alt="Hare Krishna Movement Logo" class="header-logo" style="width: 120px; height: 120px; display: block;">'}
               <div class="header-text">
                 <div style="font-size: 16px; font-weight: bold; color: #0066CC; margin-bottom: 5px;">
                   SRILA PRABHUPADA'S<br>
@@ -393,17 +421,31 @@ const sendDonationReceipt = async (donation) => {
     console.log('- Text length:', template.text.length);
     console.log('- To:', donation.donorEmail);
     
+    // Prepare attachments array
+    mailOptions.attachments = [];
+    
+    // Add logo as inline attachment (CID) - ensures logo displays in all email clients
+    const logoAttachment = getLogoAsAttachment();
+    if (logoAttachment) {
+      mailOptions.attachments.push({
+        filename: logoAttachment.filename,
+        path: logoAttachment.path,
+        cid: logoAttachment.cid, // Content-ID for inline embedding
+        contentType: 'image/png',
+        disposition: 'inline' // Inline so it shows in email body
+      });
+      console.log('Logo attached as inline image (CID)');
+    }
+    
     // Add PDF attachment only if PDF generation was successful
     if (pdfBuffer && filename) {
-      mailOptions.attachments = [
-        {
-          filename: filename,
-          content: pdfBuffer,
-          contentType: 'application/pdf',
-          disposition: 'attachment',
-          cid: 'donation_receipt_pdf'
-        }
-      ];
+      mailOptions.attachments.push({
+        filename: filename,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+        disposition: 'attachment', // Attachment for PDF
+        cid: 'donation_receipt_pdf'
+      });
       console.log('PDF attachment added:', filename);
     } else {
       console.log('No PDF attachment - PDF generation may have failed');
