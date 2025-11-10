@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const {
   createDonationOrder,
@@ -19,7 +19,8 @@ const {
   createPayUOrder,
   payuSuccess,
   payuFailure,
-  verifyPayUPayment
+  verifyPayUPayment,
+  downloadDonationFormData
 } = require('../controllers/donationController');
 
 // Public routes (for donation processing)
@@ -49,6 +50,7 @@ router.get('/stats', getDonationStats);
 router.get('/seva-stats', getSevaStats);
 router.get('/test-connection', testRazorpayConnection);
 router.get('/test-email', testEmailService);
+router.get('/export/form-submissions', downloadDonationFormData);
 router.get('/:id', getDonationById);
 router.patch('/:id/notes', updateDonationNotes);
 router.post('/sync-razorpay', syncDonationsFromRazorpay);

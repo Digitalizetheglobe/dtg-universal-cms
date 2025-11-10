@@ -1,4 +1,4 @@
-const Razorpay = require('razorpay');
+﻿const Razorpay = require('razorpay');
 const Donation = require('../models/Donation');
 const crypto = require('crypto');
 const { sendDonationReceipt, testEmailConfiguration } = require('../utils/emailService');
@@ -113,6 +113,58 @@ const verifyDonationPayment = async (req, res) => {
     });
 
     await donation.save();
+
+    // Export donation form submission to CSV (if form data is available)
+    try {
+      const { appendDonationSubmission } = require('../utils/donationFormExporter');
+      
+      // Helper function to convert to boolean properly
+      const toBoolean = (value) => {
+        if (value === true || value === 'true' || value === '1' || value === 1) return true;
+        if (value === false || value === 'false' || value === '0' || value === 0) return false;
+        return false;
+      };
+
+      // Extract form data from donorData or donation object
+      const exportData = {
+        submittedAt: new Date().toISOString(),
+        sevaName: donorData?.sevaName || donation.sevaName || '',
+        sevaType: donorData?.sevaType || donation.sevaType || '',
+        sevaAmount: donation.amount || 0,
+        donorName: String(donation.donorName || ''),
+        donorEmail: String(donation.donorEmail || ''),
+        donorPhone: String(donation.donorPhone || ''),
+        donorType: donorData?.donorType || donation.donorType || 'Indian Citizen',
+        description: String(donation.description || ''),
+        campaign: String(donation.campaign || ''),
+        isAnonymous: toBoolean(donation.isAnonymous),
+        wantsMahaPrasadam: toBoolean(donorData?.wantsMahaPrasadam || donation.wantsMahaPrasadam),
+        wants80G: toBoolean(donorData?.wants80G || donation.wants80G),
+        address: String(donorData?.address || donation.address || ''),
+        houseApartment: String(donorData?.houseApartment || donation.houseApartment || ''),
+        village: String(donorData?.village || donation.village || ''),
+        district: String(donorData?.district || donation.district || ''),
+        state: String(donorData?.state || donation.state || ''),
+        pinCode: String(donorData?.pinCode || donation.pinCode || ''),
+        landmark: String(donorData?.landmark || donation.landmark || ''),
+        panNumber: String(donorData?.panNumber || donation.panNumber || ''),
+        utmSource: String(donorData?.utmSource || donation.utmSource || ''),
+        utmMedium: String(donorData?.utmMedium || donation.utmMedium || ''),
+        utmCampaign: String(donorData?.utmCampaign || donation.utmCampaign || ''),
+        utmTerm: String(donorData?.utmTerm || donation.utmTerm || ''),
+        utmContent: String(donorData?.utmContent || donation.utmContent || '')
+      };
+
+      console.log('📝 [verifyDonationPayment] Attempting to append donation to CSV:');
+      console.log('   Donor:', exportData.donorName, '| Email:', exportData.donorEmail);
+      console.log('   Amount:', exportData.sevaAmount);
+
+      await appendDonationSubmission(exportData);
+      console.log('✅ [verifyDonationPayment] Successfully appended donation to CSV');
+    } catch (exportError) {
+      console.error('❌ [verifyDonationPayment] Error recording donation form submission export:', exportError);
+      console.error('Error stack:', exportError.stack);
+    }
 
     // Send receipt email if payment is completed and donor email exists
     let emailResult = null;
@@ -696,6 +748,15 @@ const testRazorpayConnection = async (req, res) => {
 
 // Submit donation form and create payment order
 const submitDonationForm = async (req, res) => {
+  console.log('🚀 [submitDonationForm] Form submission received');
+  console.log('📋 Request body keys:', Object.keys(req.body));
+  console.log('📋 Form data:', {
+    sevaName: req.body.sevaName,
+    donorName: req.body.donorName,
+    donorEmail: req.body.donorEmail,
+    sevaAmount: req.body.sevaAmount
+  });
+  
   try {
     const {
       sevaName,
@@ -790,8 +851,10 @@ const submitDonationForm = async (req, res) => {
       paymentStatus: 'pending'
     });
 
+    console.log('💾 [submitDonationForm] Saving donation to database...');
     try {
       await donation.save();
+      console.log('✅ [submitDonationForm] Donation saved to database:', donation._id);
     } catch (dbError) {
       console.error('Database error:', dbError);
       
@@ -809,6 +872,63 @@ const submitDonationForm = async (req, res) => {
         message: 'Database error occurred while saving donation',
         error: dbError.message
       });
+    }
+    // Export donation form submission to CSV
+    console.log('📝 [submitDonationForm] Starting CSV export...');
+    try {
+      const { appendDonationSubmission } = require('../utils/donationFormExporter');
+      console.log('✅ [submitDonationForm] CSV exporter module loaded');
+      const normalizedSevaAmount = Number(sevaAmount);
+
+      // Helper function to convert to boolean properly
+      const toBoolean = (value) => {
+        if (value === true || value === 'true' || value === '1' || value === 1) return true;
+        if (value === false || value === 'false' || value === '0' || value === 0) return false;
+        return false; // default to false
+      };
+
+      const exportData = {
+        submittedAt: new Date().toISOString(),
+        sevaName: String(sevaName || ''),
+        sevaType: String(sevaType || ''),
+        sevaAmount: Number.isFinite(normalizedSevaAmount) ? normalizedSevaAmount : (Number(sevaAmount) || 0),
+        donorName: String(donorName || ''),
+        donorEmail: String(donorEmail || ''),
+        donorPhone: String(donorPhone || ''),
+        donorType: String(donorType || ''),
+        description: String(description || ''),
+        campaign: String(campaign || ''),
+        isAnonymous: toBoolean(isAnonymous),
+        wantsMahaPrasadam: toBoolean(wantsMahaPrasadam),
+        wants80G: toBoolean(wants80G),
+        address: String(address || ''),
+        houseApartment: String(houseApartment || ''),
+        village: String(village || ''),
+        district: String(district || ''),
+        state: String(state || ''),
+        pinCode: String(pinCode || ''),
+        landmark: String(landmark || ''),
+        panNumber: String(panNumber || ''),
+        utmSource: String(utmSource || ''),
+        utmMedium: String(utmMedium || ''),
+        utmCampaign: String(utmCampaign || ''),
+        utmTerm: String(utmTerm || ''),
+        utmContent: String(utmContent || '')
+      };
+
+      console.log('📝 Attempting to append donation to CSV:');
+      console.log('   Donor:', exportData.donorName, '| Email:', exportData.donorEmail);
+      console.log('   Seva:', exportData.sevaName, '| Type:', exportData.sevaType, '| Amount:', exportData.sevaAmount);
+      console.log('   Phone:', exportData.donorPhone, '| Donor Type:', exportData.donorType);
+      console.log('   Anonymous:', exportData.isAnonymous, '| Maha Prasadam:', exportData.wantsMahaPrasadam, '| 80G:', exportData.wants80G);
+      console.log('   UTM Source:', exportData.utmSource, '| Medium:', exportData.utmMedium, '| Campaign:', exportData.utmCampaign);
+
+      await appendDonationSubmission(exportData);
+      console.log('✅ Successfully appended donation to CSV');
+    } catch (exportError) {
+      console.error('❌ Error recording donation form submission export:', exportError);
+      console.error('Error stack:', exportError.stack);
+      // Don't fail the request if export fails, but log it clearly
     }
 
     // Initialize order variable
@@ -1258,11 +1378,11 @@ const createPayUOrder = async (req, res) => {
       });
     }
 
-    // Validate minimum amount (PayU minimum is usually ₹1)
+    // Validate minimum amount (PayU minimum is usually â‚¹1)
     if (parseFloat(payuAmount) < 1) {
       return res.status(400).json({ 
         success: false,
-        message: 'Amount must be at least ₹1.' 
+        message: 'Amount must be at least â‚¹1.' 
       });
     }
 
@@ -1572,14 +1692,14 @@ const payuSuccess = async (req, res) => {
     
     // If FRONTEND_URL is not set, try to infer from request host
     if (!process.env.FRONTEND_URL) {
-      console.warn('⚠️ WARNING: FRONTEND_URL environment variable not set!');
-      console.warn('⚠️ Using default or inferring from request...');
+      console.warn('âš ï¸ WARNING: FRONTEND_URL environment variable not set!');
+      console.warn('âš ï¸ Using default or inferring from request...');
       // Try to infer frontend URL from backend URL (remove 'api.' subdomain)
       const host = req.get('host') || req.headers.host;
       if (host && host.includes('api.')) {
         frontendUrl = host.replace('api.', '');
         frontendUrl = `https://${frontendUrl}`;
-        console.warn(`⚠️ Inferred frontend URL: ${frontendUrl}`);
+        console.warn(`âš ï¸ Inferred frontend URL: ${frontendUrl}`);
       }
     }
     
@@ -1839,6 +1959,37 @@ const payuFailure = async (req, res) => {
   }
 };
 
+const downloadDonationFormData = async (req, res) => {
+  try {
+    const { ensureExportFileExists, getDonationFormExportPath } = require('../utils/donationFormExporter');
+ 
+    await ensureExportFileExists();
+    const exportPath = getDonationFormExportPath();
+    const dateSuffix = new Date().toISOString().split('T')[0];
+    const downloadName = `donation-form-submissions-${dateSuffix}.csv`;
+ 
+    res.download(exportPath, downloadName, (err) => {
+      if (err) {
+        console.error('Error sending donation form export:', err);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            message: 'Failed to download donation form data'
+          });
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error preparing donation form export:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error preparing donation form export',
+      error: error.message
+    });
+  }
+};
+
+
 module.exports = {
   createDonationOrder,
   verifyDonationPayment,
@@ -1858,5 +2009,8 @@ module.exports = {
   createPayUOrder,
   payuSuccess,
   payuFailure,
-  verifyPayUPayment
+  verifyPayUPayment,
+  downloadDonationFormData
 };
+
+

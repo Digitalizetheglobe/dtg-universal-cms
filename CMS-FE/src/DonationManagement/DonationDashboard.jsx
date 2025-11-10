@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FaHeart, 
@@ -18,6 +18,7 @@ import DonationStats from './DonationStats';
 import DonationChart from './DonationChart';
 import { FcMoneyTransfer } from "react-icons/fc";
 import { FcOk } from "react-icons/fc";
+import { getApiUrl } from '../api/api';
 
 const DonationDashboard = () => {
   const [stats, setStats] = useState({
@@ -32,6 +33,8 @@ const DonationDashboard = () => {
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [syncMessage, setSyncMessage] = useState('');
+  const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -42,7 +45,7 @@ const DonationDashboard = () => {
       setLoading(true);
       
       // Fetch stats
-      const statsResponse = await fetch('https://api.harekrishnavidya.org/api/donations/stats');
+      const statsResponse = await fetch(getApiUrl('api/donations/stats'));
       const statsData = await statsResponse.json();
       
       if (statsData.success) {
@@ -50,7 +53,7 @@ const DonationDashboard = () => {
       }
 
       // Fetch recent donations
-      const donationsResponse = await fetch('https://api.harekrishnavidya.org/api/donations?limit=5');
+      const donationsResponse = await fetch(getApiUrl('api/donations?limit=5'));
       const donationsData = await donationsResponse.json();
       
       if (donationsData.success) {
@@ -69,7 +72,7 @@ const DonationDashboard = () => {
       setSyncing(true);
       setSyncMessage('Syncing donations from Razorpay...');
       
-      const response = await fetch('https://api.harekrishnavidya.org/api/donations/sync-razorpay', {
+      const response = await fetch(getApiUrl('api/donations/sync-razorpay'), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -95,10 +98,56 @@ const DonationDashboard = () => {
     }
   };
 
+  const handleDownloadDonationFormData = async () => {
+    try {
+      setExporting(true);
+      setExportMessage('Preparing donation form data export...');
+
+      const response = await fetch(getApiUrl('api/donations/export/form-submissions'), {
+        method: 'GET',
+        headers: {
+          Accept: 'text/csv'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download donation form data');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = `donation-form-submissions-${new Date().toISOString().split('T')[0]}.csv`;
+
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/i);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setExportMessage('✅ Donation form data download started.');
+    } catch (error) {
+      console.error('Error downloading donation form data:', error);
+      setExportMessage('❌ Failed to download donation form data.');
+    } finally {
+      setExporting(false);
+      setTimeout(() => setExportMessage(''), 5000);
+    }
+  };
+
   // Get detailed Razorpay payment info
   const getRazorpayPaymentDetails = async (paymentId) => {
     try {
-      const response = await fetch(`https://api.harekrishnavidya.org/api/donations/payment/${paymentId}`);
+      const response = await fetch(getApiUrl(`api/donations/payment/${paymentId}`));
       const data = await response.json();
       return data;
     } catch (error) {
@@ -113,7 +162,7 @@ const DonationDashboard = () => {
       setSyncing(true);
       setSyncMessage('Testing Razorpay connection...');
       
-      const response = await fetch('https://api.harekrishnavidya.org/api/donations/test-connection');
+      const response = await fetch(getApiUrl('api/donations/test-connection'));
       const data = await response.json();
       
       if (data.success) {
@@ -214,6 +263,19 @@ const DonationDashboard = () => {
               <FaSync className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing...' : 'Sync Razorpay'}
             </button> */}
+            <button
+              onClick={handleDownloadDonationFormData}
+              disabled={exporting}
+              className={[
+                'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-all duration-200 border',
+                exporting
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                  : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:shadow-md'
+              ].join(' ')}
+            >
+              <FaDownload className="w-4 h-4" />
+              {exporting ? 'Preparing...' : 'Donation Form Data'}
+            </button>
             <Link
               to="/donation-management/create"
               className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:from-blue-700 hover:to-indigo-700"
@@ -234,6 +296,18 @@ const DonationDashboard = () => {
         }`}>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{syncMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {exportMessage && (
+        <div className={`mb-6 p-4 rounded-lg border ${
+          exportMessage.includes('✅')
+            ? 'bg-blue-50 border-blue-200 text-blue-800'
+            : 'bg-red-50 border-red-200 text-red-800'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{exportMessage}</span>
           </div>
         </div>
       )}
@@ -411,7 +485,20 @@ const DonationDashboard = () => {
                   <h3 className="text-lg font-semibold text-gray-900">
                     Recent Donations
                   </h3>
-                  <Link
+                  <button
+              onClick={handleDownloadDonationFormData}
+              disabled={exporting}
+              className={[
+                'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-all duration-200 border',
+                exporting
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                  : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:shadow-md'
+              ].join(' ')}
+            >
+              <FaDownload className="w-4 h-4" />
+              {exporting ? 'Preparing...' : 'Donation Form Data'}
+            </button>
+            <Link
                     to="/donation-management/list"
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
@@ -552,3 +639,7 @@ const DonationDashboard = () => {
 };
 
 export default DonationDashboard;
+
+
+
+
