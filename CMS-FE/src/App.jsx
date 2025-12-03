@@ -43,6 +43,9 @@ import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
 
+// Banner Management Components
+import BannerManagement from "./pages/BannerManagement";
+import CareerForm from "./pages/CareerForm";
 function AppWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -78,6 +81,10 @@ function AppWrapper() {
             <>
               {/* Blog Management Routes */}
               <Route path="/dashboard" element={<Home />} />
+              <Route path="/banner" element={<BannerManagement />} />
+
+              <Route path="/apply" element={<CareerForm />} />
+
               <Route path="/signUp" element={<SignUp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/blog-management" element={<BlogEditForm />} />
