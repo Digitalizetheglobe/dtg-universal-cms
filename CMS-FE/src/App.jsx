@@ -43,9 +43,10 @@ import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
 
-// Banner Management Components
+// Banner Management & Career Components
 import BannerManagement from "./pages/BannerManagement";
 import CareerForm from "./pages/CareerForm";
+import AppliedStatus from "./pages/appliedstatus";
 function AppWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -166,6 +167,7 @@ function AppWrapper() {
               {/* Public Form Route - This would typically be in your frontend app */}
               <Route path="/forms/:page" element={<FormPreviewPage />} />
               <Route path="/events/list" element={<EventManagementList />} />
+              <Route path="/appliedstatus" element={<AppliedStatus />} />
             </>
           ) : (
             <Route path="*" element={<Login />} />

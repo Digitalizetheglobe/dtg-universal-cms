@@ -145,10 +145,16 @@ const Sidebar = () => {
       label: 'Event Management',
       color: 'from-blue-300 to-blue-200'
     },
+    // { 
+    //   path: '/apply', 
+    //   icon: <FaHackerNewsSquare className="text-blue-900" />, 
+    //   label: 'Career Form',
+    //   color: 'from-blue-300 to-blue-200'
+    // },
     { 
-      path: '/apply', 
+      path: '/appliedstatus', 
       icon: <FaHackerNewsSquare className="text-blue-900" />, 
-      label: 'Career Form',
+      label: 'Applied Forms',
       color: 'from-blue-300 to-blue-200'
     },
   ];

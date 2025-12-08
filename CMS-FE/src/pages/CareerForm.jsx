@@ -153,6 +153,7 @@
 // export default CareerForm;
 import React, { useState, useRef } from "react";
 import axios from "axios";
+import { getApiUrl } from "../api/api";
 import {
   Upload,
   User,
@@ -228,9 +229,9 @@ const CareerForm = () => {
       data.append("gender", formData.gender);
       data.append("cv", formData.cv);
 
-      // Replace with your backend API
+      // Submit to career apply endpoint using configured API base URL
       const response = await axios.post(
-        "http://localhost:5000/api/career/apply",
+        getApiUrl("/api/career/apply"),
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
