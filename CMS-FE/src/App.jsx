@@ -45,6 +45,7 @@ import EventManagementList from "./EventManagement/EventManagmentList";
 
 // Banner Management & Career Components
 import BannerManagement from "./pages/BannerManagement";
+import Donationamount from "./pages/Donationamount";
 import CareerForm from "./pages/CareerForm";
 import AppliedStatus from "./pages/appliedstatus";
 function AppWrapper() {
@@ -83,6 +84,7 @@ function AppWrapper() {
               {/* Blog Management Routes */}
               <Route path="/dashboard" element={<Home />} />
               <Route path="/banner" element={<BannerManagement />} />
+              <Route path="/donation-amount" element={<Donationamount />} />
 
               <Route path="/apply" element={<CareerForm />} />
 

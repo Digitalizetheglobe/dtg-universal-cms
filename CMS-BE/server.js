@@ -94,6 +94,9 @@ app.use("/api/banner", require("./routes/bannerRoutes"));
 // Career Routing
 app.use("/api/career", require("./routes/careerRoutes"));
 
+// Donation Amount Routing
+app.use("/api/donation-amounts", require("./routes/donationAmountRoutes"));
+
 // Root
 app.get("/", (req, res) => {
   res.send("Universal CMS Backend Running");

@@ -40,6 +40,9 @@ export const Home = () => {
           <Link to="/banner">
             <FeatureCard title="Banner Uploading" icon="🖼️" />
           </Link>
+             <Link to="/donation-amount">
+            <FeatureCard title="Banner Uploading" icon="🖼️" />
+          </Link>
         </div>
 
         <p className="mt-10 text-sm text-black font-bold">
