@@ -101,6 +101,47 @@ app.use("/api/donation-amounts", require("./routes/donationAmountRoutes"));
 app.get("/", (req, res) => {
   res.send("Universal CMS Backend Running");
 });
+// ------------------------
+// DonateToClause routes
+// ------------------------
+const donateToClauseRoutes = require("./routes/donateToClause");
+app.use("/api/campaigns", donateToClauseRoutes);
+
+// ------------------------
+// Build School routes (slug-based)
+// ------------------------
+const buildSchoolRoutes = require("./routes/build-school");
+app.use("/api/build-school", buildSchoolRoutes);
+
+// ------------------------
+// Grocery Donation routes
+// ------------------------
+const groceryRoutes = require("./routes/groceryRoutes");
+app.use("/api/grocery", groceryRoutes);
+
+// ------------------------
+// Donation Kit routes
+// ------------------------
+const donationKitRoutes = require("./routes/donationKitRoutes");
+app.use("/api/donation-kits", donationKitRoutes);
+
+// ------------------------
+// General Support routes
+// ------------------------
+const generalSupportRoutes = require("./routes/generalSupportRoutes");
+app.use("/api/general-support", generalSupportRoutes);
+
+// ------------------------
+// Campaigner Campaign routes (for campaign-page)
+// ------------------------
+const campaignerCampaignRoutes = require("./routes/campaignerCampaignRoutes");
+app.use("/api/campaigner-campaigns", campaignerCampaignRoutes);
+
+// ------------------------
+// Support Campaign routes (for support-campaign detail page)
+// ------------------------
+const supportCampaignRoutes = require("./routes/supportCampaignRoutes");
+app.use("/api/support-campaign", supportCampaignRoutes);
 
 // 404 handler - must be after all routes
 app.use((req, res, next) => {

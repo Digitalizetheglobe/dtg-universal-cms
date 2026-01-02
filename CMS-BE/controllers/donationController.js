@@ -89,18 +89,20 @@ const verifyDonationPayment = async (req, res) => {
     const donation = new Donation({
       razorpayPaymentId: razorpay_payment_id,
       razorpayOrderId: razorpay_order_id,
-      donorName: donorData.name,
-      donorEmail: donorData.email,
-      donorPhone: donorData.phone,
+      // Fallback-safe donor information so validation never fails
+      donorName: (donorData && donorData.donorName) || payment.email || 'Anonymous Donor',
+      donorEmail: (donorData && donorData.donorEmail) || payment.email || '',
+      donorPhone: (donorData && donorData.donorPhone) || payment.contact || '',
+      donorType: (donorData && donorData.donorType) || 'individual',
       amount: payment.amount / 100, // Convert from paise to rupees
       currency: payment.currency,
       paymentStatus: payment.status === 'captured' ? 'completed' : 'pending',
       paymentMethod: payment.method,
-      description: donorData.description,
+      description: donorData?.description,
       receipt: payment.receipt,
-      notes: donorData.notes,
-      isAnonymous: donorData.isAnonymous || false,
-      campaign: donorData.campaign,
+      notes: donorData?.notes,
+      isAnonymous: donorData?.isAnonymous || false,
+      campaign: donorData?.campaign,
       metadata: {
         paymentMethod: payment.method,
         bank: payment.bank,
@@ -762,6 +764,10 @@ const submitDonationForm = async (req, res) => {
       sevaName,
       sevaType,
       sevaAmount,
+      sevaCode,
+      trust,
+      centerID,
+      trustID,
       donorName,
       donorEmail,
       donorPhone,
@@ -788,26 +794,57 @@ const submitDonationForm = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!sevaName || !sevaType || !sevaAmount || !donorName || !donorEmail || !donorPhone || !donorType) {
+    // For campaign donations, donor info can be empty (will be collected by Razorpay)
+    const isCampaignDonation = campaign && (campaign === 'support-compaign' || campaign.includes('campaign'));
+    
+    // Validate presence separately so we can report what is missing.
+    const missing = {
+      sevaName: !sevaName,
+      sevaType: !sevaType,
+      // sevaAmount can be 0/NaN/empty -> treat as missing/invalid below
+      sevaAmount: sevaAmount === undefined || sevaAmount === null || sevaAmount === '',
+      donorType: !donorType
+    };
+
+    if (missing.sevaName || missing.sevaType || missing.sevaAmount || missing.donorType) {
       return res.status(400).json({
         success: false,
-        message: 'All required fields must be provided'
+        message: 'All required fields must be provided',
+        missing
+      });
+    }
+    
+    // For non-campaign donations, donor info is required
+    if (!isCampaignDonation && (!donorName || !donorEmail || !donorPhone)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Donor information (name, email, phone) is required'
       });
     }
 
-    // Validate amount
-    if (sevaAmount <= 0) {
+    // PAN Number is mandatory for 80G
+    if (wants80G && !panNumber) {
       return res.status(400).json({
         success: false,
-        message: 'Seva amount must be greater than 0'
+        message: 'PAN Number is mandatory for 80G seva'
       });
     }
 
-    // Validate donor type
-    if (!['Indian Citizen', 'Foreign Citizen'].includes(donorType)) {
+    // Validate amount (robust parsing; allows ₹1, ₹2, etc.)
+    const parsedSevaAmount = Number(sevaAmount);
+    if (!Number.isFinite(parsedSevaAmount) || parsedSevaAmount <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid donor type. Must be either "Indian Citizen" or "Foreign Citizen"'
+        message: 'Seva amount must be a valid number greater than 0'
+      });
+    }
+
+    // Validate donor type - allow 'individual' for campaign donations
+    const validDonorTypes = ['Indian Citizen', 'Foreign Citizen', 'individual'];
+    if (!validDonorTypes.includes(donorType)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid donor type. Must be either "Indian Citizen", "Foreign Citizen", or "individual"'
       });
     }
 
@@ -820,15 +857,20 @@ const submitDonationForm = async (req, res) => {
     }
 
     // Create donation record with pending status
-    const donation = new Donation({
+    // For campaign donations, allow empty donor fields (will be populated from Razorpay)
+    const donationData = {
       sevaName,
       sevaType,
-      sevaAmount,
-      donorName,
-      donorEmail,
-      donorPhone,
-      donorType,
-      amount: sevaAmount,
+      sevaAmount: parsedSevaAmount,
+      sevaCode,
+      trust,
+      centerID,
+      trustID,
+      donorName: donorName || '', // Allow empty for campaign donations
+      donorEmail: donorEmail || '', // Allow empty for campaign donations
+      donorPhone: donorPhone || '', // Allow empty for campaign donations
+      donorType: donorType || 'individual', // Default to 'individual' if not provided
+      amount: parsedSevaAmount,
       description,
       isAnonymous,
       campaign,
@@ -849,7 +891,10 @@ const submitDonationForm = async (req, res) => {
       landmark,
       panNumber,
       paymentStatus: 'pending'
-    });
+    };
+    
+    // Only include donor fields if they have values (for campaign donations with empty strings)
+    const donation = new Donation(donationData);
 
     console.log('💾 [submitDonationForm] Saving donation to database...');
     try {
@@ -892,6 +937,8 @@ const submitDonationForm = async (req, res) => {
         sevaName: String(sevaName || ''),
         sevaType: String(sevaType || ''),
         sevaAmount: Number.isFinite(normalizedSevaAmount) ? normalizedSevaAmount : (Number(sevaAmount) || 0),
+        sevaCode: String(sevaCode || ''),
+        trust: String(trust || ''),
         donorName: String(donorName || ''),
         donorEmail: String(donorEmail || ''),
         donorPhone: String(donorPhone || ''),
@@ -1072,6 +1119,19 @@ const verifyPayment = async (req, res) => {
     donation.razorpayPaymentId = razorpay_payment_id;
     donation.paymentStatus = payment.status === 'captured' ? 'completed' : 'pending';
     donation.paymentMethod = payment.method;
+    
+    // Update donor information from Razorpay if it was empty (for campaign donations)
+    if (!donation.donorEmail && payment.email) {
+      donation.donorEmail = payment.email;
+    }
+    if (!donation.donorPhone && payment.contact) {
+      donation.donorPhone = payment.contact;
+    }
+    if (!donation.donorName && (payment.email || payment.contact)) {
+      // Use email or contact as name if name is missing
+      donation.donorName = payment.email || payment.contact || 'Anonymous';
+    }
+    
     donation.metadata = {
       paymentMethod: payment.method,
       bank: payment.bank,
