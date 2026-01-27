@@ -84,6 +84,7 @@ import {
 
 const BannerManagement = () => {
   const [banner, setBanner] = useState(null);
+  const [bannerVersion, setBannerVersion] = useState(0);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -94,10 +95,18 @@ const BannerManagement = () => {
   const fetchBanner = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/banner/get");
-      setBanner(res.data.url);
+      const res = await axios.get("https://api.harekrishnavidya.org/api/banner/get");
+      console.log("Banner fetch response:", res.data);
+      if (res.data.url) {
+        setBanner(res.data.url);
+        setBannerVersion(prev => prev + 1);
+      } else {
+        setBanner(null);
+        setBannerVersion(0);
+      }
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching banner:", err);
+      setBanner(null);
     } finally {
       setLoading(false);
     }
@@ -132,11 +141,19 @@ const BannerManagement = () => {
 
     setUploading(true);
     try {
-      await axios.post("http://localhost:5000/api/banner/upload", formData);
+      const res = await axios.post("https://api.harekrishnavidya.org/api/banner/upload", formData);
       showMessage("success", "Banner uploaded successfully!");
       setFile(null);
       setPreview(null);
-      fetchBanner();
+      // Set banner immediately from response, then fetch to ensure sync
+      if (res.data.url) {
+        setBanner(res.data.url);
+        setBannerVersion(prev => prev + 1);
+      }
+      // Small delay to ensure file is written, then fetch
+      setTimeout(() => {
+        fetchBanner();
+      }, 500);
     } catch (error) {
       showMessage("error", "Failed to upload banner");
       console.log(error);
@@ -148,9 +165,10 @@ const BannerManagement = () => {
   const deleteBanner = async () => {
     setLoading(true);
     try {
-      await axios.delete("http://localhost:5000/api/banner/delete");
+      await axios.delete("https://api.harekrishnavidya.org/api/banner/delete");
       showMessage("success", "Banner deleted successfully!");
       setBanner(null);
+      setBannerVersion(0);
     } catch (err) {
       showMessage("error", "Failed to delete banner");
       console.log(err);
@@ -189,11 +207,10 @@ const BannerManagement = () => {
         {/* Toast Message */}
         {message && (
           <div
-            className={`mb-6 flex items-center gap-3 rounded-lg p-4 animate-scale-in ${
-              message.type === "success"
+            className={`mb-6 flex items-center gap-3 rounded-lg p-4 animate-scale-in ${message.type === "success"
                 ? "bg-success/10 text-success"
                 : "bg-destructive/10 text-destructive"
-            }`}
+              }`}
           >
             {message.type === "success" ? (
               <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
@@ -226,9 +243,15 @@ const BannerManagement = () => {
               <div className="space-y-4">
                 <div className="relative overflow-hidden rounded-lg">
                   <img
-                    src={`http://localhost:5000${banner}`}
+                    src={`http://localhost:5000${banner}?v=${bannerVersion}`}
                     alt="Current banner"
                     className="h-48 w-full object-cover sm:h-56 lg:h-64"
+                    onError={(e) => {
+                      console.error("Failed to load banner image:", e.target.src);
+                      // Try without version parameter
+                      e.target.src = `https://api.harekrishnavidya.org/api/${banner}`;
+                    }}
+                    key={bannerVersion}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent" />
                 </div>

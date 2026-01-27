@@ -85,15 +85,28 @@ const verifyDonationPayment = async (req, res) => {
     // Get payment details from Razorpay
     const payment = await getRazorpayInstance().payments.fetch(razorpay_payment_id);
 
+    // Map donorType: 'individual' -> 'Indian Citizen', 'foreign' -> 'Foreign Citizen'
+    const mapDonorType = (type) => {
+      if (!type) return 'Indian Citizen';
+      const normalized = String(type).toLowerCase();
+      if (normalized === 'individual' || normalized === 'indian citizen') return 'Indian Citizen';
+      if (normalized === 'foreign' || normalized === 'foreign citizen') return 'Foreign Citizen';
+      return 'Indian Citizen'; // Default fallback
+    };
+
     // Create donation record
     const donation = new Donation({
+      // Seva details from donorData
+      sevaName: donorData?.sevaName || '',
+      sevaType: donorData?.sevaType || '',
+      sevaAmount: payment.amount / 100, // Convert from paise to rupees
       razorpayPaymentId: razorpay_payment_id,
       razorpayOrderId: razorpay_order_id,
       // Fallback-safe donor information so validation never fails
       donorName: (donorData && donorData.donorName) || payment.email || 'Anonymous Donor',
       donorEmail: (donorData && donorData.donorEmail) || payment.email || '',
       donorPhone: (donorData && donorData.donorPhone) || payment.contact || '',
-      donorType: (donorData && donorData.donorType) || 'individual',
+      donorType: mapDonorType(donorData?.donorType),
       amount: payment.amount / 100, // Convert from paise to rupees
       currency: payment.currency,
       paymentStatus: payment.status === 'captured' ? 'completed' : 'pending',
@@ -203,7 +216,23 @@ const verifyDonationPayment = async (req, res) => {
     });
   } catch (error) {
     console.error('Error verifying donation payment:', error);
-    res.status(500).json({ message: 'Error verifying donation payment', error: error.message });
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', {
+      razorpay_order_id: req.body?.razorpay_order_id,
+      razorpay_payment_id: req.body?.razorpay_payment_id,
+      donorData: req.body?.donorData ? {
+        sevaName: req.body.donorData.sevaName,
+        sevaType: req.body.donorData.sevaType,
+        donorType: req.body.donorData.donorType,
+        campaign: req.body.donorData.campaign
+      } : null
+    });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error verifying donation payment', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

@@ -143,6 +143,42 @@ app.use("/api/campaigner-campaigns", campaignerCampaignRoutes);
 const supportCampaignRoutes = require("./routes/supportCampaignRoutes");
 app.use("/api/support-campaign", supportCampaignRoutes);
 
+// ------------------------
+// Donation Kit Management routes (Separate)
+// ------------------------
+const donationKitManagementRoutes = require("./routes/donationKitManagementRoutes");
+app.use("/api/donation-kit-management", donationKitManagementRoutes);
+
+const donationKitUploadRoutes = require("./routes/donationKitUploadRoutes");
+app.use("/api/donation-kit-upload", donationKitUploadRoutes);
+
+// ------------------------
+// Grocery Item Management routes (Separate)
+// ------------------------
+const groceryItemManagementRoutes = require("./routes/groceryItemManagementRoutes");
+app.use("/api/grocery-item-management", groceryItemManagementRoutes);
+
+const groceryItemUploadRoutes = require("./routes/groceryItemUploadRoutes");
+app.use("/api/grocery-item-upload", groceryItemUploadRoutes);
+
+// ------------------------
+// Campaigner Campaign Management routes (Separate)
+// ------------------------
+const campaignerCampaignManagementRoutes = require("./routes/campaignerCampaignManagementRoutes");
+app.use("/api/campaigner-campaign-management", campaignerCampaignManagementRoutes);
+
+const campaignerCampaignUploadRoutes = require("./routes/campaignerCampaignUploadRoutes");
+app.use("/api/campaigner-campaign-upload", campaignerCampaignUploadRoutes);
+
+// ------------------------
+// Campaign Management routes (Separate)
+// ------------------------
+const campaignManagementRoutes = require("./routes/campaignManagementRoutes");
+app.use("/api/campaign-management", campaignManagementRoutes);
+
+const campaignUploadRoutes = require("./routes/campaignUploadRoutes");
+app.use("/api/campaign-upload", campaignUploadRoutes);
+
 // 404 handler - must be after all routes
 app.use((req, res, next) => {
   console.log(`[404] ${req.method} ${req.url} - Route not found`);

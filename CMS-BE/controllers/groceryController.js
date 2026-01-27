@@ -1,4 +1,4 @@
-const GroceryItem = require("../models/GroceryItem");
+const GroceryItem = require("../models/GroceryItemManagement");
 const GroceryDonation = require("../models/GroceryDonation");
 const GrocerySelection = require("../models/GrocerySelection");
 
@@ -20,7 +20,7 @@ exports.getGroceryItems = async (req, res) => {
     disableCache(res);
 
     const items = await GroceryItem.find({ isActive: true })
-      .sort({ order: 1, createdAt: 1 })
+      .sort({ displayOrder: 1, createdAt: -1 })
       .lean();
 
     res.status(200).json({

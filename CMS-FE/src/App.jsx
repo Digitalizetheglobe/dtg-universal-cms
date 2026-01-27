@@ -39,6 +39,21 @@ import DonationDashboard from "./DonationManagement/DonationDashboard";
 import DonationForm from "./DonationManagement/DonationForm";
 import DonationView from "./DonationManagement/DonationView";
 import UTMTrackingDashboard from "./DonationManagement/UTMTrackingDashboard";
+import DonationKitManagement from "./DonationKitManagement/DonationKitManagement";
+import DonationKitList from "./DonationKitManagement/DonationKitList";
+import DonationKitForm from "./DonationKitManagement/DonationKitForm";
+
+// Grocery Item Management Components
+import GroceryItemList from "./GroceryItemManagement/GroceryItemList";
+import GroceryItemForm from "./GroceryItemManagement/GroceryItemForm";
+
+// Campaign Management Components (Choose a Cause campaigns)
+import CampaignList from "./CampaignManagement/CampaignList";
+import CampaignForm from "./CampaignManagement/CampaignForm";
+
+// Campaigner Campaign Management Components
+import CampaignerCampaignList from "./CampaignerCampaignManagement/CampaignerCampaignList";
+import CampaignerCampaignForm from "./CampaignerCampaignManagement/CampaignerCampaignForm";
 
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
@@ -77,6 +92,10 @@ function AppWrapper() {
       >
         <Routes>
           <Route index element={<Login />} />
+          
+          {/* Auth routes - accessible to everyone */}
+          <Route path="/signUp" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
 
           {/* <Route path="*" element={<Notfound />} /> */}
           {isLoggedIn ? (
@@ -87,9 +106,6 @@ function AppWrapper() {
               <Route path="/donation-amount" element={<Donationamount />} />
 
               <Route path="/apply" element={<CareerForm />} />
-
-              <Route path="/signUp" element={<SignUp />} />
-              <Route path="/login" element={<Login />} />
               <Route path="/blog-management" element={<BlogEditForm />} />
               <Route
                 path="/blog-management/dashboard"
@@ -164,6 +180,64 @@ function AppWrapper() {
               <Route
                 path="/utm-tracking-dashboard"
                 element={<UTMTrackingDashboard />}
+              />
+              <Route
+                path="/donation-kit-management"
+                element={<DonationKitManagement />}
+              />
+              <Route
+                path="/donation-kit-management/kits"
+                element={<DonationKitList />}
+              />
+              <Route
+                path="/donation-kit-management/kits/create"
+                element={<DonationKitForm />}
+              />
+              <Route
+                path="/donation-kit-management/kits/edit/:id"
+                element={<DonationKitForm />}
+              />
+
+              {/* Grocery Item Management Routes */}
+              <Route
+                path="/grocery-item-management/items"
+                element={<GroceryItemList />}
+              />
+              <Route
+                path="/grocery-item-management/items/create"
+                element={<GroceryItemForm />}
+              />
+              <Route
+                path="/grocery-item-management/items/edit/:id"
+                element={<GroceryItemForm />}
+              />
+
+              {/* Campaign Management Routes (Choose a Cause campaigns) */}
+              <Route
+                path="/campaign-management/campaigns"
+                element={<CampaignList />}
+              />
+              <Route
+                path="/campaign-management/campaigns/create"
+                element={<CampaignForm />}
+              />
+              <Route
+                path="/campaign-management/campaigns/edit/:id"
+                element={<CampaignForm />}
+              />
+
+              {/* Campaigner Campaign Management Routes */}
+              <Route
+                path="/campaigner-campaign-management/campaigns"
+                element={<CampaignerCampaignList />}
+              />
+              <Route
+                path="/campaigner-campaign-management/campaigns/create"
+                element={<CampaignerCampaignForm />}
+              />
+              <Route
+                path="/campaigner-campaign-management/campaigns/edit/:id"
+                element={<CampaignerCampaignForm />}
               />
 
               {/* Public Form Route - This would typically be in your frontend app */}

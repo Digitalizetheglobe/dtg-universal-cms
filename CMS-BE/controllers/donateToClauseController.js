@@ -1,7 +1,5 @@
 // controllers/donateToClauseController.js
-const Campaign = require("../models/Campaign");
-
-// controllers/donateToClauseController.js
+const CampaignManagement = require("../models/CampaignManagement");
 
 // 🔥 Helper: disable caching (fix 304 Not Modified issue)
 const disableCache = (res) => {
@@ -13,103 +11,30 @@ const disableCache = (res) => {
 };
 
 // --------------------
-// STATIC CAMPAIGN DATA
-// --------------------
-const campaigns = [
-  {
-    id: "build-school",
-    title: "Build a School in Rural Telangana",
-    description:
-      "Help us construct a school building for 200+ children in a remote village where kids currently study under trees.",
-    image:
-      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 5000000,
-    raisedAmount: 3250000,
-    category: "Education",
-    deadline: "2025-03-31",
-    supporters: 124,
-    featured: true,
-  },
-  {
-    id: "nutritious-meals",
-    title: "Sponsor 10,000 Nutritious Meals",
-    description:
-      "Provide millet-based nutritious meals to underprivileged children for the next 3 months across our Aikya Vidya centers.",
-    image:
-      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 600000,
-    raisedAmount: 485000,
-    category: "Food",
-    deadline: "2025-02-28",
-    supporters: 256,
-    featured: true,
-  },
-  {
-    id: "train-teachers",
-    title: "Train 50 Aikya Vidya Teachers",
-    description:
-      "Empower women from local communities to become certified teachers, providing them livelihood and children quality education.",
-    image:
-      "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 400000,
-    raisedAmount: 175000,
-    category: "Empowerment",
-    deadline: "2025-06-30",
-    supporters: 67,
-    featured: false,
-  },
-  {
-    id: "chenchu-community",
-    title: "Support Chenchu Tribal Community",
-    description:
-      "Provide education kits, health support, and skill training to 100 children from Chenchu tribal communities.",
-    image:
-      "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 800000,
-    raisedAmount: 220000,
-    category: "Community",
-    deadline: "2025-05-15",
-    supporters: 43,
-    featured: false,
-  },
-  {
-    id: "health-camps",
-    title: "Organize Health Camps in 20 Villages",
-    description:
-      "Conduct free medical camps providing health checkups, medicines, and basic treatments to underserved communities.",
-    image:
-      "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 350000,
-    raisedAmount: 280000,
-    category: "Healthcare",
-    deadline: "2025-04-20",
-    supporters: 89,
-    featured: false,
-  },
-  {
-    id: "setup-libraries",
-    title: "Setup Libraries in 10 Centers",
-    description:
-      "Create mini libraries with 500+ books in each Aikya Vidya center to foster reading habit among children.",
-    image:
-      "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1000&q=80",
-    goalAmount: 250000,
-    raisedAmount: 95000,
-    category: "Education",
-    deadline: "2025-07-31",
-    supporters: 31,
-    featured: false,
-  },
-];
-
-// --------------------
 // Get all campaigns
 // GET /api/campaigns
 // --------------------
 const getAllCampaigns = async (req, res) => {
   try {
     disableCache(res);
-    return res.status(200).json(campaigns);
+
+    const campaigns = await CampaignManagement.find({ isActive: true })
+      .sort({ displayOrder: 1, createdAt: -1 });
+
+    const formattedCampaigns = campaigns.map(c => ({
+      id: c._id,
+      title: c.campaignTitle,
+      description: c.shortDescription || c.campaignTitle,
+      image: c.heroImage || "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1000&q=80",
+      goalAmount: c.goalAmount,
+      raisedAmount: c.raisedAmount,
+      category: c.category,
+      deadline: c.deadline,
+      supporters: c.supporters,
+      featured: c.featured,
+    }));
+
+    return res.status(200).json(formattedCampaigns);
   } catch (error) {
     console.error("Get campaigns error:", error);
     return res.status(500).json({ message: "Failed to fetch campaigns" });
@@ -125,13 +50,26 @@ const getCampaignById = async (req, res) => {
     disableCache(res);
 
     const { id } = req.params;
-    const campaign = campaigns.find((c) => c.id === id);
+    const campaign = await CampaignManagement.findById(id);
 
-    if (!campaign) {
+    if (!campaign || !campaign.isActive) {
       return res.status(404).json({ message: "Campaign not found" });
     }
 
-    return res.status(200).json(campaign);
+    const formattedCampaign = {
+      id: campaign._id,
+      title: campaign.campaignTitle,
+      description: campaign.shortDescription || campaign.campaignTitle,
+      image: campaign.heroImage || "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1000&q=80",
+      goalAmount: campaign.goalAmount,
+      raisedAmount: campaign.raisedAmount,
+      category: campaign.category,
+      deadline: campaign.deadline,
+      supporters: campaign.supporters,
+      featured: campaign.featured,
+    };
+
+    return res.status(200).json(formattedCampaign);
   } catch (error) {
     console.error("Get campaign error:", error);
     return res.status(500).json({ message: "Failed to fetch campaign" });
@@ -174,18 +112,24 @@ const submitDonation = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const campaign = campaigns.find((c) => c.id === campaignId);
+    const campaign = await CampaignManagement.findById(campaignId);
     if (!campaign) {
       return res.status(404).json({ message: "Campaign not found" });
     }
 
-    // Mock update
+    // Update real amount
     campaign.raisedAmount += Number(amount);
     campaign.supporters += 1;
+    await campaign.save();
 
     return res.status(200).json({
       message: "Donation successful",
-      campaign,
+      campaign: {
+        id: campaign._id,
+        title: campaign.campaignTitle,
+        raisedAmount: campaign.raisedAmount,
+        supporters: campaign.supporters
+      },
     });
   } catch (error) {
     console.error("Submit donation error:", error);

@@ -157,6 +157,12 @@ const Sidebar = () => {
       label: 'Applied Forms',
       color: 'from-blue-300 to-blue-200'
     },
+    { 
+      path: '/donation-kit-management', 
+      icon: <FaHackerNewsSquare className="text-blue-900" />, 
+      label: 'Donation Kit Management',
+      color: 'from-blue-300 to-blue-200'
+    },
   ];
 
   // Mobile toggle button

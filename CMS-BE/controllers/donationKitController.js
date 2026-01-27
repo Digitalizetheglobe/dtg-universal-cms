@@ -1,10 +1,10 @@
-const DonationKit = require('../models/DonationKit');
+const DonationKit = require('../models/DonationKitManagement');
 
 // Get all donation kits (public endpoint)
 const getDonationKits = async (req, res) => {
   try {
     const { active } = req.query;
-    
+
     // Build query
     const query = {};
     if (active === 'true' || active === undefined) {
@@ -21,10 +21,10 @@ const getDonationKits = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching donation kits:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server Error', 
-      error: error.message 
+      message: 'Server Error',
+      error: error.message
     });
   }
 };
@@ -35,9 +35,9 @@ const getDonationKitById = async (req, res) => {
     const kit = await DonationKit.findById(req.params.id);
 
     if (!kit) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Donation kit not found' 
+        message: 'Donation kit not found'
       });
     }
 
@@ -47,10 +47,10 @@ const getDonationKitById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching donation kit:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server Error', 
-      error: error.message 
+      message: 'Server Error',
+      error: error.message
     });
   }
 };
@@ -58,15 +58,15 @@ const getDonationKitById = async (req, res) => {
 // Get donation kit by slug
 const getDonationKitBySlug = async (req, res) => {
   try {
-    const kit = await DonationKit.findOne({ 
+    const kit = await DonationKit.findOne({
       slug: req.params.slug,
-      isActive: true 
+      isActive: true
     });
 
     if (!kit) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Donation kit not found' 
+        message: 'Donation kit not found'
       });
     }
 
@@ -76,10 +76,10 @@ const getDonationKitBySlug = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching donation kit by slug:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server Error', 
-      error: error.message 
+      message: 'Server Error',
+      error: error.message
     });
   }
 };
@@ -91,9 +91,9 @@ const createDonationKit = async (req, res) => {
 
     // Validate required fields
     if (!title || !price || !img || !description || !highlight) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Missing required fields: title, price, img, description, and highlight are required' 
+        message: 'Missing required fields: title, price, img, description, and highlight are required'
       });
     }
 
@@ -117,18 +117,18 @@ const createDonationKit = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating donation kit:', error);
-    
+
     if (error.code === 11000) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'A donation kit with this slug already exists' 
+        message: 'A donation kit with this slug already exists'
       });
     }
 
-    res.status(400).json({ 
+    res.status(400).json({
       success: false,
-      message: 'Bad Request', 
-      error: error.message 
+      message: 'Bad Request',
+      error: error.message
     });
   }
 };
@@ -155,9 +155,9 @@ const updateDonationKit = async (req, res) => {
     );
 
     if (!updatedKit) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Donation kit not found' 
+        message: 'Donation kit not found'
       });
     }
 
@@ -168,10 +168,10 @@ const updateDonationKit = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating donation kit:', error);
-    res.status(400).json({ 
+    res.status(400).json({
       success: false,
-      message: 'Bad Request', 
-      error: error.message 
+      message: 'Bad Request',
+      error: error.message
     });
   }
 };
@@ -182,23 +182,23 @@ const deleteDonationKit = async (req, res) => {
     const deletedKit = await DonationKit.findByIdAndDelete(req.params.id);
 
     if (!deletedKit) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Donation kit not found' 
+        message: 'Donation kit not found'
       });
     }
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       message: 'Donation kit deleted successfully',
       data: deletedKit
     });
   } catch (error) {
     console.error('Error deleting donation kit:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server Error', 
-      error: error.message 
+      message: 'Server Error',
+      error: error.message
     });
   }
 };
@@ -207,9 +207,9 @@ const deleteDonationKit = async (req, res) => {
 const bulkCreateDonationKits = async (req, res) => {
   try {
     if (!Array.isArray(req.body)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Request body must be an array of donation kits' 
+        message: 'Request body must be an array of donation kits'
       });
     }
 
@@ -223,10 +223,10 @@ const bulkCreateDonationKits = async (req, res) => {
     });
   } catch (error) {
     console.error('Error bulk creating donation kits:', error);
-    res.status(400).json({ 
+    res.status(400).json({
       success: false,
-      message: 'Bad Request', 
-      error: error.message 
+      message: 'Bad Request',
+      error: error.message
     });
   }
 };
