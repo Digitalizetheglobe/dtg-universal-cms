@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const CATEGORIES = ['Education', 'Healthcare', 'Food', 'Empowerment', 'Environment', 'General'];
 
@@ -42,7 +42,7 @@ const CampaignForm = () => {
     const fetchCampaignData = async () => {
         setFetching(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/campaign-management/${id}`);
+            const response = await axios.get(`${API_BASE_URL_API}/campaign-management/${id}`);
             if (response.data.success) {
                 const data = response.data.data;
                 setFormData({
@@ -91,7 +91,7 @@ const CampaignForm = () => {
 
         setUploading(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/campaign-upload`, formData, {
+            const response = await axios.post(`${API_BASE_URL_API}/campaign-upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -124,10 +124,10 @@ const CampaignForm = () => {
             };
 
             if (isEditMode) {
-                await axios.put(`${API_BASE_URL}/campaign-management/${id}`, payload);
+                await axios.put(`${API_BASE_URL_API}/campaign-management/${id}`, payload);
                 toast.success('Campaign updated successfully');
             } else {
-                await axios.post(`${API_BASE_URL}/campaign-management`, payload);
+                await axios.post(`${API_BASE_URL_API}/campaign-management`, payload);
                 toast.success('Campaign created successfully');
             }
 

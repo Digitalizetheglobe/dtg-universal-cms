@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const CampaignList = () => {
     const [campaigns, setCampaigns] = useState([]);
@@ -18,7 +18,7 @@ const CampaignList = () => {
 
     const fetchCampaigns = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/campaign-management`);
+            const response = await axios.get(`${API_BASE_URL_API}/campaign-management`);
             if (response.data.success) {
                 setCampaigns(response.data.data);
             }
@@ -33,7 +33,7 @@ const CampaignList = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this campaign?')) {
             try {
-                await axios.delete(`${API_BASE_URL}/campaign-management/${id}`);
+                await axios.delete(`${API_BASE_URL_API}/campaign-management/${id}`);
                 toast.success('Campaign deleted successfully');
                 fetchCampaigns();
             } catch (error) {
@@ -45,7 +45,7 @@ const CampaignList = () => {
 
     const handleToggleFeatured = async (id) => {
         try {
-            const response = await axios.patch(`${API_BASE_URL}/campaign-management/${id}/featured`);
+            const response = await axios.patch(`${API_BASE_URL_API}/campaign-management/${id}/featured`);
             if (response.data.success) {
                 toast.success(response.data.message);
                 fetchCampaigns();

@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API, normalizeImageUrl } from '../api/api';
 
 const DonationKitList = () => {
     const [kits, setKits] = useState([]);
@@ -18,7 +18,7 @@ const DonationKitList = () => {
 
     const fetchKits = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/donation-kit-management`);
+            const response = await axios.get(`${API_BASE_URL_API}/donation-kit-management`);
             if (response.data.success) {
                 setKits(response.data.data);
             }
@@ -33,7 +33,7 @@ const DonationKitList = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this kit?')) {
             try {
-                await axios.delete(`${API_BASE_URL}/donation-kit-management/${id}`);
+                await axios.delete(`${API_BASE_URL_API}/donation-kit-management/${id}`);
                 toast.success('Donation kit deleted successfully');
                 fetchKits();
             } catch (error) {
@@ -80,7 +80,7 @@ const DonationKitList = () => {
                             {/* Image */}
                             <div className="w-full md:w-64 h-48 md:h-auto flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
                                 <img
-                                    src={kit.img}
+                                    src={normalizeImageUrl(kit.img)}
                                     alt={kit.title}
                                     className="w-full h-full object-cover"
                                     onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image' }}

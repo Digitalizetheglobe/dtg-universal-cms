@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const GroceryItemList = () => {
     const [items, setItems] = useState([]);
@@ -18,7 +18,7 @@ const GroceryItemList = () => {
 
     const fetchItems = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/grocery-item-management`);
+            const response = await axios.get(`${API_BASE_URL_API}/grocery-item-management`);
             if (response.data.success) {
                 setItems(response.data.data);
             }
@@ -33,7 +33,7 @@ const GroceryItemList = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
-                await axios.delete(`${API_BASE_URL}/grocery-item-management/${id}`);
+                await axios.delete(`${API_BASE_URL_API}/grocery-item-management/${id}`);
                 toast.success('Grocery item deleted successfully');
                 fetchItems();
             } catch (error) {

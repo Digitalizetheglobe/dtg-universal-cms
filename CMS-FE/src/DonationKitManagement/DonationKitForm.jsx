@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API, normalizeImageUrl } from '../api/api';
 
 const DonationKitForm = () => {
     const { id } = useParams();
@@ -35,7 +35,7 @@ const DonationKitForm = () => {
     const fetchKitData = async () => {
         setFetching(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/donation-kit-management/${id}`);
+            const response = await axios.get(`${API_BASE_URL_API}/donation-kit-management/${id}`);
             if (response.data.success) {
                 const data = response.data.data;
                 setFormData({
@@ -94,10 +94,10 @@ const DonationKitForm = () => {
             };
 
             if (isEditMode) {
-                await axios.put(`${API_BASE_URL}/donation-kit-management/${id}`, payload);
+                await axios.put(`${API_BASE_URL_API}/donation-kit-management/${id}`, payload);
                 toast.success('Donation kit updated successfully');
             } else {
-                await axios.post(`${API_BASE_URL}/donation-kit-management`, payload);
+                await axios.post(`${API_BASE_URL_API}/donation-kit-management`, payload);
                 toast.success('Donation kit created successfully');
             }
 
@@ -219,14 +219,14 @@ const DonationKitForm = () => {
 
                                                 setUploading(true);
                                                 try {
-                                                    const response = await axios.post(`${API_BASE_URL}/donation-kit-upload`, formData, {
+                                                    const response = await axios.post(`${API_BASE_URL_API}/donation-kit-upload`, formData, {
                                                         headers: {
                                                             'Content-Type': 'multipart/form-data'
                                                         }
                                                     });
 
                                                     if (response.data.success) {
-                                                        setFormData(prev => ({ ...prev, img: response.data.url }));
+                                                        setFormData(prev => ({ ...prev, img: normalizeImageUrl(response.data.url) }));
                                                         toast.success('Image uploaded successfully');
                                                     }
                                                 } catch (error) {
@@ -267,7 +267,7 @@ const DonationKitForm = () => {
                                     {formData.img && (
                                         <div className="mt-2 relative h-48 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
                                             <img
-                                                src={formData.img}
+                                                src={normalizeImageUrl(formData.img)}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Invalid+Image+URL' }}

@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const CampaignerCampaignList = () => {
     const [campaigns, setCampaigns] = useState([]);
@@ -18,7 +18,7 @@ const CampaignerCampaignList = () => {
 
     const fetchCampaigns = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/campaigner-campaign-management`);
+            const response = await axios.get(`${API_BASE_URL_API}/campaigner-campaign-management`);
             if (response.data.success) {
                 setCampaigns(response.data.data);
             }
@@ -33,7 +33,7 @@ const CampaignerCampaignList = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this campaign?')) {
             try {
-                await axios.delete(`${API_BASE_URL}/campaigner-campaign-management/${id}`);
+                await axios.delete(`${API_BASE_URL_API}/campaigner-campaign-management/${id}`);
                 toast.success('Campaigner campaign deleted successfully');
                 fetchCampaigns();
             } catch (error) {

@@ -41,7 +41,7 @@ export const Home = () => {
             <FeatureCard title="Banner Uploading" icon="🖼️" />
           </Link>
           <Link to="/donation-amount">
-            <FeatureCard title="Donation Amount Uploading" icon="🖼️" />
+            <FeatureCard title="Donation Amount Uploading" icon="💰"/>
           </Link>
          {/* / <Link to="/donation-amount">
             <FeatureCard title="Donation Amount Uploading" icon="🖼️" />

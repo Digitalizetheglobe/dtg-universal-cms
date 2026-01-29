@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const CampaignerCampaignForm = () => {
     const { id } = useParams();
@@ -39,7 +39,7 @@ const CampaignerCampaignForm = () => {
     const fetchCampaignData = async () => {
         setFetching(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/campaigner-campaign-management/${id}`);
+            const response = await axios.get(`${API_BASE_URL_API}/campaigner-campaign-management/${id}`);
             if (response.data.success) {
                 const data = response.data.data;
                 setFormData({
@@ -86,7 +86,7 @@ const CampaignerCampaignForm = () => {
 
         setUploadingPhoto(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/campaigner-campaign-upload?type=photo`, formData, {
+            const response = await axios.post(`${API_BASE_URL_API}/campaigner-campaign-upload?type=photo`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -118,7 +118,7 @@ const CampaignerCampaignForm = () => {
 
         setUploadingImage(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/campaigner-campaign-upload?type=campaign`, formData, {
+            const response = await axios.post(`${API_BASE_URL_API}/campaigner-campaign-upload?type=campaign`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -150,10 +150,10 @@ const CampaignerCampaignForm = () => {
             };
 
             if (isEditMode) {
-                await axios.put(`${API_BASE_URL}/campaigner-campaign-management/${id}`, payload);
+                await axios.put(`${API_BASE_URL_API}/campaigner-campaign-management/${id}`, payload);
                 toast.success('Campaigner campaign updated successfully');
             } else {
-                await axios.post(`${API_BASE_URL}/campaigner-campaign-management`, payload);
+                await axios.post(`${API_BASE_URL_API}/campaigner-campaign-management`, payload);
                 toast.success('Campaigner campaign created successfully');
             }
 

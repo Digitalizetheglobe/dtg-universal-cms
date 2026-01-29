@@ -17,6 +17,9 @@ connectDB();
 
 const app = express();
 
+// Trust reverse proxy headers (needed for correct req.protocol/host on HTTPS)
+app.set("trust proxy", true);
+
 // CORS configuration - DEBUGGING VERSION
 const corsOptions = {
   origin: true, // Allow all origins temporarily
@@ -65,6 +68,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Also serve uploads under /api to work with proxies that only forward /api/*
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/blogs", require("./routes/blogRoutes"));

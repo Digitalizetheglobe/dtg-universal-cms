@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL_API } from '../api/api';
 
 const GROCERY_EMOJIS = [
     '🍚', '🥇', '☕', '🌾', '⚡', '🧂', '🥐', '☕', '💧', '🍪', '🍝',
@@ -39,7 +39,7 @@ const GroceryItemForm = () => {
     const fetchItemData = async () => {
         setFetching(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/grocery-item-management/${id}`);
+            const response = await axios.get(`${API_BASE_URL_API}/grocery-item-management/${id}`);
             if (response.data.success) {
                 const data = response.data.data;
                 setFormData({
@@ -86,7 +86,7 @@ const GroceryItemForm = () => {
 
         setUploading(true);
         try {
-            const response = await axios.post(`${API_BASE_URL}/grocery-item-upload`, formData, {
+            const response = await axios.post(`${API_BASE_URL_API}/grocery-item-upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -116,10 +116,10 @@ const GroceryItemForm = () => {
             };
 
             if (isEditMode) {
-                await axios.put(`${API_BASE_URL}/grocery-item-management/${id}`, payload);
+                await axios.put(`${API_BASE_URL_API}/grocery-item-management/${id}`, payload);
                 toast.success('Grocery item updated successfully');
             } else {
-                await axios.post(`${API_BASE_URL}/grocery-item-management`, payload);
+                await axios.post(`${API_BASE_URL_API}/grocery-item-management`, payload);
                 toast.success('Grocery item created successfully');
             }
 

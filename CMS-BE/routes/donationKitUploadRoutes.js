@@ -51,12 +51,14 @@ router.post('/', upload.single('image'), (req, res) => {
         // Construct URL
         const protocol = req.protocol;
         const host = req.get('host');
-        const url = `${protocol}://${host}/uploads/donation_kits/${req.file.filename}`;
+        const relativePath = `/api/uploads/donation_kits/${req.file.filename}`;
+        const url = `${protocol}://${host}${relativePath}`;
 
         res.status(200).json({
             success: true,
             message: 'Image uploaded successfully',
             url: url,
+            path: relativePath,
             filename: req.file.filename
         });
     } catch (error) {
