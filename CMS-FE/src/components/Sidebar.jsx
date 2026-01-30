@@ -17,7 +17,8 @@ import {
   FaPlus,
   FaList,
   FaUserFriends,
-  FaHeart
+  FaHeart,
+  FaEnvelopeOpenText
 } from 'react-icons/fa';
 import logo from '../assets/DTG.png'
 import logo2 from '../../public/logo.png'
@@ -88,6 +89,12 @@ const Sidebar = () => {
       path: '/leads-management', 
       icon: <FaUsers className="text-blue-900" />, 
       label: 'Lead Management',
+      color: 'from-blue-300 to-blue-200'
+    },
+    { 
+      path: '/guidance-requests', 
+      icon: <FaEnvelopeOpenText className="text-blue-900" />, 
+      label: 'Guidance Requests',
       color: 'from-blue-300 to-blue-200'
     },
     { 

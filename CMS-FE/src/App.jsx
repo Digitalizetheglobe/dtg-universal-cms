@@ -63,6 +63,7 @@ import BannerManagement from "./pages/BannerManagement";
 import Donationamount from "./pages/Donationamount";
 import CareerForm from "./pages/CareerForm";
 import AppliedStatus from "./pages/appliedstatus";
+import GuidanceRequests from "./pages/GuidanceRequests";
 function AppWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -104,6 +105,7 @@ function AppWrapper() {
               <Route path="/dashboard" element={<Home />} />
               <Route path="/banner" element={<BannerManagement />} />
               <Route path="/donation-amount" element={<Donationamount />} />
+              <Route path="/guidance-requests" element={<GuidanceRequests />} />
 
               <Route path="/apply" element={<CareerForm />} />
               <Route path="/blog-management" element={<BlogEditForm />} />

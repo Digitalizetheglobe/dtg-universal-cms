@@ -59,10 +59,30 @@ const DonationKitForm = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        setFormData(prev => {
+            // Prevent negative numbers for numeric fields
+            if (type !== 'checkbox' && (name === 'displayOrder' || name === 'price')) {
+                if (value === '' || value === null) {
+                    return { ...prev, [name]: '' };
+                }
+
+                const num = Number(value);
+                if (!Number.isFinite(num)) {
+                    // Ignore intermediate invalid states like "-"
+                    return prev;
+                }
+
+                const normalized =
+                    name === 'displayOrder' ? Math.max(0, Math.trunc(num)) : Math.max(0, num);
+
+                return { ...prev, [name]: normalized };
+            }
+
+            return {
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            };
+        });
     };
 
     const handleIncludedChange = (index, value) => {
@@ -163,9 +183,11 @@ const DonationKitForm = () => {
                                         name="price"
                                         value={formData.price}
                                         onChange={handleChange}
+                                        onWheel={(e) => e.currentTarget.blur()}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-shadow"
                                         placeholder="e.g. 790"
                                         min="0"
+                                        step="1"
                                         required
                                     />
                                 </div>
@@ -326,7 +348,10 @@ const DonationKitForm = () => {
                                             name="displayOrder"
                                             value={formData.displayOrder}
                                             onChange={handleChange}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-shadow"
+                                            min="0"
+                                            step="1"
                                         />
                                     </div>
                                     <div className="flex-1 flex items-end mb-3">

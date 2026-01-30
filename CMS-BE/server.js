@@ -99,6 +99,9 @@ app.use("/api/banner", require("./routes/bannerRoutes"));
 // Career Routing
 app.use("/api/career", require("./routes/careerRoutes"));
 
+// Guidance Routing (Get Guidance form)
+app.use("/api/guidance", require("./routes/guidanceRoutes"));
+
 // Donation Amount Routing
 app.use("/api/donation-amounts", require("./routes/donationAmountRoutes"));
 

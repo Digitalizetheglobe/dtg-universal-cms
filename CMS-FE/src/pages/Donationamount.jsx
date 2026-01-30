@@ -19,22 +19,23 @@ const Donationamount = () => {
   const [saving, setSaving] = useState({});
   const [message, setMessage] = useState(null);
   const [editingCard, setEditingCard] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("food");
 
   // Form data for each category
   const [formData, setFormData] = useState({
     giftFuture: {
       text: "",
       yearText: "",
-      amount: 0,
+      amount: "",
     },
     giftLearning: {
       text: "",
       yearText: "",
-      amount: 0,
+      amount: "",
     },
     food: {
       text: "",
-      amount: 0,
+      amount: "",
     },
   });
 
@@ -76,7 +77,12 @@ const Donationamount = () => {
       ...prev,
       [category]: {
         ...prev[category],
-        [field]: field === "amount" ? parseFloat(value) || 0 : value,
+        [field]:
+          field === "amount"
+            ? value === "" || value === null
+              ? ""
+              : Number(value)
+            : value,
       },
     }));
   };
@@ -85,7 +91,12 @@ const Donationamount = () => {
     if (editingCard) {
       setEditingCard({
         ...editingCard,
-        [field]: field === "amount" ? parseFloat(value) || 0 : value,
+        [field]:
+          field === "amount"
+            ? value === "" || value === null
+              ? ""
+              : Number(value)
+            : value,
       });
     }
   };
@@ -105,10 +116,15 @@ const Donationamount = () => {
         return;
       }
 
+      const amountValue =
+        formData[category].amount === "" || formData[category].amount === null
+          ? undefined
+          : Number(formData[category].amount);
+
       const payload = {
         category,
         text: formData[category].text,
-        amount: formData[category].amount,
+        amount: amountValue,
       };
 
       // Add yearText for gift categories
@@ -155,8 +171,8 @@ const Donationamount = () => {
           ...prev,
           [category]:
             category === "food"
-              ? { text: "", amount: 0 }
-              : { text: "", yearText: "", amount: 0 },
+              ? { text: "", amount: "" }
+              : { text: "", yearText: "", amount: "" },
         }));
 
         setMessage({
@@ -199,9 +215,14 @@ const Donationamount = () => {
         return;
       }
 
+      const amountValue =
+        editingCard.amount === "" || editingCard.amount === null
+          ? undefined
+          : Number(editingCard.amount);
+
       const payload = {
         text: editingCard.text,
-        amount: editingCard.amount,
+        amount: amountValue,
       };
 
       if (
@@ -328,6 +349,26 @@ const Donationamount = () => {
     }
   };
 
+  const getFilterButtonClasses = (category) => {
+    const base =
+      "flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-all sm:w-auto";
+
+    if (activeCategory !== category) {
+      return `${base} border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+    }
+
+    switch (category) {
+      case "giftFuture":
+        return `${base} border-blue-300 bg-blue-50 text-blue-700`;
+      case "giftLearning":
+        return `${base} border-purple-300 bg-purple-50 text-purple-700`;
+      case "food":
+        return `${base} border-green-300 bg-green-50 text-green-700`;
+      default:
+        return `${base} border-gray-300 bg-gray-50 text-gray-800`;
+    }
+  };
+
   const renderFormCard = (category) => {
     const categoryData = formData[category];
     const isGiftCategory = category === "giftFuture" || category === "giftLearning";
@@ -417,12 +458,12 @@ const Donationamount = () => {
             /> */}
             <input
               type="number"
-              value={categoryData.amount === 0 ? "" : categoryData.amount}
-              onFocus={() => handleInputChange(category, "amount", "")}
+              value={categoryData.amount === "" ? "" : categoryData.amount}
               onChange={(e) =>
                 handleInputChange(category, "amount", e.target.value)
               }
-              onWheel={(e) => e.target.blur()}
+              onWheel={(e) => e.currentTarget.blur()}
+              placeholder="Enter amount"
               min="0"
               step="1"
               className={`w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 ${category === "giftFuture"
@@ -432,9 +473,6 @@ const Donationamount = () => {
                     : "focus:border-green-500 focus:ring-green-200"
                 }`}
             />
-
-
-
           </div>
 
           <button
@@ -508,10 +546,11 @@ const Donationamount = () => {
               </label>
               <input
                 type="number"
-                value={editingCard.amount}
+                value={editingCard.amount === "" ? "" : editingCard.amount}
                 onChange={(e) =>
                   handleEditInputChange("amount", e.target.value)
                 }
+                onWheel={(e) => e.currentTarget.blur()}
                 className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 min="0"
                 step="0.01"
@@ -639,20 +678,62 @@ const Donationamount = () => {
 
         {/* Form Cards Grid */}
         <div className="mb-12 grid gap-6 lg:grid-cols-3">
-          {renderFormCard("giftFuture")}
-          {renderFormCard("giftLearning")}
           {renderFormCard("food")}
+          {renderFormCard("giftLearning")}
+          {renderFormCard("giftFuture")}
         </div>
 
         {/* Display Created Cards by Category */}
         <div className="mb-8">
-          <h2 className="mb-6 text-2xl font-bold text-gray-800">
-            Created Donation Cards
-          </h2>
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Created Donation Cards
+            </h2>
 
-          {renderCardsSection("giftFuture")}
-          {renderCardsSection("giftLearning")}
-          {renderCardsSection("food")}
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setActiveCategory("food")}
+                className={getFilterButtonClasses("food")}
+              >
+                {getTypeIcon("food")}
+                Food
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCategory("giftLearning")}
+                className={getFilterButtonClasses("giftLearning")}
+              >
+                {getTypeIcon("giftLearning")}
+                Gift Learning
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCategory("giftFuture")}
+                className={getFilterButtonClasses("giftFuture")}
+              >
+                {getTypeIcon("giftFuture")}
+                Gift Future
+              </button>
+             
+            </div>
+          </div>
+
+          {activeCategory === "giftFuture" && renderCardsSection("giftFuture")}
+          {activeCategory === "giftLearning" && renderCardsSection("giftLearning")}
+          {activeCategory === "food" && renderCardsSection("food")}
+
+          {cards.giftFuture.length > 0 ||
+          cards.giftLearning.length > 0 ||
+          cards.food.length > 0 ? (
+            (cards[activeCategory]?.length || 0) === 0 && (
+              <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
+                <p className="text-gray-500">
+                  No {getTypeLabel(activeCategory)} cards created yet.
+                </p>
+              </div>
+            )
+          ) : null}
 
           {cards.giftFuture.length === 0 &&
             cards.giftLearning.length === 0 &&
