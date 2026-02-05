@@ -17,7 +17,8 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `campaign-hero-${uniqueSuffix}${path.extname(file.originalname)}`);
+        const fileType = req.query.type || 'image';
+        cb(null, `campaign-${fileType}-${uniqueSuffix}${path.extname(file.originalname)}`);
     }
 });
 
@@ -38,7 +39,7 @@ const upload = multer({
     }
 });
 
-// Upload endpoint
+// Upload endpoint for campaign images (cover, banner, gallery, etc.)
 router.post('/', upload.single('image'), (req, res) => {
     try {
         if (!req.file) {
@@ -69,5 +70,37 @@ router.post('/', upload.single('image'), (req, res) => {
     }
 });
 
-module.exports = router;
+// Upload multiple images (for gallery)
+router.post('/multiple', upload.array('images', 10), (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No files uploaded'
+            });
+        }
 
+        const protocol = req.protocol;
+        const host = req.get('host');
+        
+        const urls = req.files.map(file => ({
+            url: `${protocol}://${host}/uploads/campaigns/${file.filename}`,
+            filename: file.filename
+        }));
+
+        res.status(200).json({
+            success: true,
+            message: 'Images uploaded successfully',
+            files: urls
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during upload',
+            error: error.message
+        });
+    }
+});
+
+module.exports = router;

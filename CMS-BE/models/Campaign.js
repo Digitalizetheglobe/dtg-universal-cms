@@ -38,11 +38,11 @@ const campaignSchema = new mongoose.Schema({
   goalAmount: { type: Number, required: true },
   raisedAmount: { type: Number, default: 0 },
   supporters: { type: Number, default: 0 },
-  deadline: { 
+  deadline: {
     type: Date,
     required: true,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return value > new Date();
       },
       message: "Deadline must be a future date."

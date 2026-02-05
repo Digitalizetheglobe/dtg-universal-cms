@@ -109,11 +109,6 @@ app.use("/api/donation-amounts", require("./routes/donationAmountRoutes"));
 app.get("/", (req, res) => {
   res.send("Universal CMS Backend Running");
 });
-// ------------------------
-// DonateToClause routes
-// ------------------------
-const donateToClauseRoutes = require("./routes/donateToClause");
-app.use("/api/campaigns", donateToClauseRoutes);
 
 // ------------------------
 // Build School routes (slug-based)
@@ -179,7 +174,7 @@ const campaignerCampaignUploadRoutes = require("./routes/campaignerCampaignUploa
 app.use("/api/campaigner-campaign-upload", campaignerCampaignUploadRoutes);
 
 // ------------------------
-// Campaign Management routes (Separate)
+// Campaign Management routes
 // ------------------------
 const campaignManagementRoutes = require("./routes/campaignManagementRoutes");
 app.use("/api/campaign-management", campaignManagementRoutes);

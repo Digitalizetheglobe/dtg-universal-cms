@@ -47,13 +47,13 @@ import DonationKitForm from "./DonationKitManagement/DonationKitForm";
 import GroceryItemList from "./GroceryItemManagement/GroceryItemList";
 import GroceryItemForm from "./GroceryItemManagement/GroceryItemForm";
 
-// Campaign Management Components (Choose a Cause campaigns)
-import CampaignList from "./CampaignManagement/CampaignList";
-import CampaignForm from "./CampaignManagement/CampaignForm";
-
 // Campaigner Campaign Management Components
 import CampaignerCampaignList from "./CampaignerCampaignManagement/CampaignerCampaignList";
 import CampaignerCampaignForm from "./CampaignerCampaignManagement/CampaignerCampaignForm";
+
+// Campaign Management Components
+import CampaignList from "./CampaignManagement/CampaignList";
+import CampaignForm from "./CampaignManagement/CampaignForm";
 
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
@@ -93,7 +93,7 @@ function AppWrapper() {
       >
         <Routes>
           <Route index element={<Login />} />
-          
+
           {/* Auth routes - accessible to everyone */}
           <Route path="/signUp" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
@@ -214,20 +214,6 @@ function AppWrapper() {
                 element={<GroceryItemForm />}
               />
 
-              {/* Campaign Management Routes (Choose a Cause campaigns) */}
-              <Route
-                path="/campaign-management/campaigns"
-                element={<CampaignList />}
-              />
-              <Route
-                path="/campaign-management/campaigns/create"
-                element={<CampaignForm />}
-              />
-              <Route
-                path="/campaign-management/campaigns/edit/:id"
-                element={<CampaignForm />}
-              />
-
               {/* Campaigner Campaign Management Routes */}
               <Route
                 path="/campaigner-campaign-management/campaigns"
@@ -240,6 +226,20 @@ function AppWrapper() {
               <Route
                 path="/campaigner-campaign-management/campaigns/edit/:id"
                 element={<CampaignerCampaignForm />}
+              />
+
+              {/* Campaign Management Routes */}
+              <Route
+                path="/campaign-management/list"
+                element={<CampaignList />}
+              />
+              <Route
+                path="/campaign-management/create"
+                element={<CampaignForm />}
+              />
+              <Route
+                path="/campaign-management/edit/:id"
+                element={<CampaignForm />}
               />
 
               {/* Public Form Route - This would typically be in your frontend app */}

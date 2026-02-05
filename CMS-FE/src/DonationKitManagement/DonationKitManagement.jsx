@@ -1,12 +1,10 @@
 import React from 'react';
 import {
     FaHeart,
-    FaBullseye,
     FaShoppingBasket,
     FaUsers,
-    FaBriefcase,
-    FaBirthdayCake,
-    FaPlus
+    FaPlus,
+    FaBullhorn
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,16 +21,6 @@ const DonationKitManagement = () => {
             buttonText: 'Manage Kits',
             onManage: () => navigate('/donation-kit-management/kits'),
             onAdd: () => navigate('/donation-kit-management/kits'), // Per user request, opens the List View
-        },
-        {
-            id: 2,
-            title: 'Campaigns',
-            description: 'Manage "Choose a Cause - Make Real Impact" campaigns',
-            icon: <FaBullseye className="text-orange-500 text-xl" />,
-            iconBg: 'bg-orange-100',
-            buttonText: 'Manage Campaigns',
-            onManage: () => navigate('/campaign-management/campaigns'),
-            onAdd: () => navigate('/campaign-management/campaigns/create'),
         },
         {
             id: 3,
@@ -54,7 +42,17 @@ const DonationKitManagement = () => {
             onManage: () => navigate('/campaigner-campaign-management/campaigns'),
             onAdd: () => navigate('/campaigner-campaign-management/campaigns/create'),
         },
-    
+        {
+            id: 5,
+            title: 'Campaign Management',
+            description: 'Manage main campaigns',
+            icon: <FaBullhorn className="text-purple-500 text-xl" />,
+            iconBg: 'bg-purple-100',
+            buttonText: 'Manage Campaigns',
+            onManage: () => navigate('/campaign-management/list'),
+            onAdd: () => navigate('/campaign-management/create'),
+        },
+
     ];
 
     return (
