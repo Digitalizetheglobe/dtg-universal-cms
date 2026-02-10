@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FaChartBar, 
-  FaChartLine, 
-  FaChartPie, 
+import {
+  FaChartBar,
+  FaChartLine,
+  FaChartPie,
   FaCalendarAlt,
   FaRupeeSign,
   FaUsers,
   FaHeart,
   FaDownload
 } from 'react-icons/fa';
+import { getApiUrl } from '../api/api';
 
 const DonationStats = () => {
   const [stats, setStats] = useState({
@@ -25,6 +26,7 @@ const DonationStats = () => {
     startDate: '',
     endDate: ''
   });
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -34,11 +36,11 @@ const DonationStats = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-      
+
       if (dateRange.startDate) queryParams.append('startDate', dateRange.startDate);
       if (dateRange.endDate) queryParams.append('endDate', dateRange.endDate);
 
-      const response = await fetch(`https://api.harekrishnavidya.org/api/donations/stats?${queryParams}`);
+      const response = await fetch(getApiUrl(`api/donations/stats?${queryParams}`));
       const data = await response.json();
 
       if (data.success) {
@@ -91,8 +93,53 @@ const DonationStats = () => {
   };
 
   const exportStats = () => {
-    // Implementation for exporting statistics
-    console.log('Exporting stats...');
+    try {
+      setExporting(true);
+
+      const escape = (val) => `"${String(val).replace(/"/g, '""')}"`;
+
+      const rows = [
+        ['"Donation Analytics Report"'],
+        ['"Date Range"', escape(`${dateRange.startDate || 'All Time'} to ${dateRange.endDate || 'Present'}`)],
+        ['"Generated At"', escape(new Date().toLocaleString())],
+        [],
+        ['"Key Metrics"'],
+        ['"Metric"', '"Value"'],
+        ['"Total Donations"', stats.totalDonations],
+        ['"Total Amount"', stats.totalAmount],
+        ['"Average Donation"', stats.avgAmount],
+        ['"Completed Donations"', stats.completedDonations],
+        ['"Completed Amount"', stats.completedAmount],
+        ['"Success Rate"', `"${stats.totalDonations > 0 ? Math.round((stats.completedDonations / stats.totalDonations) * 100) : 0}%"`],
+        [],
+        ['"Payment Status Breakdown"'],
+        ['"Status"', '"Count"', '"Amount (INR)"'],
+        ...stats.statusBreakdown.map(item => [escape(item._id), item.count, item.amount]),
+        [],
+        ['"Monthly Trends"'],
+        ['"Year"', '"Month"', '"Count"', '"Amount (INR)"'],
+        ...stats.monthlyBreakdown.map(item => {
+          const monthName = new Date(item._id.year, item._id.month - 1).toLocaleDateString('en-US', { month: 'short' });
+          return [item._id.year, escape(monthName), item.count, item.amount];
+        })
+      ];
+
+      const csvContent = rows.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `donation_stats_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting stats:', error);
+      alert('Failed to export statistics.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (loading) {
@@ -135,10 +182,11 @@ const DonationStats = () => {
           </div>
           <button
             onClick={exportStats}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50"
           >
-            <FaDownload className="w-4 h-4" />
-            Export
+            <FaDownload className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+            {exporting ? 'Exporting...' : 'Export'}
           </button>
         </div>
       </div>
@@ -201,7 +249,7 @@ const DonationStats = () => {
             <div>
               <p className="text-orange-100 text-sm font-medium">Success Rate</p>
               <p className="text-3xl font-bold">
-                {stats.totalDonations > 0 
+                {stats.totalDonations > 0
                   ? Math.round((stats.completedDonations / stats.totalDonations) * 100)
                   : 0}%
               </p>
@@ -226,7 +274,7 @@ const DonationStats = () => {
             <h3 className="text-lg font-semibold text-gray-900">Payment Status Breakdown</h3>
             <FaChartPie className="w-5 h-5 text-gray-400" />
           </div>
-          
+
           <div className="space-y-4">
             {stats.statusBreakdown.map((item) => (
               <div key={item._id} className="flex items-center justify-between">
@@ -252,7 +300,7 @@ const DonationStats = () => {
                   const rotation = stats.statusBreakdown
                     .slice(0, index)
                     .reduce((sum, i) => sum + (i.count / total) * 360, 0);
-                  
+
                   return (
                     <div
                       key={item._id}
@@ -279,13 +327,13 @@ const DonationStats = () => {
             <h3 className="text-lg font-semibold text-gray-900">Monthly Trends</h3>
             <FaChartLine className="w-5 h-5 text-gray-400" />
           </div>
-          
+
           <div className="space-y-4">
             {stats.monthlyBreakdown.slice(0, 6).map((item) => {
               const monthName = new Date(item._id.year, item._id.month - 1).toLocaleDateString('en-US', { month: 'short' });
               const maxAmount = Math.max(...stats.monthlyBreakdown.map(i => i.amount));
               const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
-              
+
               return (
                 <div key={`${item._id.year}-${item._id.month}`} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
@@ -312,7 +360,7 @@ const DonationStats = () => {
       {/* Additional Insights */}
       <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Key Insights</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -330,7 +378,7 @@ const DonationStats = () => {
             </div>
             <h4 className="font-semibold text-gray-900 mb-1">Success Rate</h4>
             <p className="text-sm text-gray-600">
-              {stats.totalDonations > 0 
+              {stats.totalDonations > 0
                 ? Math.round((stats.completedDonations / stats.totalDonations) * 100)
                 : 0}% payment success rate
             </p>
@@ -342,7 +390,7 @@ const DonationStats = () => {
             </div>
             <h4 className="font-semibold text-gray-900 mb-1">Monthly Growth</h4>
             <p className="text-sm text-gray-600">
-              {stats.monthlyBreakdown.length > 1 
+              {stats.monthlyBreakdown.length > 1
                 ? `${stats.monthlyBreakdown.length} months of data`
                 : 'Insufficient data for trend analysis'}
             </p>

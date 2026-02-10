@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaChartLine } from 'react-icons/fa';
+import { getApiUrl } from '../api/api';
 
 const DonationChart = () => {
   const [chartData, setChartData] = useState([]);
@@ -12,7 +13,7 @@ const DonationChart = () => {
   const fetchChartData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api.harekrishnavidya.org/api/donations/stats');
+      const response = await fetch(getApiUrl('api/donations/stats'));
       const data = await response.json();
 
       if (data.success && data.stats.monthlyBreakdown) {
@@ -72,7 +73,7 @@ const DonationChart = () => {
             const monthName = new Date(item._id.year, item._id.month - 1).toLocaleDateString('en-US', { month: 'short' });
             const amountHeight = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
             const countHeight = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-            
+
             return (
               <div key={`${item._id.year}-${item._id.month}`} className="flex-1 flex flex-col items-center">
                 {/* Amount Bar */}
@@ -86,7 +87,7 @@ const DonationChart = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Count Bar */}
                 <div className="relative w-full mt-2">
                   <div
@@ -98,7 +99,7 @@ const DonationChart = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Month Label */}
                 <div className="mt-2 text-xs text-gray-600 font-medium text-center">
                   {monthName}
@@ -107,7 +108,7 @@ const DonationChart = () => {
             );
           })}
         </div>
-        
+
         {/* Y-axis labels */}
         <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500">
           <span>{formatCurrency(maxAmount)}</span>
