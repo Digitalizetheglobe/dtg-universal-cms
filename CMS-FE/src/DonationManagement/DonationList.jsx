@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FaHeart, 
-  FaEye, 
-  FaEdit, 
-  FaSearch, 
-  FaFilter, 
+import {
+  FaHeart,
+  FaEye,
+  FaEdit,
+  FaSearch,
+  FaFilter,
   FaDownload,
   FaCalendarAlt,
   FaRupeeSign,
@@ -22,6 +22,7 @@ import {
   FaSortDown
 } from 'react-icons/fa';
 import { FcOk } from "react-icons/fc";
+import { getApiUrl } from '../api/api';
 
 
 const DonationList = () => {
@@ -54,14 +55,14 @@ const DonationList = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-      
+
       Object.keys(filters).forEach(key => {
         if (filters[key]) {
           queryParams.append(key, filters[key]);
         }
       });
 
-      const response = await fetch(`https://api.harekrishnavidya.org/api/donations?${queryParams}`);
+      const response = await fetch(getApiUrl(`api/donations?${queryParams}`));
       const data = await response.json();
 
       if (data.success) {
@@ -146,14 +147,90 @@ const DonationList = () => {
     if (sortField !== field) {
       return <FaSort className="w-3 h-3 text-gray-400" />;
     }
-    return sortOrder === 'asc' 
+    return sortOrder === 'asc'
       ? <FaSortUp className="w-3 h-3 text-blue-600" />
       : <FaSortDown className="w-3 h-3 text-blue-600" />;
   };
 
-  const exportDonations = () => {
-    // Implementation for exporting donations to CSV/Excel
-    console.log('Exporting donations...');
+  const [exporting, setExporting] = useState(false);
+
+  const exportDonations = async () => {
+    try {
+      setExporting(true);
+      const queryParams = new URLSearchParams();
+
+      // Use current filters but set a large limit for export to get all matching records
+      const exportFilters = { ...filters, limit: 5000, page: 1 };
+
+      Object.keys(exportFilters).forEach(key => {
+        if (exportFilters[key]) {
+          queryParams.append(key, exportFilters[key]);
+        }
+      });
+
+      const response = await fetch(getApiUrl(`api/donations?${queryParams}`));
+      const data = await response.json();
+
+      if (data.success && data.donations) {
+        if (data.donations.length === 0) {
+          alert('No donations found to export with current filters.');
+          return;
+        }
+
+        // CSV headers
+        const headers = [
+          'Donor Name',
+          'Email',
+          'Phone',
+          'Amount',
+          'Currency',
+          'Status',
+          'Payment Method',
+          'Date',
+          'Time',
+          'Payment ID',
+          'Anonymous'
+        ];
+
+        // CSV rows
+        const rows = data.donations.map(d => {
+          const date = new Date(d.createdAt);
+          return [
+            `"${(d.isAnonymous ? 'Anonymous' : d.donorName || '').replace(/"/g, '""')}"`,
+            `"${(d.donorEmail || '').replace(/"/g, '""')}"`,
+            `"${(d.donorPhone || '').replace(/"/g, '""')}"`,
+            d.amount,
+            d.currency,
+            d.paymentStatus,
+            d.paymentMethod || 'N/A',
+            date.toLocaleDateString('en-IN'),
+            date.toLocaleTimeString('en-IN'),
+            `"${d.razorpayPaymentId || 'N/A'}"`,
+            d.isAnonymous ? 'Yes' : 'No'
+          ];
+        });
+
+        const csvContent = [
+          headers.join(','),
+          ...rows.map(r => r.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `donations_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Error exporting donations:', error);
+      alert('Failed to export donations. Please try again.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (loading) {
@@ -186,7 +263,7 @@ const DonationList = () => {
               />
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -197,10 +274,11 @@ const DonationList = () => {
             </button>
             <button
               onClick={exportDonations}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+              disabled={exporting}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50"
             >
-              <FaDownload className="w-4 h-4" />
-              Export
+              <FaDownload className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+              {exporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>
@@ -219,7 +297,7 @@ const DonationList = () => {
               <option value="failed">Failed</option>
               <option value="refunded">Refunded</option>
             </select>
-            
+
             <input
               type="date"
               value={filters.startDate}
@@ -227,7 +305,7 @@ const DonationList = () => {
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Start Date"
             />
-            
+
             <input
               type="date"
               value={filters.endDate}
@@ -235,7 +313,7 @@ const DonationList = () => {
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="End Date"
             />
-            
+
             <select
               value={filters.limit}
               onChange={(e) => handleFilterChange('limit', e.target.value)}
@@ -264,7 +342,7 @@ const DonationList = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('donorName')}
                     >
@@ -273,7 +351,7 @@ const DonationList = () => {
                         {getSortIcon('donorName')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('amount')}
                     >
@@ -282,7 +360,7 @@ const DonationList = () => {
                         {getSortIcon('amount')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('paymentStatus')}
                     >
@@ -291,7 +369,7 @@ const DonationList = () => {
                         {getSortIcon('paymentStatus')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('paymentMethod')}
                     >
@@ -300,7 +378,7 @@ const DonationList = () => {
                         {getSortIcon('paymentMethod')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('createdAt')}
                     >
@@ -309,7 +387,7 @@ const DonationList = () => {
                         {getSortIcon('createdAt')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Payment ID
@@ -392,8 +470,8 @@ const DonationList = () => {
                       {/* Payment ID */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 font-mono">
-                          {donation.razorpayPaymentId ? 
-                            donation.razorpayPaymentId.substring(0, 12) + '...' : 
+                          {donation.razorpayPaymentId ?
+                            donation.razorpayPaymentId.substring(0, 12) + '...' :
                             'N/A'
                           }
                         </div>
@@ -433,7 +511,7 @@ const DonationList = () => {
                     {Math.min(pagination.currentPage * filters.limit, pagination.totalDonations)} of{' '}
                     {pagination.totalDonations} donations
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
@@ -442,7 +520,7 @@ const DonationList = () => {
                     >
                       Previous
                     </button>
-                    
+
                     <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                         const page = i + 1;
@@ -450,18 +528,17 @@ const DonationList = () => {
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}
-                            className={`px-3 py-1 text-sm rounded-md ${
-                              page === pagination.currentPage
-                                ? 'bg-blue-600 text-white'
-                                : 'border border-gray-300 hover:bg-gray-50'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md ${page === pagination.currentPage
+                              ? 'bg-blue-600 text-white'
+                              : 'border border-gray-300 hover:bg-gray-50'
+                              }`}
                           >
                             {page}
                           </button>
                         );
                       })}
                     </div>
-                    
+
                     <button
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       disabled={!pagination.hasNextPage}
