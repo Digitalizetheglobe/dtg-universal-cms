@@ -55,6 +55,18 @@ import CampaignerCampaignForm from "./CampaignerCampaignManagement/CampaignerCam
 import CampaignList from "./CampaignManagement/CampaignList";
 import CampaignForm from "./CampaignManagement/CampaignForm";
 
+// Photo Gallery Components
+import PhotoGalleryForm from "./PhotoGallery/PhotoGalleryForm";
+import PhotoGalleryList from "./PhotoGallery/PhotoGalleryList";
+
+// Video Gallery Components
+import VideoGalleryForm from "./VideoGallery/VideoGalleryForm";
+import VideoGalleryList from "./VideoGallery/VideoGalleryList";
+
+// Donor Wall Components
+import DonorWallForm from "./DonorWall/DonorWallForm";
+import DonorWallList from "./DonorWall/DonorWallList";
+
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
 
@@ -240,6 +252,48 @@ function AppWrapper() {
               <Route
                 path="/campaign-management/edit/:id"
                 element={<CampaignForm />}
+              />
+
+              {/* Photo Gallery Routes */}
+              <Route
+                path="/photo-gallery"
+                element={<PhotoGalleryList />}
+              />
+              <Route
+                path="/photo-gallery/create"
+                element={<PhotoGalleryForm />}
+              />
+              <Route
+                path="/photo-gallery/edit/:id"
+                element={<PhotoGalleryForm />}
+              />
+
+              {/* Video Gallery Routes */}
+              <Route
+                path="/video-gallery"
+                element={<VideoGalleryList />}
+              />
+              <Route
+                path="/video-gallery/create"
+                element={<VideoGalleryForm />}
+              />
+              <Route
+                path="/video-gallery/edit/:id"
+                element={<VideoGalleryForm />}
+              />
+
+              {/* Donor Wall Routes */}
+              <Route
+                path="/donor-wall"
+                element={<DonorWallList />}
+              />
+              <Route
+                path="/donor-wall/create"
+                element={<DonorWallForm />}
+              />
+              <Route
+                path="/donor-wall/edit/:id"
+                element={<DonorWallForm />}
               />
 
               {/* Public Form Route - This would typically be in your frontend app */}

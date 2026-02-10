@@ -182,6 +182,24 @@ app.use("/api/campaign-management", campaignManagementRoutes);
 const campaignUploadRoutes = require("./routes/campaignUploadRoutes");
 app.use("/api/campaign-upload", campaignUploadRoutes);
 
+// ------------------------
+// Photo Gallery routes
+// ------------------------
+const photoGalleryRoutes = require("./routes/photoGalleryRoutes");
+app.use("/api/photo-gallery", photoGalleryRoutes);
+
+// ------------------------
+// Video Gallery routes
+// ------------------------
+const videoGalleryRoutes = require("./routes/videoGalleryRoutes");
+app.use("/api/video-gallery", videoGalleryRoutes);
+
+// ------------------------
+// Donor Wall routes
+// ------------------------
+const donorWallRoutes = require("./routes/donorWallRoutes");
+app.use("/api/donor-wall", donorWallRoutes);
+
 // 404 handler - must be after all routes
 app.use((req, res, next) => {
   console.log(`[404] ${req.method} ${req.url} - Route not found`);

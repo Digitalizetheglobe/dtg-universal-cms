@@ -4,8 +4,12 @@ import {
     FaShoppingBasket,
     FaUsers,
     FaPlus,
-    FaBullhorn
+    FaBullhorn,
+    FaCrown,
+    FaVideo,
+    FaImages
 } from 'react-icons/fa';
+
 import { useNavigate } from 'react-router-dom';
 
 const DonationKitManagement = () => {
@@ -52,6 +56,37 @@ const DonationKitManagement = () => {
             onManage: () => navigate('/campaign-management/list'),
             onAdd: () => navigate('/campaign-management/create'),
         },
+        {
+            id: 6,
+            title: 'Video Gallery',
+            description: 'Manage event and campaign videos',
+            icon: <FaVideo className="text-red-500 text-xl" />,
+            iconBg: 'bg-red-100',
+            buttonText: 'Manage Videos',
+            onManage: () => navigate('/video-gallery'),
+            onAdd: () => navigate('/video-gallery/create'),
+        },
+        {
+            id: 7,
+            title: 'Photo Gallery',
+            description: 'Manage event and campaign photos',
+            icon: <FaImages className="text-green-500 text-xl" />,
+            iconBg: 'bg-green-100',
+            buttonText: 'Manage Photos',
+            onManage: () => navigate('/photo-gallery'),
+            onAdd: () => navigate('/photo-gallery/create'),
+        },
+        {
+            id: 8,
+            title: 'Donor Wall',
+            description: 'Manage donors and visibility settings',
+            icon: <FaCrown className="text-orange-500 text-xl" />,
+            iconBg: 'bg-orange-100',
+            buttonText: 'Manage Donors',
+            onManage: () => navigate('/donor-wall'),
+            onAdd: () => navigate('/donor-wall/create'),
+        },
+
 
     ];
 
