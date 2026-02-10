@@ -1,12 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FaHeart, 
-  FaUsers, 
-  FaRupeeSign, 
-  FaChartLine, 
-  FaPlus, 
-  FaSync, 
+import {
+  FaHeart,
+  FaUsers,
+  FaRupeeSign,
+  FaChartLine,
+  FaPlus,
+  FaSync,
   FaEye,
   FaCalendarAlt,
   FaSearch,
@@ -43,11 +43,11 @@ const DonationDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch stats
       const statsResponse = await fetch(getApiUrl('api/donations/stats'));
       const statsData = await statsResponse.json();
-      
+
       if (statsData.success) {
         setStats(statsData.stats);
       }
@@ -55,7 +55,7 @@ const DonationDashboard = () => {
       // Fetch recent donations
       const donationsResponse = await fetch(getApiUrl('api/donations?limit=5'));
       const donationsData = await donationsResponse.json();
-      
+
       if (donationsData.success) {
         setRecentDonations(donationsData.donations);
       }
@@ -71,16 +71,16 @@ const DonationDashboard = () => {
     try {
       setSyncing(true);
       setSyncMessage('Syncing donations from Razorpay...');
-      
+
       const response = await fetch(getApiUrl('api/donations/sync-razorpay'), {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         }
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSyncMessage(`✅ Successfully synced ${data.syncedCount} new donations from Razorpay!`);
         // Refresh dashboard data after sync
@@ -161,10 +161,10 @@ const DonationDashboard = () => {
     try {
       setSyncing(true);
       setSyncMessage('Testing Razorpay connection...');
-      
+
       const response = await fetch(getApiUrl('api/donations/test-connection'));
       const data = await response.json();
-      
+
       if (data.success) {
         setSyncMessage(`✅ Razorpay connected! Found ${data.recentPayments} recent payments`);
         console.log('Razorpay connection test:', data);
@@ -289,11 +289,10 @@ const DonationDashboard = () => {
 
       {/* Sync Message */}
       {syncMessage && (
-        <div className={`mb-6 p-4 rounded-lg border ${
-          syncMessage.includes('✅') 
-            ? 'bg-green-50 border-green-200 text-green-800' 
+        <div className={`mb-6 p-4 rounded-lg border ${syncMessage.includes('✅')
+            ? 'bg-green-50 border-green-200 text-green-800'
             : 'bg-red-50 border-red-200 text-red-800'
-        }`}>
+          }`}>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{syncMessage}</span>
           </div>
@@ -301,11 +300,10 @@ const DonationDashboard = () => {
       )}
 
       {exportMessage && (
-        <div className={`mb-6 p-4 rounded-lg border ${
-          exportMessage.includes('✅')
+        <div className={`mb-6 p-4 rounded-lg border ${exportMessage.includes('✅')
             ? 'bg-blue-50 border-blue-200 text-blue-800'
             : 'bg-red-50 border-red-200 text-red-800'
-        }`}>
+          }`}>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{exportMessage}</span>
           </div>
@@ -400,7 +398,7 @@ const DonationDashboard = () => {
             <span className="text-sm text-green-600 font-medium">Connected</span>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="flex items-center gap-3">
@@ -415,7 +413,7 @@ const DonationDashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
@@ -427,7 +425,7 @@ const DonationDashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-purple-50 rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
@@ -455,11 +453,10 @@ const DonationDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -486,19 +483,19 @@ const DonationDashboard = () => {
                     Recent Donations
                   </h3>
                   <button
-              onClick={handleDownloadDonationFormData}
-              disabled={exporting}
-              className={[
-                'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-all duration-200 border',
-                exporting
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
-                  : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:shadow-md'
-              ].join(' ')}
-            >
-              <FaDownload className="w-4 h-4" />
-              {exporting ? 'Preparing...' : 'Donation Form Data'}
-            </button>
-            <Link
+                    onClick={handleDownloadDonationFormData}
+                    disabled={exporting}
+                    className={[
+                      'flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-all duration-200 border',
+                      exporting
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                        : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:shadow-md'
+                    ].join(' ')}
+                  >
+                    <FaDownload className="w-4 h-4" />
+                    {exporting ? 'Preparing...' : 'Donation Form Data'}
+                  </button>
+                  <Link
                     to="/donation-management/list"
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
@@ -579,7 +576,7 @@ const DonationDashboard = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg p-4 shadow-sm">
                     <h4 className="font-medium text-gray-900 mb-2">Recent Payment IDs</h4>
                     <div className="space-y-2">
@@ -604,17 +601,16 @@ const DonationDashboard = () => {
                   <button
                     onClick={syncFromRazorpay}
                     disabled={syncing}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      syncing 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${syncing
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
+                      }`}
                   >
                     <FaSync className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
                     {syncing ? 'Syncing...' : 'Sync from Razorpay'}
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-blue-600">{stats.totalDonations}</p>
