@@ -35,8 +35,8 @@ const createDonationOrder = async (req, res) => {
 
     // Check if Razorpay credentials are configured
     if (!isRazorpayConfigured()) {
-      return res.status(500).json({ 
-        message: 'Payment gateway not configured. Please contact administrator.' 
+      return res.status(500).json({
+        message: 'Payment gateway not configured. Please contact administrator.'
       });
     }
 
@@ -132,7 +132,7 @@ const verifyDonationPayment = async (req, res) => {
     // Export donation form submission to CSV (if form data is available)
     try {
       const { appendDonationSubmission } = require('../utils/donationFormExporter');
-      
+
       // Helper function to convert to boolean properly
       const toBoolean = (value) => {
         if (value === true || value === 'true' || value === '1' || value === 1) return true;
@@ -187,7 +187,7 @@ const verifyDonationPayment = async (req, res) => {
       try {
         console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
         emailResult = await sendDonationReceipt(donation);
-        
+
         if (emailResult.success) {
           console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
         } else {
@@ -227,9 +227,9 @@ const verifyDonationPayment = async (req, res) => {
         campaign: req.body.donorData.campaign
       } : null
     });
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Error verifying donation payment', 
+      message: 'Error verifying donation payment',
       error: error.message,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
@@ -244,17 +244,17 @@ const getAllDonations = async (req, res) => {
 
     // Build filter object
     const filter = {};
-    
+
     if (status) {
       filter.paymentStatus = status;
     }
-    
+
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(endDate);
     }
-    
+
     if (search) {
       filter.$or = [
         { donorName: { $regex: search, $options: 'i' } },
@@ -292,7 +292,7 @@ const getAllDonations = async (req, res) => {
 const getDonationById = async (req, res) => {
   try {
     const donation = await Donation.findById(req.params.id);
-    
+
     if (!donation) {
       return res.status(404).json({ message: 'Donation not found' });
     }
@@ -311,7 +311,7 @@ const getDonationById = async (req, res) => {
 const getDonationStats = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     const filter = {};
     if (startDate || endDate) {
       filter.createdAt = {};
@@ -392,7 +392,7 @@ const getDonationStats = async (req, res) => {
 const updateDonationNotes = async (req, res) => {
   try {
     const { notes } = req.body;
-    
+
     const donation = await Donation.findByIdAndUpdate(
       req.params.id,
       { notes },
@@ -418,7 +418,7 @@ const updateDonationNotes = async (req, res) => {
 const forceSyncAllPayments = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     // Check if credentials are set
     if (!isRazorpayConfigured()) {
       return res.status(400).json({
@@ -429,14 +429,14 @@ const forceSyncAllPayments = async (req, res) => {
 
     // Get Razorpay instance
     const razorpayInstance = getRazorpayInstance();
-    
+
     // Fetch ALL payments using pagination
     console.log('Force syncing ALL payments from Razorpay with pagination...');
     let allPayments = [];
     let hasMore = true;
     let skip = 0;
     const limit = 100; // Razorpay's maximum per request
-    
+
     while (hasMore) {
       const options = {
         from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
@@ -445,26 +445,26 @@ const forceSyncAllPayments = async (req, res) => {
         skip: skip,
         expand: ['card', 'emi', 'offer']
       };
-      
-      console.log(`Fetching payments batch ${Math.floor(skip/limit) + 1} (skip: ${skip})...`);
+
+      console.log(`Fetching payments batch ${Math.floor(skip / limit) + 1} (skip: ${skip})...`);
       const batch = await razorpayInstance.payments.all(options);
-      
+
       allPayments = allPayments.concat(batch.items);
       console.log(`Fetched ${batch.items.length} payments in this batch. Total so far: ${allPayments.length}`);
-      
+
       // Check if there are more payments
       hasMore = batch.items.length === limit;
       skip += limit;
-      
+
       // Safety break to prevent infinite loops
       if (skip > 10000) {
         console.log('Safety break: Stopping at 10,000 payments to prevent infinite loop');
         break;
       }
     }
-    
+
     console.log(`Found ${allPayments.length} total payments from Razorpay`);
-    
+
     let syncedCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
@@ -499,8 +499,8 @@ const forceSyncAllPayments = async (req, res) => {
         }
 
         // Check if donation already exists
-        const existingDonation = await Donation.findOne({ 
-          razorpayPaymentId: payment.id 
+        const existingDonation = await Donation.findOne({
+          razorpayPaymentId: payment.id
         });
 
         const donationData = {
@@ -561,10 +561,10 @@ const forceSyncAllPayments = async (req, res) => {
     });
   } catch (error) {
     console.error('Error force syncing payments from Razorpay:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Error force syncing payments from Razorpay', 
-      error: error.message 
+      message: 'Error force syncing payments from Razorpay',
+      error: error.message
     });
   }
 };
@@ -573,7 +573,7 @@ const forceSyncAllPayments = async (req, res) => {
 const syncDonationsFromRazorpay = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     // Check if credentials are set
     if (!isRazorpayConfigured()) {
       return res.status(400).json({
@@ -584,7 +584,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
 
     // Get Razorpay instance
     const razorpayInstance = getRazorpayInstance();
-    
+
     const options = {
       from: startDate ? new Date(startDate).getTime() / 1000 : undefined,
       to: endDate ? new Date(endDate).getTime() / 1000 : undefined,
@@ -598,33 +598,33 @@ const syncDonationsFromRazorpay = async (req, res) => {
     let hasMore = true;
     let skip = 0;
     const limit = 100; // Razorpay's maximum per request
-    
+
     while (hasMore) {
       const batchOptions = {
         ...options,
         skip: skip
       };
-      
-      console.log(`Fetching payments batch ${Math.floor(skip/limit) + 1} (skip: ${skip})...`);
+
+      console.log(`Fetching payments batch ${Math.floor(skip / limit) + 1} (skip: ${skip})...`);
       const batch = await razorpayInstance.payments.all(batchOptions);
-      
+
       allPayments = allPayments.concat(batch.items);
       console.log(`Fetched ${batch.items.length} payments in this batch. Total so far: ${allPayments.length}`);
-      
+
       // Check if there are more payments
       hasMore = batch.items.length === limit;
       skip += limit;
-      
+
       // Safety break to prevent infinite loops
       if (skip > 10000) {
         console.log('Safety break: Stopping at 10,000 payments to prevent infinite loop');
         break;
       }
     }
-    
+
     console.log(`Found ${allPayments.length} total payments from Razorpay`);
     console.log(`Date range: ${startDate} to ${endDate}`);
-    
+
     let syncedCount = 0;
     let newDonations = [];
     let skippedCount = 0;
@@ -652,8 +652,8 @@ const syncDonationsFromRazorpay = async (req, res) => {
         console.log(`Processing payment: ${payment.id}, Status: ${payment.status}, Amount: ${payment.amount}, Date: ${new Date(payment.created_at * 1000).toISOString()}`);
 
         // Check if donation already exists
-        const existingDonation = await Donation.findOne({ 
-          razorpayPaymentId: payment.id 
+        const existingDonation = await Donation.findOne({
+          razorpayPaymentId: payment.id
         });
 
         if (existingDonation) {
@@ -698,7 +698,7 @@ const syncDonationsFromRazorpay = async (req, res) => {
           await donation.save();
           newDonations.push(donation);
           syncedCount++;
-          console.log(`Synced payment: ${payment.id} - ${payment.amount/100} ${payment.currency}`);
+          console.log(`Synced payment: ${payment.id} - ${payment.amount / 100} ${payment.currency}`);
         }
       } catch (paymentError) {
         console.error(`Error processing payment ${payment.id}:`, paymentError);
@@ -721,10 +721,10 @@ const syncDonationsFromRazorpay = async (req, res) => {
     });
   } catch (error) {
     console.error('Error syncing donations from Razorpay:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Error syncing donations from Razorpay', 
-      error: error.message 
+      message: 'Error syncing donations from Razorpay',
+      error: error.message
     });
   }
 };
@@ -747,7 +747,7 @@ const testRazorpayConnection = async (req, res) => {
     // Test connection by fetching recent payments
     const razorpayInstance = getRazorpayInstance();
     const payments = await razorpayInstance.payments.all({ count: 5 });
-    
+
     res.json({
       success: true,
       message: 'Razorpay connection successful',
@@ -787,7 +787,7 @@ const submitDonationForm = async (req, res) => {
     donorEmail: req.body.donorEmail,
     sevaAmount: req.body.sevaAmount
   });
-  
+
   try {
     const {
       sevaName,
@@ -825,7 +825,7 @@ const submitDonationForm = async (req, res) => {
     // Validate required fields
     // For campaign donations, donor info can be empty (will be collected by Razorpay)
     const isCampaignDonation = campaign && (campaign === 'support-compaign' || campaign.includes('campaign'));
-    
+
     // Validate presence separately so we can report what is missing.
     const missing = {
       sevaName: !sevaName,
@@ -842,7 +842,7 @@ const submitDonationForm = async (req, res) => {
         missing
       });
     }
-    
+
     // For non-campaign donations, donor info is required
     if (!isCampaignDonation && (!donorName || !donorEmail || !donorPhone)) {
       return res.status(400).json({
@@ -921,7 +921,7 @@ const submitDonationForm = async (req, res) => {
       panNumber,
       paymentStatus: 'pending'
     };
-    
+
     // Only include donor fields if they have values (for campaign donations with empty strings)
     const donation = new Donation(donationData);
 
@@ -931,7 +931,7 @@ const submitDonationForm = async (req, res) => {
       console.log('✅ [submitDonationForm] Donation saved to database:', donation._id);
     } catch (dbError) {
       console.error('Database error:', dbError);
-      
+
       // Check if it's a duplicate key error
       if (dbError.code === 11000) {
         return res.status(500).json({
@@ -940,7 +940,7 @@ const submitDonationForm = async (req, res) => {
           error: 'Duplicate key error - database indexes need to be updated'
         });
       }
-      
+
       return res.status(500).json({
         success: false,
         message: 'Database error occurred while saving donation',
@@ -1148,7 +1148,7 @@ const verifyPayment = async (req, res) => {
     donation.razorpayPaymentId = razorpay_payment_id;
     donation.paymentStatus = payment.status === 'captured' ? 'completed' : 'pending';
     donation.paymentMethod = payment.method;
-    
+
     // Update donor information from Razorpay if it was empty (for campaign donations)
     if (!donation.donorEmail && payment.email) {
       donation.donorEmail = payment.email;
@@ -1160,7 +1160,7 @@ const verifyPayment = async (req, res) => {
       // Use email or contact as name if name is missing
       donation.donorName = payment.email || payment.contact || 'Anonymous';
     }
-    
+
     donation.metadata = {
       paymentMethod: payment.method,
       bank: payment.bank,
@@ -1181,12 +1181,12 @@ const verifyPayment = async (req, res) => {
       donorEmail: donation.donorEmail,
       shouldSend: donation.paymentStatus === 'completed' && donation.donorEmail
     });
-    
+
     if (donation.paymentStatus === 'completed' && donation.donorEmail) {
       try {
         console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
         emailResult = await sendDonationReceipt(donation);
-        
+
         if (emailResult.success) {
           console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
         } else {
@@ -1239,9 +1239,9 @@ const verifyPayment = async (req, res) => {
 const getDonationByOrderId = async (req, res) => {
   try {
     const { orderId } = req.params;
-    
+
     const donation = await Donation.findOne({ razorpayOrderId: orderId });
-    
+
     if (!donation) {
       return res.status(404).json({
         success: false,
@@ -1280,7 +1280,7 @@ const getDonationByOrderId = async (req, res) => {
 const getSevaStats = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     const filter = {};
     if (startDate || endDate) {
       filter.createdAt = {};
@@ -1366,7 +1366,7 @@ const getSevaStats = async (req, res) => {
 const testEmailService = async (req, res) => {
   try {
     const result = await testEmailConfiguration();
-    
+
     res.json({
       success: result.success,
       message: result.message,
@@ -1386,7 +1386,7 @@ const testEmailService = async (req, res) => {
 const sendReceiptEmail = async (req, res) => {
   try {
     const { donationId } = req.params;
-    
+
     const donation = await Donation.findById(donationId);
     if (!donation) {
       return res.status(404).json({
@@ -1394,16 +1394,16 @@ const sendReceiptEmail = async (req, res) => {
         message: 'Donation not found'
       });
     }
-    
+
     if (!donation.donorEmail) {
       return res.status(400).json({
         success: false,
         message: 'No email address found for this donation'
       });
     }
-    
+
     const result = await sendDonationReceipt(donation);
-    
+
     res.json({
       success: result.success,
       message: result.message,
@@ -1424,12 +1424,12 @@ const sendReceiptEmail = async (req, res) => {
 // Create PayU order
 const createPayUOrder = async (req, res) => {
   try {
-    const { 
-      amount, 
-      firstname, 
-      email, 
-      phone, 
-      productinfo, 
+    const {
+      amount,
+      firstname,
+      email,
+      phone,
+      productinfo,
       description,
       sevaType,
       donorType,
@@ -1438,9 +1438,9 @@ const createPayUOrder = async (req, res) => {
 
     // Validate required fields
     if (!amount || !firstname || !email) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Amount, name, and email are required' 
+        message: 'Amount, name, and email are required'
       });
     }
 
@@ -1451,53 +1451,53 @@ const createPayUOrder = async (req, res) => {
       // Convert amount to number and validate
       const numAmount = parseFloat(amount);
       if (isNaN(numAmount) || numAmount <= 0) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          message: 'Invalid amount. Amount must be a positive number.' 
+          message: 'Invalid amount. Amount must be a positive number.'
         });
       }
-      
+
       // PayU accepts amount as number or string with 2 decimal places
       // Format to 2 decimal places to avoid precision issues
       payuAmount = numAmount.toFixed(2);
     } catch (error) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid amount format.' 
+        message: 'Invalid amount format.'
       });
     }
 
     // Validate minimum amount (PayU minimum is usually â‚¹1)
     if (parseFloat(payuAmount) < 1) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Amount must be at least â‚¹1.' 
+        message: 'Amount must be at least â‚¹1.'
       });
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid email format.' 
+        message: 'Invalid email format.'
       });
     }
 
     // Validate firstname (should not be empty and should be trimmed)
     const trimmedFirstname = firstname.trim();
     if (!trimmedFirstname || trimmedFirstname.length < 2) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Name must be at least 2 characters long.' 
+        message: 'Name must be at least 2 characters long.'
       });
     }
 
     // Check if PayU credentials are configured
     if (!process.env.PAYU_KEY || !process.env.PAYU_SALT) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        message: 'PayU credentials not configured. Please contact administrator.' 
+        message: 'PayU credentials not configured. Please contact administrator.'
       });
     }
 
@@ -1533,16 +1533,16 @@ const createPayUOrder = async (req, res) => {
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substr(2, 9);
     const txnid = `TXN_${timestamp}_${randomStr}`.substring(0, 30);
-    
+
     // Sanitize productinfo (remove special characters that might break hash)
     const sanitizedProductinfo = (productinfo || 'Donation')
       .replace(/[|]/g, '') // Remove pipe characters as they're used in hash
       .substring(0, 100); // PayU limit is 100 chars
-    
+
     // Prepare hash string for SHA-512
     // Format: key|txnid|amount|productinfo|firstname|email|||||||||||salt
     const hashString = `${process.env.PAYU_KEY}|${txnid}|${payuAmount}|${sanitizedProductinfo}|${trimmedFirstname}|${email}|||||||||||${process.env.PAYU_SALT}`;
-    
+
     // Generate SHA-512 hash
     const hash = crypto.createHash('sha512').update(hashString).digest('hex');
 
@@ -1572,8 +1572,8 @@ const createPayUOrder = async (req, res) => {
     };
 
     // PayU gateway URL - use production URL for live mode, test URL for test mode
-    const payuUrl = isTestMode 
-      ? 'https://test.payu.in/_payment' 
+    const payuUrl = isTestMode
+      ? 'https://test.payu.in/_payment'
       : 'https://secure.payu.in/_payment';
 
     // Log PayU order creation (without sensitive data)
@@ -1604,10 +1604,10 @@ const createPayUOrder = async (req, res) => {
 
   } catch (error) {
     console.error('Error creating PayU order:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Error creating PayU order', 
-      error: error.message 
+      message: 'Error creating PayU order',
+      error: error.message
     });
   }
 };
@@ -1622,14 +1622,14 @@ const payuSuccess = async (req, res) => {
     console.log('Request Query:', req.query);
     console.log('Content-Type:', req.headers['content-type']);
     console.log('==============================');
-    
+
     // PayU sends POST data as form-encoded, check both body and query
     // Sometimes PayU might send as query params in redirect, sometimes as POST body
     const params = req.method === 'POST' ? (req.body || req.query) : req.query;
-    
+
     // Get donationId from query params (passed in callback URL)
     const donationId = req.query.donationId || req.body.donationId;
-    
+
     // Log what we receive from PayU (for debugging)
     console.log('PayU Success Callback - Extracted Params:', {
       method: req.method,
@@ -1637,17 +1637,17 @@ const payuSuccess = async (req, res) => {
       hasBody: !!req.body && Object.keys(req.body).length > 0,
       hasQuery: !!req.query && Object.keys(req.query).length > 0
     });
-    
-    const { 
-      mihpayid, 
-      status, 
-      txnid, 
-      amount, 
-      productinfo, 
-      firstname, 
-      email, 
-      phone, 
-      hash 
+
+    const {
+      mihpayid,
+      status,
+      txnid,
+      amount,
+      productinfo,
+      firstname,
+      email,
+      phone,
+      hash
     } = params;
 
     // Validate required fields
@@ -1726,7 +1726,7 @@ const payuSuccess = async (req, res) => {
 
     // Find or create donation record
     let donation;
-    
+
     // If donationId is provided, find and update existing donation
     if (donationId) {
       try {
@@ -1778,7 +1778,7 @@ const payuSuccess = async (req, res) => {
     // Get frontend URL for redirect - pass donationId so frontend can verify payment
     // Ensure HTTPS in production
     let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    
+
     // If FRONTEND_URL is not set, try to infer from request host
     if (!process.env.FRONTEND_URL) {
       console.warn('âš ï¸ WARNING: FRONTEND_URL environment variable not set!');
@@ -1791,7 +1791,7 @@ const payuSuccess = async (req, res) => {
         console.warn(`âš ï¸ Inferred frontend URL: ${frontendUrl}`);
       }
     }
-    
+
     if (process.env.NODE_ENV === 'production') {
       // Force HTTPS in production
       if (!frontendUrl.startsWith('http')) {
@@ -1800,10 +1800,10 @@ const payuSuccess = async (req, res) => {
         frontendUrl = frontendUrl.replace('http://', 'https://');
       }
     }
-    
+
     // Build redirect URL with payment success parameters
     const redirectUrl = `${frontendUrl}/donate?payment=success&paymentMethod=payu&donationId=${donation._id}&txnid=${txnid}`;
-    
+
     console.log('PayU Success: Redirecting to frontend:', redirectUrl);
     console.log('PayU Success: Frontend URL from env:', process.env.FRONTEND_URL);
     console.log('PayU Success: Request host:', req.get('host'));
@@ -1811,7 +1811,7 @@ const payuSuccess = async (req, res) => {
     // Use HTTP 302 redirect for immediate redirect (better than HTML redirect)
     // If PayU sent POST, we'll still send a redirect and the browser will handle it
     // Some browsers may show the redirect URL briefly, but it's more reliable than HTML+JS
-    
+
     // For POST requests, send HTML with immediate redirect (browsers don't auto-follow 302 on POST)
     // For GET requests, use HTTP 302 redirect
     if (req.method === 'POST') {
@@ -1920,7 +1920,7 @@ const verifyPayUPayment = async (req, res) => {
       try {
         console.log(`Sending receipt email to ${donation.donorEmail} for PayU donation ${donation._id}`);
         emailResult = await sendDonationReceipt(donation);
-        
+
         if (emailResult.success) {
           console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
         } else {
@@ -1974,11 +1974,11 @@ const payuFailure = async (req, res) => {
     console.log('Request Body:', req.body);
     console.log('Request Query:', req.query);
     console.log('==============================');
-    
+
     // PayU sends POST data, but also check query params for GET requests (testing/debugging)
     // Sometimes PayU might send as query params in redirect, sometimes as POST body
     const params = req.method === 'POST' ? (req.body || req.query) : req.query;
-    
+
     const { txnid, amount, firstname, email } = params;
 
     console.log('PayU Payment Failed:', {
@@ -2050,24 +2050,69 @@ const payuFailure = async (req, res) => {
 
 const downloadDonationFormData = async (req, res) => {
   try {
-    const { ensureExportFileExists, getDonationFormExportPath } = require('../utils/donationFormExporter');
- 
-    await ensureExportFileExists();
-    const exportPath = getDonationFormExportPath();
-    const dateSuffix = new Date().toISOString().split('T')[0];
-    const downloadName = `donation-form-submissions-${dateSuffix}.csv`;
- 
-    res.download(exportPath, downloadName, (err) => {
-      if (err) {
-        console.error('Error sending donation form export:', err);
-        if (!res.headersSent) {
-          res.status(500).json({
-            success: false,
-            message: 'Failed to download donation form data'
-          });
-        }
-      }
+    const { escapeCsvField } = require('../utils/donationFormExporter');
+
+    // Fetch all donations from database
+    const donations = await Donation.find({}).sort({ createdAt: -1 });
+
+    if (!donations || donations.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No donation data found to export'
+      });
+    }
+
+    // Define headers (matching the legacy CSV format)
+    const CSV_HEADERS = [
+      'submittedAt', 'sevaName', 'sevaType', 'sevaAmount', 'donorName', 'donorEmail',
+      'donorPhone', 'donorType', 'description', 'campaign', 'isAnonymous',
+      'wantsMahaPrasadam', 'wants80G', 'address', 'houseApartment', 'village',
+      'district', 'state', 'pinCode', 'landmark', 'panNumber', 'utmSource',
+      'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent'
+    ];
+
+    // Create CSV content
+    const headerRow = CSV_HEADERS.join(',');
+    const rows = donations.map(d => {
+      const data = {
+        submittedAt: d.createdAt ? d.createdAt.toISOString() : '',
+        sevaName: d.sevaName || '',
+        sevaType: d.sevaType || '',
+        sevaAmount: d.amount || 0,
+        donorName: d.isAnonymous ? 'Anonymous' : (d.donorName || ''),
+        donorEmail: d.donorEmail || '',
+        donorPhone: d.donorPhone || '',
+        donorType: d.donorType || '',
+        description: d.description || '',
+        campaign: d.campaign || '',
+        isAnonymous: d.isAnonymous ? 'true' : 'false',
+        wantsMahaPrasadam: d.wantsMahaPrasadam ? 'true' : 'false',
+        wants80G: d.wants80G ? 'true' : 'false',
+        address: d.address || '',
+        houseApartment: d.houseApartment || '',
+        village: d.village || '',
+        district: d.district || '',
+        state: d.state || '',
+        pinCode: d.pinCode || '',
+        landmark: d.landmark || '',
+        panNumber: d.panNumber || '',
+        utmSource: d.utmSource || '',
+        utmMedium: d.utmMedium || '',
+        utmCampaign: d.utmCampaign || '',
+        utmTerm: d.utmTerm || '',
+        utmContent: d.utmContent || ''
+      };
+      return CSV_HEADERS.map(header => escapeCsvField(data[header])).join(',');
     });
+
+    const csvContent = [headerRow, ...rows].join('\n');
+    const dateSuffix = new Date().toISOString().split('T')[0];
+    const filename = `donation-form-submissions-${dateSuffix}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.status(200).send(csvContent);
+
   } catch (error) {
     console.error('Error preparing donation form export:', error);
     res.status(500).json({

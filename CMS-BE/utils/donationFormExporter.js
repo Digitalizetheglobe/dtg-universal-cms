@@ -81,14 +81,14 @@ const appendDonationSubmission = async (data) => {
   try {
     console.log('📁 Ensuring export file exists...');
     await ensureExportFileExists();
-    
+
     console.log('📝 Converting data to CSV row...');
     const csvRow = dataToCsvRow(data);
     console.log('📄 CSV row length:', csvRow.length, 'characters');
-    
+
     console.log('💾 Appending to file:', EXPORT_FILE_PATH);
     fs.appendFileSync(EXPORT_FILE_PATH, csvRow + '\n', 'utf8');
-    
+
     // Verify the write
     const stats = fs.statSync(EXPORT_FILE_PATH);
     console.log('✅ File updated. New size:', stats.size, 'bytes');
@@ -112,6 +112,7 @@ const getDonationFormExportPath = () => {
 module.exports = {
   ensureExportFileExists,
   appendDonationSubmission,
-  getDonationFormExportPath
+  getDonationFormExportPath,
+  escapeCsvField
 };
 
