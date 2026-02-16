@@ -79,28 +79,26 @@ const ensureExportFileExists = async () => {
 // Append donation submission to CSV file
 const appendDonationSubmission = async (data) => {
   try {
-    console.log('📁 Ensuring export file exists...');
-    await ensureExportFileExists();
+    // Ensure directory exists asynchronously
+    if (!fs.existsSync(EXPORT_DIR)) {
+      await fs.promises.mkdir(EXPORT_DIR, { recursive: true });
+    }
 
-    console.log('📝 Converting data to CSV row...');
+    // Create file with headers if it doesn't exist asynchronously
+    if (!fs.existsSync(EXPORT_FILE_PATH)) {
+      const headerRow = CSV_HEADERS.join(',');
+      await fs.promises.writeFile(EXPORT_FILE_PATH, headerRow + '\n', 'utf8');
+    }
+
     const csvRow = dataToCsvRow(data);
-    console.log('📄 CSV row length:', csvRow.length, 'characters');
 
-    console.log('💾 Appending to file:', EXPORT_FILE_PATH);
-    fs.appendFileSync(EXPORT_FILE_PATH, csvRow + '\n', 'utf8');
+    // Use asynchronous append to not block the event loop
+    await fs.promises.appendFile(EXPORT_FILE_PATH, csvRow + '\n', 'utf8');
 
-    // Verify the write
-    const stats = fs.statSync(EXPORT_FILE_PATH);
-    console.log('✅ File updated. New size:', stats.size, 'bytes');
+    console.log('✅ Donation recorded in CSV successfully');
   } catch (error) {
     console.error('❌ Error appending donation submission to export file:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      path: error.path,
-      stack: error.stack
-    });
-    throw error;
+    // Don't throw the error, just log it so the main donation process can continue
   }
 };
 

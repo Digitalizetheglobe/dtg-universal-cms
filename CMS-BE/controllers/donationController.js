@@ -174,8 +174,9 @@ const verifyDonationPayment = async (req, res) => {
       console.log('   Donor:', exportData.donorName, '| Email:', exportData.donorEmail);
       console.log('   Amount:', exportData.sevaAmount);
 
-      await appendDonationSubmission(exportData);
-      console.log('✅ [verifyDonationPayment] Successfully appended donation to CSV');
+      // Export donation form submission in the background
+      appendDonationSubmission(exportData).catch(err => console.error('❌ [verifyDonationPayment] Background CSV export error:', err));
+      console.log('✅ [verifyDonationPayment] Proceeding with response while CSV export runs in background');
     } catch (exportError) {
       console.error('❌ [verifyDonationPayment] Error recording donation form submission export:', exportError);
       console.error('Error stack:', exportError.stack);
@@ -184,22 +185,22 @@ const verifyDonationPayment = async (req, res) => {
     // Send receipt email if payment is completed and donor email exists
     let emailResult = null;
     if (donation.paymentStatus === 'completed' && donation.donorEmail) {
-      try {
-        console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
-        emailResult = await sendDonationReceipt(donation);
+      // Send receipt email in background
+      console.log(`[verifyDonationPayment] Triggering background receipt email to ${donation.donorEmail}`);
+      sendDonationReceipt(donation)
+        .then(result => {
+          if (result.success) {
+            console.log(`[verifyDonationPayment] Background receipt email sent successfully to ${donation.donorEmail}`);
+          } else {
+            console.error(`[verifyDonationPayment] Background receipt email failed for ${donation.donorEmail}:`, result.error);
+          }
+        })
+        .catch(err => {
+          console.error(`[verifyDonationPayment] Background email sending error for ${donation.donorEmail}:`, err);
+        });
 
-        if (emailResult.success) {
-          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
-        } else {
-          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
-        }
-      } catch (emailError) {
-        console.error('Error sending receipt email:', emailError);
-        emailResult = {
-          success: false,
-          error: emailError.message
-        };
-      }
+      // Set a placeholder result
+      emailResult = { success: true, message: 'Email receipt is being sent in the background' };
     }
 
     res.status(201).json({
@@ -999,8 +1000,9 @@ const submitDonationForm = async (req, res) => {
       console.log('   Anonymous:', exportData.isAnonymous, '| Maha Prasadam:', exportData.wantsMahaPrasadam, '| 80G:', exportData.wants80G);
       console.log('   UTM Source:', exportData.utmSource, '| Medium:', exportData.utmMedium, '| Campaign:', exportData.utmCampaign);
 
-      await appendDonationSubmission(exportData);
-      console.log('✅ Successfully appended donation to CSV');
+      // Export donation form submission in the background so it doesn't slow down the payment process
+      appendDonationSubmission(exportData).catch(err => console.error('❌ Background CSV export error:', err));
+      console.log('✅ Donation processing continuing in parallel with CSV export');
     } catch (exportError) {
       console.error('❌ Error recording donation form submission export:', exportError);
       console.error('Error stack:', exportError.stack);
@@ -1183,22 +1185,22 @@ const verifyPayment = async (req, res) => {
     });
 
     if (donation.paymentStatus === 'completed' && donation.donorEmail) {
-      try {
-        console.log(`Sending receipt email to ${donation.donorEmail} for donation ${donation._id}`);
-        emailResult = await sendDonationReceipt(donation);
+      // Send receipt email in background to speed up response to user
+      console.log(`[verifyPayment] Triggering background receipt email to ${donation.donorEmail}`);
+      sendDonationReceipt(donation)
+        .then(result => {
+          if (result.success) {
+            console.log(`[verifyPayment] Background receipt email sent successfully to ${donation.donorEmail}`);
+          } else {
+            console.error(`[verifyPayment] Background receipt email failed for ${donation.donorEmail}:`, result.error);
+          }
+        })
+        .catch(err => {
+          console.error(`[verifyPayment] Background email sending error for ${donation.donorEmail}:`, err);
+        });
 
-        if (emailResult.success) {
-          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
-        } else {
-          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
-        }
-      } catch (emailError) {
-        console.error('Error sending receipt email:', emailError);
-        emailResult = {
-          success: false,
-          error: emailError.message
-        };
-      }
+      // Set a placeholder result for the response
+      emailResult = { success: true, message: 'Email receipt is being sent in the background' };
     } else {
       console.log('Email not sent - conditions not met:', {
         paymentStatus: donation.paymentStatus,
@@ -1917,22 +1919,22 @@ const verifyPayUPayment = async (req, res) => {
     // Send receipt email if payment is completed and donor email exists
     let emailResult = null;
     if (donation.paymentStatus === 'completed' && donation.donorEmail) {
-      try {
-        console.log(`Sending receipt email to ${donation.donorEmail} for PayU donation ${donation._id}`);
-        emailResult = await sendDonationReceipt(donation);
+      // Send receipt email in background to speed up response to user
+      console.log(`[verifyPayUPayment] Triggering background receipt email to ${donation.donorEmail}`);
+      sendDonationReceipt(donation)
+        .then(result => {
+          if (result.success) {
+            console.log(`[verifyPayUPayment] Background receipt email sent successfully to ${donation.donorEmail}`);
+          } else {
+            console.error(`[verifyPayUPayment] Background receipt email failed for ${donation.donorEmail}:`, result.error);
+          }
+        })
+        .catch(err => {
+          console.error(`[verifyPayUPayment] Background email sending error for ${donation.donorEmail}:`, err);
+        });
 
-        if (emailResult.success) {
-          console.log(`Receipt email sent successfully to ${donation.donorEmail}`);
-        } else {
-          console.error(`Failed to send receipt email to ${donation.donorEmail}:`, emailResult.error);
-        }
-      } catch (emailError) {
-        console.error('Error sending receipt email:', emailError);
-        emailResult = {
-          success: false,
-          message: 'Error sending email: ' + emailError.message
-        };
-      }
+      // Set a placeholder result for the response
+      emailResult = { success: true, message: 'Email receipt is being sent in the background' };
     }
 
     const response = {
