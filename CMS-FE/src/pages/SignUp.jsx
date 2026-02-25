@@ -43,15 +43,15 @@ const SignUp = () => {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-300 to-purple-200">
       <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-2xl">
-         <div className='p-0'>
+        <div className='p-0'>
           <div className="flex flex-col items-center justify-center gap-2 mb-6">
-          <img src="/logo.png" alt="Logo" className="h-20 mb-4 w-50" />
-          <div className='flex flex-col'>
-          <h1 className="text-2xl font-bold text-gray-700">Create an Account</h1>
-          <p className="text-sm text-gray-500">Sign up to get started</p>
+            <img src="/logo.png" alt="Logo" className="h-20 mb-4 w-50" />
+            <div className='flex flex-col'>
+              <h1 className="text-2xl font-bold text-gray-700">Create an Account</h1>
+              <p className="text-sm text-gray-500">Sign up to get started</p>
+            </div>
           </div>
         </div>
-         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

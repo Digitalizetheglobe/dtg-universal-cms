@@ -67,7 +67,7 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-       <select
+        <select
           className="border rounded-lg p-3"
           value={roleId}
           onChange={(e) => setRoleId(e.target.value)}

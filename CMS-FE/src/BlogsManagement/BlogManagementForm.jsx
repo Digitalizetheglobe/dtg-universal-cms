@@ -20,7 +20,7 @@ const BlogManagementForm = () => {
     ogImage: '',
     readTime: 0
   });
-  
+
   const [imagePreview, setImagePreview] = useState(''); // For displaying the preview
 
   const [tagInput, setTagInput] = useState('');
@@ -41,7 +41,7 @@ const BlogManagementForm = () => {
     // Create a preview URL for the image
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
-    
+
     // Store the file object in formData
     setFormData(prev => ({
       ...prev,
@@ -85,9 +85,9 @@ const BlogManagementForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const formDataToSend = new FormData();
-    
+
     // Append all form data to FormData object
     Object.keys(formData).forEach(key => {
       if (key === 'coverImage' && formData.coverImage) {
@@ -98,28 +98,28 @@ const BlogManagementForm = () => {
         formDataToSend.append(key, formData[key]);
       }
     });
-    
+
     try {
       const response = await fetch('https://api.harekrishnavidya.org/api/blogs', {
         method: 'POST',
         body: formDataToSend,
         // Don't set Content-Type header - let the browser set it with the correct boundary
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
-      
+
       console.log('Success:', data);
       // Handle success (show toast, redirect, etc.)
-      
+
       // Clean up the object URL to avoid memory leaks
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
-      
+
     } catch (error) {
       console.error('Error:', error);
       // Handle error (show error message to user)
@@ -135,7 +135,7 @@ const BlogManagementForm = () => {
             <h1 className="text-2xl font-bold">Create New Blog Post</h1>
             <p className="opacity-90">Fill in the details below to publish a new blog post</p>
           </div>
-          
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -154,7 +154,7 @@ const BlogManagementForm = () => {
                     required
                   />
                 </div>
-                
+
                 {/* Slug */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Slug*</label>
@@ -168,7 +168,7 @@ const BlogManagementForm = () => {
                     required
                   />
                 </div>
-                
+
                 {/* Excerpt */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt*</label>
@@ -182,7 +182,7 @@ const BlogManagementForm = () => {
                     required
                   />
                 </div>
-                
+
                 {/* Content */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Content*</label>
@@ -197,7 +197,7 @@ const BlogManagementForm = () => {
                   />
                 </div>
               </div>
-              
+
               {/* Right Column */}
               <div className="space-y-6">
                 {/* Cover Image */}
@@ -218,9 +218,9 @@ const BlogManagementForm = () => {
                       <FiUpload className="w-6 h-6 mb-1" />
                       <span className="text-sm">Click to upload or drag and drop</span>
                       <span className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</span>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*"
                         onChange={handleImageUpload}
                       />
@@ -229,10 +229,10 @@ const BlogManagementForm = () => {
                   {formData.coverImage && (
                     <div className="mt-2">
                       <div className="relative group">
-                        <img 
-                          src={imagePreview || formData.coverImage} 
-                          alt="Preview" 
-                          className="h-32 w-full object-cover rounded-lg border border-gray-200" 
+                        <img
+                          src={imagePreview || formData.coverImage}
+                          alt="Preview"
+                          className="h-32 w-full object-cover rounded-lg border border-gray-200"
                         />
                         <button
                           type="button"
@@ -246,7 +246,7 @@ const BlogManagementForm = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Author */}
                 {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Author*</label>
@@ -260,7 +260,7 @@ const BlogManagementForm = () => {
                     required
                   />
                 </div> */}
-                
+
                 {/* Tags */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
@@ -295,7 +295,7 @@ const BlogManagementForm = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Categories */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
@@ -330,7 +330,7 @@ const BlogManagementForm = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Publish Settings */}
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between mb-4">
@@ -349,7 +349,7 @@ const BlogManagementForm = () => {
                       </span>
                     </label>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <FiCalendar className="text-gray-500 w-5 h-5" />
@@ -361,7 +361,7 @@ const BlogManagementForm = () => {
                         className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                       />
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <FiClock className="text-gray-500 w-5 h-5" />
                       <input
@@ -379,11 +379,11 @@ const BlogManagementForm = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* SEO Section */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-lg font-medium text-gray-800 mb-3">SEO Settings</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
@@ -396,7 +396,7 @@ const BlogManagementForm = () => {
                     placeholder="Meta title for SEO"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
                   <textarea
@@ -408,7 +408,7 @@ const BlogManagementForm = () => {
                     placeholder="Meta description for SEO"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">OG Title</label>
                   <input
@@ -420,7 +420,7 @@ const BlogManagementForm = () => {
                     placeholder="Open Graph title"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">OG Description</label>
                   <textarea
@@ -432,7 +432,7 @@ const BlogManagementForm = () => {
                     placeholder="Open Graph description"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">OG Image URL</label>
                   <input
@@ -446,7 +446,7 @@ const BlogManagementForm = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Form Actions */}
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <button

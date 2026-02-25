@@ -190,11 +190,10 @@ const EventList = () => {
                 <button
                   key={index + 1}
                   onClick={() => handlePageChange(index + 1)}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === index + 1
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
+                  className={`px-3 py-1 rounded ${currentPage === index + 1
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                    }`}
                 >
                   {index + 1}
                 </button>

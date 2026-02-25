@@ -57,7 +57,7 @@ const PhotoGalleryForm = () => {
             });
 
             // Set preview with full URL
-            setImagePreview(`https://api.harekrishnavidya.org${photo.imageUrl}`);
+            setImagePreview(photo.imageUrl);
         } catch (err) {
             console.error('Error fetching photo:', err);
             setError('Failed to load photo details');

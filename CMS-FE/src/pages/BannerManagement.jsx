@@ -530,11 +530,10 @@ const BannerManagement = () => {
         {/* Toast Message */}
         {message && (
           <div
-            className={`mb-6 flex items-center gap-3 rounded-lg p-4 animate-scale-in ${
-              message.type === "success"
-                ? "bg-success/10 text-success"
-                : "bg-destructive/10 text-destructive"
-            }`}
+            className={`mb-6 flex items-center gap-3 rounded-lg p-4 animate-scale-in ${message.type === "success"
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive"
+              }`}
           >
             {message.type === "success" ? (
               <CheckCircle2 className="h-5 w-5 flex-shrink-0" />

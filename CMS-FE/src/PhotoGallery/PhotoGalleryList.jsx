@@ -139,7 +139,7 @@ const PhotoGalleryList = () => {
                                 {/* Image with Hover Overlay */}
                                 <div className="aspect-video bg-gray-100 overflow-hidden relative">
                                     <img
-                                        src={`https://api.harekrishnavidya.org${photo.imageUrl}`}
+                                        src={photo.imageUrl}
                                         alt={photo.imageTitle}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
@@ -160,7 +160,7 @@ const PhotoGalleryList = () => {
                                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                                         {/* Star/Favorite Button */}
                                         <button
-                                            onClick={() => window.open(`https://api.harekrishnavidya.org${photo.imageUrl}`, '_blank')}
+                                            onClick={() => window.open(photo.imageUrl, '_blank')}
                                             className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-all transform hover:scale-110 shadow-lg"
                                             title="View Full Image"
                                         >

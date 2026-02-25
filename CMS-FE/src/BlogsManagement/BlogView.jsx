@@ -17,11 +17,11 @@ const BlogView = () => {
     try {
       setLoading(true);
       const response = await fetch(`https://api.harekrishnavidya.org/api/blogs/${blogId}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch blog data');
       }
-      
+
       const data = await response.json();
       console.log(data)
       setBlog(data);
@@ -136,11 +136,10 @@ const BlogView = () => {
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 left-4">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  blog.isPublished 
-                    ? 'bg-green-100 text-green-800' 
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${blog.isPublished
+                    ? 'bg-green-100 text-green-800'
                     : 'bg-yellow-100 text-yellow-800'
-                }`}>
+                  }`}>
                   {blog.isPublished ? 'Published' : 'Draft'}
                 </span>
               </div>
@@ -152,7 +151,7 @@ const BlogView = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
               {blog.title}
             </h1>
-            
+
             <p className="text-xl text-gray-600 mb-6 leading-relaxed">
               {blog.excerpt}
             </p>
@@ -200,7 +199,7 @@ const BlogView = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {categories.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {categories.map((category, index) => (
@@ -218,7 +217,7 @@ const BlogView = () => {
 
             {/* Blog Content */}
             <div className="prose prose-lg max-w-none">
-              <div 
+              <div
                 className="text-gray-700 leading-relaxed blog-rich-content"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
               />

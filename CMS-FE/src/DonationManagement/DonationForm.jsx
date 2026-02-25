@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  FaHeart, 
-  FaUser, 
-  FaEnvelope, 
-  FaPhone, 
-  FaRupeeSign, 
-  FaEdit, 
-  FaSave, 
+import {
+  FaHeart,
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaRupeeSign,
+  FaEdit,
+  FaSave,
   FaArrowLeft,
   FaEye,
   FaEyeSlash,
@@ -20,7 +20,7 @@ const DonationForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
-  
+
   const [formData, setFormData] = useState({
     donorName: '',
     donorEmail: '',
@@ -32,7 +32,7 @@ const DonationForm = () => {
     isAnonymous: false,
     notes: ''
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -75,7 +75,7 @@ const DonationForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -108,14 +108,14 @@ const DonationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setSaving(true);
-      
+
       if (isEditing) {
         // Update existing donation notes
         const response = await fetch(`https://api.harekrishnavidya.org/api/donations/${id}/notes`, {
@@ -146,7 +146,7 @@ const DonationForm = () => {
         });
 
         const data = await response.json();
-        
+
         if (data.success) {
           // Here you would typically redirect to Razorpay payment page
           // For now, we'll just show a success message
@@ -195,7 +195,7 @@ const DonationForm = () => {
             Back
           </button>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
             {isEditing ? <FaEdit className="w-6 h-6 text-white" /> : <FaHeart className="w-6 h-6 text-white" />}
@@ -223,7 +223,7 @@ const DonationForm = () => {
                     <FaUser className="w-5 h-5 text-blue-600" />
                     Donor Information
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {/* Anonymous Toggle */}
                     <div className="flex items-center gap-3">
@@ -254,9 +254,8 @@ const DonationForm = () => {
                             name="donorName"
                             value={formData.donorName}
                             onChange={handleInputChange}
-                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              errors.donorName ? 'border-red-300' : 'border-gray-300'
-                            }`}
+                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.donorName ? 'border-red-300' : 'border-gray-300'
+                              }`}
                             placeholder="Enter donor name"
                           />
                         </div>
@@ -279,9 +278,8 @@ const DonationForm = () => {
                           name="donorEmail"
                           value={formData.donorEmail}
                           onChange={handleInputChange}
-                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.donorEmail ? 'border-red-300' : 'border-gray-300'
-                          }`}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.donorEmail ? 'border-red-300' : 'border-gray-300'
+                            }`}
                           placeholder="Enter email address"
                         />
                       </div>
@@ -319,7 +317,7 @@ const DonationForm = () => {
                     <FaRupeeSign className="w-5 h-5 text-green-600" />
                     Donation Details
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {/* Amount */}
                     <div>
@@ -336,9 +334,8 @@ const DonationForm = () => {
                           onChange={handleInputChange}
                           min="1"
                           step="1"
-                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            errors.amount ? 'border-red-300' : 'border-gray-300'
-                          }`}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.amount ? 'border-red-300' : 'border-gray-300'
+                            }`}
                           placeholder="Enter amount"
                         />
                       </div>
@@ -405,7 +402,7 @@ const DonationForm = () => {
                     <FaFileAlt className="w-5 h-5 text-purple-600" />
                     Additional Notes
                   </h3>
-                  
+
                   <div>
                     <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
                       Notes

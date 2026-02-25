@@ -15,11 +15,11 @@ const BlogList = () => {
     try {
       setLoading(true);
       const response = await fetch('https://api.harekrishnavidya.org/api/blogs/');
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log(data)
       setBlogs(data);
@@ -38,13 +38,13 @@ const BlogList = () => {
   // Filter blogs based on search term and status
   const filteredBlogs = blogs.filter(blog => {
     const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.slug.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'published' && blog.isPublished) ||
-                         (filterStatus === 'draft' && !blog.isPublished);
-    
+      blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      blog.slug.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = filterStatus === 'all' ||
+      (filterStatus === 'published' && blog.isPublished) ||
+      (filterStatus === 'draft' && !blog.isPublished);
+
     return matchesSearch && matchesStatus;
   });
 
@@ -55,7 +55,7 @@ const BlogList = () => {
         const response = await fetch(`https://api.harekrishnavidya.org/api/blogs/${blogId}`, {
           method: 'DELETE',
         });
-        
+
         if (response.ok) {
           setBlogs(blogs.filter(blog => blog._id !== blogId));
           alert('Blog deleted successfully!');
@@ -184,7 +184,7 @@ const BlogList = () => {
             </div>
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No blogs found</h3>
             <p className="text-gray-500">
-              {searchTerm || filterStatus !== 'all' 
+              {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your search or filter criteria'
                 : 'No blogs have been created yet'
               }
@@ -195,7 +195,7 @@ const BlogList = () => {
             {filteredBlogs.map((blog) => {
               const tags = parseArrayField(blog.tags);
               const categories = parseArrayField(blog.categories);
-              
+
               return (
                 <div key={blog._id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   {/* Blog Image */}
@@ -214,54 +214,53 @@ const BlogList = () => {
                     <div className="hidden absolute inset-0 bg-gray-200 items-center justify-center">
                       <FiEye className="w-12 h-12 text-gray-400" />
                     </div>
-                    
+
                     {/* Status Badge */}
                     <div className="absolute top-3 left-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        blog.isPublished 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${blog.isPublished
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-yellow-100 text-yellow-800'
-                      }`}>
+                        }`}>
                         {blog.isPublished ? 'Published' : 'Draft'}
                       </span>
                     </div>
 
-                                         {/* Action Buttons */}
-                     <div className="absolute top-3 right-3 flex space-x-2">
-                       <button 
-                         className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-green-600"
-                         onClick={() => handleView(blog._id)}
-                         title="View Blog"
-                       >
-                         <FiEye className="w-4 h-4" />
-                       </button>
-                       <button 
-                         className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-blue-600"
-                         onClick={() => handleEdit(blog._id)}
-                         title="Edit Blog"
-                       >
-                         <FiEdit2 className="w-4 h-4" />
-                       </button>
-                       <button 
-                         className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-red-600"
-                         onClick={() => handleDelete(blog._id)}
-                         title="Delete Blog"
-                       >
-                         <FiTrash2 className="w-4 h-4" />
-                       </button>
-                     </div>
+                    {/* Action Buttons */}
+                    <div className="absolute top-3 right-3 flex space-x-2">
+                      <button
+                        className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-green-600"
+                        onClick={() => handleView(blog._id)}
+                        title="View Blog"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-blue-600"
+                        onClick={() => handleEdit(blog._id)}
+                        title="Edit Blog"
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100 transition hover:text-red-600"
+                        onClick={() => handleDelete(blog._id)}
+                        title="Delete Blog"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Blog Content */}
                   <div className="p-6">
-                                         {/* Title */}
-                     <h3 
-                       className="text-xl font-bold text-gray-800 mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition"
-                       onClick={() => handleView(blog._id)}
-                       title="Click to view full blog"
-                     >
-                       {blog.title}
-                     </h3>
+                    {/* Title */}
+                    <h3
+                      className="text-xl font-bold text-gray-800 mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition"
+                      onClick={() => handleView(blog._id)}
+                      title="Click to view full blog"
+                    >
+                      {blog.title}
+                    </h3>
 
                     {/* Excerpt */}
                     <p className="text-gray-600 mb-4 line-clamp-3">

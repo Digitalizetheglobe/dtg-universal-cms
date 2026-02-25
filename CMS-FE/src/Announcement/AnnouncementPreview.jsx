@@ -17,11 +17,11 @@ const AnnouncementPreview = () => {
             limit: 5
           }
         });
-        
+
         // Handle different response structures
         const data = response.data;
         const announcementsData = Array.isArray(data) ? data : (data?.announcements || []);
-        
+
         setAnnouncements(announcementsData);
         setError(null);
       } catch (err) {
@@ -66,9 +66,9 @@ const AnnouncementPreview = () => {
       {announcements.map((announcement) => (
         <div key={announcement._id} className="p-4 border rounded-lg">
           {announcement.imageUrl && (
-            <img 
-              src={announcement.imageUrl} 
-              alt={announcement.title} 
+            <img
+              src={announcement.imageUrl}
+              alt={announcement.title}
               className="object-cover w-full h-48 mb-4 rounded"
             />
           )}

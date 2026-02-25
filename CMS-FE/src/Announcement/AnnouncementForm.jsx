@@ -105,7 +105,7 @@ const AnnouncementForm = ({ announcement, onSuccess, onCancel }) => {
       <h2 className="mb-6 text-2xl font-bold text-gray-800">
         {announcement ? 'Edit Announcement' : 'Create New Announcement'}
       </h2>
-      
+
       {error && (
         <div className="p-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded">
           {error}

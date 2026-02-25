@@ -10,7 +10,7 @@ const TestimonialManagement = () => {
     fullName: '',
     location: '',
     testimonialText: '',
-    
+
   });
 
   // Fetch all testimonials
@@ -52,12 +52,12 @@ const TestimonialManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = currentTestimonial 
+      const url = currentTestimonial
         ? `https://api.harekrishnavidya.org/api/testimonials/${currentTestimonial._id}`
         : 'https://api.harekrishnavidya.org/api/testimonials/';
-      
+
       const method = currentTestimonial ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -69,7 +69,7 @@ const TestimonialManagement = () => {
       if (!response.ok) throw new Error('Operation failed');
 
       const data = await response.json();
-      
+
       if (currentTestimonial) {
         setTestimonials(testimonials.map(t => t._id === data._id ? data : t));
         toast.success('Testimonial updated successfully');
@@ -109,9 +109,9 @@ const TestimonialManagement = () => {
         const response = await fetch(`https://api.harekrishnavidya.org/api/testimonials/${id}`, {
           method: 'DELETE'
         });
-        
+
         if (!response.ok) throw new Error('Deletion failed');
-        
+
         setTestimonials(testimonials.filter(t => t._id !== id));
         toast.success('Testimonial deleted successfully');
       } catch (error) {
@@ -124,7 +124,7 @@ const TestimonialManagement = () => {
   const resetForm = () => {
     setFormData({
       fullName: '',
-      
+
       testimonialText: '',
       date: new Date().toISOString().split('T')[0],
       companyName: '',
@@ -249,7 +249,7 @@ const TestimonialManagement = () => {
                     { label: 'Full Name', type: 'text', name: 'fullName', value: formData.fullName },
                     { label: 'Location', type: 'text', name: 'location', value: formData.location },
                     { label: 'Testimonial Text', type: 'textarea', name: 'testimonialText', value: formData.testimonialText },
-                    
+
                   ].map(({ label, type, name, value, options }, index) => (
                     <div key={index}>
                       <label className="block mb-1 text-sm font-medium text-gray-700">{label}</label>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, Typography, Button, Card, CardContent, Grid, 
-  IconButton, Chip, Dialog, DialogActions, DialogContent, 
+import {
+  Box, Typography, Button, Card, CardContent, Grid,
+  IconButton, Chip, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, CircularProgress, Alert,
-  Table, TableBody, TableCell, TableContainer, TableHead, 
+  Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Paper, TextField, Select, MenuItem, FormControl,
   InputLabel, Avatar, Switch, FormControlLabel
 } from '@mui/material';
@@ -41,15 +41,15 @@ const TeamManagement = () => {
   const fetchTeamMembers = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch('https://api.harekrishnavidya.org/api/team');
       if (!response.ok) {
         throw new Error('Failed to load team members');
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setTeamMembers(result.data);
       } else {
@@ -72,14 +72,14 @@ const TeamManagement = () => {
     if (!member || !member.fullName || !member.designation) {
       return false;
     }
-    
+
     const searchMatch = member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       member.designation.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const statusMatch = filterStatus === 'all' || 
-                       (filterStatus === 'active' && member.isActive) ||
-                       (filterStatus === 'inactive' && !member.isActive);
-    
+      member.designation.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const statusMatch = filterStatus === 'all' ||
+      (filterStatus === 'active' && member.isActive) ||
+      (filterStatus === 'inactive' && !member.isActive);
+
     return searchMatch && statusMatch;
   });
 
@@ -162,10 +162,10 @@ const TeamManagement = () => {
   // Handle form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       if (photoFile) {
         // Upload with photo
         const formDataToSend = new FormData();
@@ -174,7 +174,7 @@ const TeamManagement = () => {
         formDataToSend.append('designation', formData.designation);
         formDataToSend.append('linkedinUrl', formData.linkedinUrl);
         formDataToSend.append('isActive', formData.isActive);
-        
+
         response = await fetch(`https://api.harekrishnavidya.org/api/team${editingMember ? `/${editingMember._id}` : ''}`, {
           method: editingMember ? 'PUT' : 'POST',
           body: formDataToSend
@@ -189,9 +189,9 @@ const TeamManagement = () => {
           body: JSON.stringify(formData)
         });
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         closeFormDialog();
         fetchTeamMembers();
@@ -209,9 +209,9 @@ const TeamManagement = () => {
       const response = await fetch(`https://api.harekrishnavidya.org/api/team/${memberToDelete._id}`, {
         method: 'DELETE'
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setTeamMembers(teamMembers.filter(m => m._id !== memberToDelete._id));
         closeDeleteDialog();
@@ -230,11 +230,11 @@ const TeamManagement = () => {
       const response = await fetch(`https://api.harekrishnavidya.org/api/team/${member._id}/toggle-status`, {
         method: 'PATCH'
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
-        setTeamMembers(teamMembers.map(m => 
+        setTeamMembers(teamMembers.map(m =>
           m._id === member._id ? { ...m, isActive: result.data.isActive } : m
         ));
       } else {
@@ -369,7 +369,7 @@ const TeamManagement = () => {
           <PersonIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-lg font-medium text-gray-900">No team members found</h3>
           <p className="mt-1 text-gray-500">
-            {searchTerm || filterStatus !== 'all' 
+            {searchTerm || filterStatus !== 'all'
               ? 'Try adjusting your search or filter criteria'
               : 'Get started by adding your first team member'}
           </p>
@@ -664,7 +664,7 @@ const TeamManagement = () => {
             <Button onClick={closeFormDialog} className="text-gray-600">
               Cancel
             </Button>
-            <Button 
+            <Button
               type="submit"
               variant="contained"
               className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -695,8 +695,8 @@ const TeamManagement = () => {
           <Button onClick={closeDeleteDialog} className="text-gray-600">
             Cancel
           </Button>
-          <Button 
-            onClick={confirmDelete} 
+          <Button
+            onClick={confirmDelete}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
             Delete

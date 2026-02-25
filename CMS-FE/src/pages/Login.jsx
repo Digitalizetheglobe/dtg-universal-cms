@@ -16,7 +16,7 @@ const Login = () => {
       [e.target.name]: e.target.value,
     }));
   };
-   const handleSignUpClick = () => {
+  const handleSignUpClick = () => {
     navigate("/signUp");
   };
 
@@ -24,7 +24,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      
+
       // Login api is apply
       const res = await axios.post(
         "https://api.harekrishnavidya.org/api/users/login",
@@ -38,7 +38,7 @@ const Login = () => {
     }
   };
 
-   return (
+  return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-300 to-purple-200">
       <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-2xl">
         <div className="flex flex-col mb-6 text-center">

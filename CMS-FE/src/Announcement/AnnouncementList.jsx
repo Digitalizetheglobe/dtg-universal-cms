@@ -29,23 +29,23 @@ const AnnouncementList = () => {
           search: searchTerm
         }
       });
-      
+
       // Handle both response structures:
       // 1. Direct array response: response.data is the array
       // 2. Object with data and pagination: response.data.announcements
-      const announcementsData = Array.isArray(response.data) 
-        ? response.data 
+      const announcementsData = Array.isArray(response.data)
+        ? response.data
         : response.data?.announcements || [];
-        
+
       setAnnouncements(announcementsData);
-      
+
       // Set total pages if available, otherwise calculate it
       if (response.data?.totalPages) {
         setTotalPages(response.data.totalPages);
       } else {
         setTotalPages(Math.ceil(announcementsData.length / itemsPerPage) || 1);
       }
-      
+
       setError('');
     } catch (err) {
       console.error('Error fetching announcements:', err);
@@ -393,11 +393,10 @@ const AnnouncementList = () => {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            currentPage === pageNum
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === pageNum
                               ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                               : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                          }`}
+                            }`}
                         >
                           {pageNum}
                         </button>

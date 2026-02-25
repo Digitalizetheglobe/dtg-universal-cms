@@ -170,7 +170,7 @@ const GroceryItemForm = () => {
                             {/* Icon Selection Section */}
                             <div className="mb-8">
                                 <label className="block text-sm font-semibold text-gray-700 mb-4">Icon</label>
-                                
+
                                 {/* Custom Upload Option */}
                                 <div className="mb-6">
                                     <p className="text-sm text-gray-600 mb-2">Upload custom icon</p>
@@ -202,11 +202,10 @@ const GroceryItemForm = () => {
                                                 key={index}
                                                 type="button"
                                                 onClick={() => handleIconSelect(emoji)}
-                                                className={`w-12 h-12 text-2xl rounded-lg border-2 transition-all hover:scale-110 ${
-                                                    formData.icon === emoji
-                                                        ? 'border-orange-500 bg-orange-50'
-                                                        : 'border-gray-200 hover:border-orange-300'
-                                                }`}
+                                                className={`w-12 h-12 text-2xl rounded-lg border-2 transition-all hover:scale-110 ${formData.icon === emoji
+                                                    ? 'border-orange-500 bg-orange-50'
+                                                    : 'border-gray-200 hover:border-orange-300'
+                                                    }`}
                                             >
                                                 {emoji}
                                             </button>

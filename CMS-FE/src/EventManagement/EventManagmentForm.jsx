@@ -95,7 +95,7 @@ const EventForm = ({ event, onSuccess, onCancel }) => {
     }
   };
   return (
-     <div className="max-w-3xl p-6 mx-auto bg-white rounded-lg shadow-xl">
+    <div className="max-w-3xl p-6 mx-auto bg-white rounded-lg shadow-xl">
       <h2 className="mb-6 text-2xl font-bold text-gray-800">
         {event ? 'Edit Event' : 'Create New Event'}
       </h2>
@@ -173,7 +173,7 @@ const EventForm = ({ event, onSuccess, onCancel }) => {
           />
         </div>
 
-         <div className="mb-6">
+        <div className="mb-6">
           <label className="block mb-2 font-medium text-gray-700">Event Image *</label>
           <div className="flex items-center space-x-4">
             <input
@@ -254,7 +254,7 @@ const EventForm = ({ event, onSuccess, onCancel }) => {
           </button>
         </div>
 
-       
+
       </form>
     </div>
   );
