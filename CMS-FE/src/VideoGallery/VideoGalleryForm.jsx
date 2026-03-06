@@ -2,6 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { FaArrowLeft, FaSave, FaVideo, FaInfoCircle, FaLink, FaImage as FaThumbnail } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 
+// Converts YouTube video URL or video ID to actual thumbnail image URL
+const getYouTubeThumbnailUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    // Already an image URL
+    if (url.includes('img.youtube.com') || /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)) return url;
+    // Extract video ID from: youtube.com/watch?v=, youtu.be/, youtube.com/shorts/
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/\s]+)/);
+    if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    return url;
+};
+
+// Returns the thumbnail URL to display (handles YouTube URLs, fallback to video URL)
+const getResolvedThumbnailUrl = (thumbnailUrl, videoUrl) => {
+    const fromThumb = getYouTubeThumbnailUrl(thumbnailUrl);
+    if (fromThumb) return fromThumb;
+    const fromVideo = getYouTubeThumbnailUrl(videoUrl);
+    if (fromVideo) return fromVideo;
+    return thumbnailUrl || null;
+};
+
 const VideoGalleryForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -105,12 +125,19 @@ const VideoGalleryForm = () => {
 
             const method = isEditMode ? 'PUT' : 'POST';
 
+            // Convert YouTube thumbnail URL to actual image URL before saving
+            const thumbnailUrl = formData.thumbnailUrl
+                ? (getYouTubeThumbnailUrl(formData.thumbnailUrl) || formData.thumbnailUrl)
+                : (getYouTubeThumbnailUrl(formData.videoUrl) || '');
+
+            const payload = { ...formData, thumbnailUrl };
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -375,10 +402,10 @@ const VideoGalleryForm = () => {
                             <div className="space-y-4">
                                 {/* Video Preview */}
                                 <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center relative">
-                                    {formData.thumbnailUrl ? (
+                                    {getResolvedThumbnailUrl(formData.thumbnailUrl, formData.videoUrl) ? (
                                         <>
                                             <img
-                                                src={formData.thumbnailUrl}
+                                                src={getResolvedThumbnailUrl(formData.thumbnailUrl, formData.videoUrl)}
                                                 alt="Thumbnail Preview"
                                                 className="w-full h-full object-cover"
                                             />
@@ -402,7 +429,7 @@ const VideoGalleryForm = () => {
                                             ⭐ Featured
                                         </div>
                                     )}
-                                    {formData.duration && formData.thumbnailUrl && (
+                                    {formData.duration && getResolvedThumbnailUrl(formData.thumbnailUrl, formData.videoUrl) && (
                                         <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs font-medium px-2 py-1 rounded">
                                             {formData.duration}
                                         </div>

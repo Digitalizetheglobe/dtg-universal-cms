@@ -14,7 +14,7 @@ const videoGallerySchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['Events', 'Campaigns', 'Festivals', 'Community Service', 'Temple Activities', 'Other']
+        enum: ['Events', 'Campaigns', 'Testimonials', 'Documentaries', 'Updates', 'Festivals', 'Community Service', 'Temple Activities', 'Other']
     },
     videoUrl: {
         type: String,

@@ -21,6 +21,9 @@ const VideoGalleryList = () => {
     const categories = [
         'Events',
         'Campaigns',
+        'Testimonials',
+        'Documentaries',
+        'Updates',
         'Festivals',
         'Community Service',
         'Temple Activities',
@@ -82,13 +85,19 @@ const VideoGalleryList = () => {
     };
 
     const getVideoThumbnail = (video) => {
-        if (video.thumbnailUrl) return video.thumbnailUrl;
+        const getYouTubeThumbnailUrl = (url) => {
+            if (!url || typeof url !== 'string') return null;
+            if (url.includes('img.youtube.com') || /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)) return url;
+            const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/\s]+)/);
+            if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+            return url;
+        };
 
-        // Extract YouTube video ID and generate thumbnail
-        const youtubeMatch = video.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-        if (youtubeMatch) {
-            return `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`;
-        }
+        const fromThumb = video.thumbnailUrl ? getYouTubeThumbnailUrl(video.thumbnailUrl) : null;
+        if (fromThumb) return fromThumb;
+
+        const fromVideo = getYouTubeThumbnailUrl(video.videoUrl);
+        if (fromVideo) return fromVideo;
 
         return null;
     };
