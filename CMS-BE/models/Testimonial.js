@@ -7,8 +7,9 @@ const TestimonialSchema = new mongoose.Schema(
     testimonialText: { type: String, required: true },
     date: { type: Date, default: Date.now },
     location: { type: String, required: true },
-
-     // Flexible object for additional fields
+    photo: { type: String },
+    companyName: { type: String },
+    otherFields: { type: Object, default: {} },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

@@ -5,6 +5,7 @@ const { protect, admin } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/forms/page/:page', formController.getFormByPage);
+router.post('/forms/page/:page/submit', formController.submitFormByPage);
 router.post('/forms/:formId/submit', formController.submitForm);
 
 // Temporarily making this route public (removed protect and admin middleware)

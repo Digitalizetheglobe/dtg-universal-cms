@@ -2,7 +2,7 @@ const { sendDonationReceipt } = require('./utils/emailService');
 
 async function testEmailOnly() {
   console.log('🧪 Testing Email Service Only...\n');
-  
+
   try {
     // Create a mock donation for testing
     const mockDonation = {
@@ -19,10 +19,10 @@ async function testEmailOnly() {
       isAnonymous: false,
       createdAt: new Date().toISOString()
     };
-    
+
     console.log('Sending test email...');
     const result = await sendDonationReceipt(mockDonation);
-    
+
     if (result.success) {
       console.log('✅ Test email sent successfully!');
       console.log(`   Message ID: ${result.messageId}`);
@@ -32,7 +32,7 @@ async function testEmailOnly() {
       console.log(`   Error: ${result.error}`);
       console.log(`   Message: ${result.message}`);
     }
-    
+
   } catch (error) {
     console.error('❌ Error during email test:', error.message);
   }

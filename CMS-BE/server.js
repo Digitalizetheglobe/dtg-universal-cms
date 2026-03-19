@@ -73,6 +73,7 @@ app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/blogs", require("./routes/blogRoutes"));
+app.use("/api/contact", require("./routes/contactRoutes"));
 app.use("/api/forms", require("./routes/formRoutes"));
 app.use("/api/testimonials", require("./routes/testimonialRoutes"));
 app.use("/api/announcements", require("./routes/announcementRoutes"));
@@ -95,6 +96,7 @@ app.use("/api/donations", require("./routes/donationRoutes"));
 
 // Banner Routing
 app.use("/api/banner", require("./routes/bannerRoutes"));
+app.use("/api/home-banner", require("./routes/homeBannerRoutes"));
 
 // Career Routing
 app.use("/api/career", require("./routes/careerRoutes"));
@@ -199,6 +201,12 @@ app.use("/api/video-gallery", videoGalleryRoutes);
 // ------------------------
 const donorWallRoutes = require("./routes/donorWallRoutes");
 app.use("/api/donor-wall", donorWallRoutes);
+
+// ------------------------
+// Stat routes
+// ------------------------
+const statRoutes = require("./routes/statRoutes");
+app.use("/api/stats", statRoutes);
 
 // 404 handler - must be after all routes
 app.use((req, res, next) => {

@@ -38,7 +38,10 @@ export const Home = () => {
           <FeatureCard title="Careers Module" icon="💼" />
           <FeatureCard title="Admin Panel" icon="⚙️" />
           <Link to="/banner">
-            <FeatureCard title="Banner Uploading" icon="🖼️" />
+            <FeatureCard title="Main Banner" icon="🖼️" />
+          </Link>
+          <Link to="/home-banner">
+            <FeatureCard title="Home Page Banner" icon="🏠" />
           </Link>
           <Link to="/donation-amount">
             <FeatureCard title="Donation Amount Uploading" icon="💰"/>

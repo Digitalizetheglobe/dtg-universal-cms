@@ -1,4 +1,4 @@
-﻿const Razorpay = require('razorpay');
+const Razorpay = require('razorpay');
 const Donation = require('../models/Donation');
 const crypto = require('crypto');
 const { sendDonationReceipt, testEmailConfiguration } = require('../utils/emailService');
@@ -1045,7 +1045,7 @@ const submitDonationForm = async (req, res) => {
     // Create new Razorpay order if none exists
     if (!order) {
       const orderOptions = {
-        amount: sevaAmount * 100, // Convert to paise
+        amount: parsedSevaAmount * 100, // Convert to paise (using parsed value)
         currency: 'INR',
         receipt: `don_${donation._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
         notes: {
@@ -1068,7 +1068,8 @@ const submitDonationForm = async (req, res) => {
         return res.status(500).json({
           success: false,
           message: 'Payment gateway error. Please try again later.',
-          error: razorpayError.message
+          error: razorpayError.message,
+          rawError: razorpayError
         });
       }
     }

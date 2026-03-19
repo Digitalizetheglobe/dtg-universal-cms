@@ -37,7 +37,7 @@ const donationSchema = new mongoose.Schema({
   },
   donorType: {
     type: String,
-    enum: ['Indian Citizen', 'Foreign Citizen'],
+    enum: ['Indian Citizen', 'Foreign Citizen', 'individual'],
     required: false // Made optional for Razorpay sync
   },
 

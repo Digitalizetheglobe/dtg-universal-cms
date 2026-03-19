@@ -26,6 +26,7 @@ import FormPreviewPage from "./DynamicForms/FormPreviewPage";
 import LeadsManagement from "./DynamicForms/LeadsManagement";
 import TeamManagement from "./TeamManagement/TeamManagement";
 import TestimonialManagement from "./TestimonialManagement/TestimonialManagement";
+import StatManagement from "./StatManagement/StatManagement";
 // import AdminAuth from "./components/AdminAuth";
 import AnnouncementForm from "./Announcement/AnnouncementForm";
 import AnnouncementList from "./Announcement/AnnouncementList";
@@ -72,6 +73,7 @@ import EventManagementList from "./EventManagement/EventManagmentList";
 
 // Banner Management & Career Components
 import BannerManagement from "./pages/BannerManagement";
+import HomeBannerManagement from "./pages/HomeBannerManagement";
 import Donationamount from "./pages/Donationamount";
 import CareerForm from "./pages/CareerForm";
 import AppliedStatus from "./pages/appliedstatus";
@@ -116,6 +118,7 @@ function AppWrapper() {
               {/* Blog Management Routes */}
               <Route path="/dashboard" element={<Home />} />
               <Route path="/banner" element={<BannerManagement />} />
+              <Route path="/home-banner" element={<HomeBannerManagement />} />
               <Route path="/donation-amount" element={<Donationamount />} />
               <Route path="/guidance-requests" element={<GuidanceRequests />} />
 
@@ -162,6 +165,10 @@ function AppWrapper() {
               <Route
                 path="/testimonialmanagement"
                 element={<TestimonialManagement />}
+              />
+              <Route
+                path="/statmanagement"
+                element={<StatManagement />}
               />
               <Route path="/announcement" element={<AnnouncementForm />} />
               <Route path="/announcement/list" element={<AnnouncementList />} />

@@ -17,6 +17,9 @@ EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_email_password
 
+# Contact form - where to receive "Send us a message" submissions (optional, defaults to aikyavidya@hkmhyderabad.org)
+CONTACT_RECIPIENT_EMAIL=aikyavidya@hkmhyderabad.org
+
 # Razorpay Configuration
 RAZORPAY_KEY_ID=rzp_test_your_razorpay_key_id_here
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here

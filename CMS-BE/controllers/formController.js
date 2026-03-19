@@ -162,6 +162,53 @@ exports.deleteForm = async (req, res) => {
 };
 
 // Form Submission Controllers
+exports.submitFormByPage = async (req, res) => {
+  try {
+    const { page } = req.params;
+    const { data } = req.body;
+
+    const form = await DynamicForm.findOne({ page, isActive: true });
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+
+    const submission = await FormSubmission.create({
+      formId: form._id,
+      data,
+      submittedBy: req.user ? req.user._id : null,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    if (form.emailSettings?.sendEmailOnSubmission) {
+      const emailTemplate = await EmailTemplate.findById(form.emailSettings.emailTemplateId);
+      if (emailTemplate) {
+        let emailBody = emailTemplate.body;
+        for (const key in data) {
+          emailBody = emailBody.replace(`{{${key}}}`, data[key]);
+        }
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: form.emailSettings.recipientEmails.join(','),
+          subject: emailTemplate.subject,
+          html: emailBody
+        });
+      }
+    }
+
+    res.status(201).json(submission);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.submitForm = async (req, res) => {
   try {
     const { formId } = req.params;

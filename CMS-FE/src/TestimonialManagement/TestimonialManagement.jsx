@@ -10,8 +10,16 @@ const TestimonialManagement = () => {
     fullName: '',
     location: '',
     testimonialText: '',
-
+    photo: '',
+    date: new Date().toISOString().split('T')[0],
+    companyName: '',
+    rating: 5,
+    otherFields: {
+      position: ''
+    }
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   // Fetch all testimonials
   useEffect(() => {
@@ -32,7 +40,7 @@ const TestimonialManagement = () => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name in formData.otherFields) {
+    if (formData.otherFields && name in formData.otherFields) {
       setFormData({
         ...formData,
         otherFields: {
@@ -48,6 +56,18 @@ const TestimonialManagement = () => {
     }
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,23 +78,38 @@ const TestimonialManagement = () => {
 
       const method = currentTestimonial ? 'PUT' : 'POST';
 
+      const dataToSend = new FormData();
+      dataToSend.append('fullName', formData.fullName);
+      dataToSend.append('location', formData.location);
+      dataToSend.append('testimonialText', formData.testimonialText);
+      dataToSend.append('rating', formData.rating);
+      dataToSend.append('date', formData.date);
+      dataToSend.append('companyName', formData.companyName);
+      dataToSend.append('otherFields', JSON.stringify(formData.otherFields));
+      
+      if (photoFile) {
+        dataToSend.append('photo', photoFile);
+      }
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: dataToSend,
       });
 
-      if (!response.ok) throw new Error('Operation failed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Operation failed');
+      }
 
-      const data = await response.json();
+      const result = await response.json();
+      // Handle both direct object and { success: true, data: { ... } } formats
+      const data = result.data || result;
 
       if (currentTestimonial) {
-        setTestimonials(testimonials.map(t => t._id === data._id ? data : t));
+        setTestimonials(testimonials.map(t => (t._id === data._id || t._id === currentTestimonial._id) ? data : t));
         toast.success('Testimonial updated successfully');
       } else {
-        setTestimonials([...testimonials, data]);
+        setTestimonials([data, ...testimonials]);
         toast.success('Testimonial added successfully');
       }
 
@@ -90,15 +125,19 @@ const TestimonialManagement = () => {
   const handleEdit = (testimonial) => {
     setCurrentTestimonial(testimonial);
     setFormData({
-      fullName: testimonial.fullName,
-      rating: testimonial.rating,
-      testimonialText: testimonial.testimonialText,
-      date: testimonial.date.split('T')[0],
-      companyName: testimonial.companyName,
+      fullName: testimonial.fullName || '',
+      location: testimonial.location || '',
+      rating: testimonial.rating || 5,
+      testimonialText: testimonial.testimonialText || '',
+      photo: testimonial.photo || '',
+      date: testimonial.date ? testimonial.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      companyName: testimonial.companyName || '',
       otherFields: {
         position: testimonial.otherFields?.position || ''
       }
     });
+    setPhotoPreview(testimonial.photo ? `https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}` : null);
+    setPhotoFile(null);
     setIsModalOpen(true);
   };
 
@@ -124,14 +163,18 @@ const TestimonialManagement = () => {
   const resetForm = () => {
     setFormData({
       fullName: '',
-
+      location: '',
       testimonialText: '',
+      photo: '',
       date: new Date().toISOString().split('T')[0],
       companyName: '',
+      rating: 5,
       otherFields: {
         position: ''
       }
     });
+    setPhotoFile(null);
+    setPhotoPreview(null);
   };
 
   // Open modal for new testimonial
@@ -142,16 +185,16 @@ const TestimonialManagement = () => {
   };
 
   // Render stars based on rating
-  // const renderStars = (rating) => {
-  //   return [...Array(5)].map((_, i) => (
-  //     <span
-  //       key={i}
-  //       className={`text-2xl ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`}
-  //     >
-  //       ★
-  //     </span>
-  //   ));
-  // };
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, i) => (
+      <span
+        key={i}
+        className={`text-xl ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`}
+      >
+        ★
+      </span>
+    ));
+  };
 
   if (loading) {
     return (
@@ -185,15 +228,28 @@ const TestimonialManagement = () => {
           >
             <div className="p-6">
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800">{testimonial.fullName}</h3>
-                  <p className="text-sm text-gray-500">{testimonial.location}</p>
+                <div className="flex items-center space-x-4">
+                  {testimonial.photo ? (
+                    <img 
+                      src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`} 
+                      alt={testimonial.fullName} 
+                      className="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-md"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                      {testimonial.fullName?.charAt(0) || '?'}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">{testimonial.fullName}</h3>
+                    <p className="text-sm text-gray-500">{testimonial.location}</p>
+                  </div>
                 </div>
-                {/* <div className="flex items-center">
-                  {renderStars(testimonial.rating)}
-                </div> */}
+                <div className="flex items-center">
+                  {renderStars(testimonial.rating || 5)}
+                </div>
               </div>
-              <p className="mt-4 italic text-gray-700">"{testimonial.testimonialText}"</p>
+              <p className="mt-4 italic text-gray-700 min-h-[80px]">"{testimonial.testimonialText}"</p>
               <div className="flex items-center justify-between mt-6">
                 <span className="text-sm text-gray-500">
                   {new Date(testimonial.date).toLocaleDateString()}
@@ -224,88 +280,173 @@ const TestimonialManagement = () => {
 
       {/* Modal for Add/Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm">
           <div
-            className="w-full max-w-md bg-white shadow-2xl rounded-xl animate-fadeIn"
+            className="w-full max-w-xl bg-white shadow-2xl rounded-2xl animate-fadeIn overflow-hidden"
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {currentTestimonial ? 'Edit Testimonial' : 'Add Testimonial'}
-                </h2>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-500 transition duration-300 hover:text-gray-700"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  {/* Form fields */}
-                  {[
-                    { label: 'Full Name', type: 'text', name: 'fullName', value: formData.fullName },
-                    { label: 'Location', type: 'text', name: 'location', value: formData.location },
-                    { label: 'Testimonial Text', type: 'textarea', name: 'testimonialText', value: formData.testimonialText },
+            <div className="bg-gradient-to-r from-blue-600 to-purple-700 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">
+                {currentTestimonial ? 'Edit Testimonial' : 'Create New Testimonial'}
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-                  ].map(({ label, type, name, value, options }, index) => (
-                    <div key={index}>
-                      <label className="block mb-1 text-sm font-medium text-gray-700">{label}</label>
-                      {type === 'textarea' ? (
-                        <textarea
-                          name={name}
-                          value={value}
-                          onChange={handleInputChange}
-                          rows="3"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        ></textarea>
-                      ) : type === 'select' ? (
-                        <select
-                          name={name}
-                          value={value}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        >
-                          {options.map((option) => (
-                            <option key={option} value={option}>
-                              {option} Star{option !== 1 ? 's' : ''}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type={type}
-                          name={name}
-                          value={value}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
+            <div className="p-6 max-h-[85vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-6">
+                  {/* Photo Upload Section */}
+                  <div className="flex flex-col items-center pb-4 border-b border-gray-100">
+                    <div className="relative mb-3 group">
+                      {photoPreview ? (
+                        <img 
+                          src={photoPreview} 
+                          alt="Preview" 
+                          className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl group-hover:brightness-90 transition-all"
                         />
+                      ) : (
+                        <div className="w-28 h-28 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 group-hover:border-purple-400 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="text-[10px] font-bold">ADD PHOTO</span>
+                        </div>
                       )}
+                      <label 
+                        htmlFor="photo-upload" 
+                        className="absolute bottom-1 right-1 bg-purple-600 text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-purple-700 hover:scale-110 active:scale-95 transition-all"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.103-1.103A1 1 0 0011.103 3H8.897a1 1 0 00-.707.293L7.087 4.407A1 1 0 016.38 4.7H4zm3 8a3 3 0 106 0 3 3 0 00-6 0z" clipRule="evenodd" />
+                        </svg>
+                      </label>
+                      <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Form Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Full Name</label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        placeholder="e.g. John Doe"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location</label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        placeholder="e.g. Mumbai, India"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Company / Org</label>
+                      <input
+                        type="text"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        placeholder="e.g. Google"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rating</label>
+                      <select
+                        name="rating"
+                        value={formData.rating}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        required
+                      >
+                        {[5, 4, 3, 2, 1].map(r => (
+                          <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Testimonial Text</label>
+                    <textarea
+                      name="testimonialText"
+                      value={formData.testimonialText}
+                      onChange={handleInputChange}
+                      rows="4"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm resize-none"
+                      placeholder="Share the feedback here..."
+                      required
+                    ></textarea>
+                  </div>
                 </div>
-                <div className="flex justify-end mt-6 space-x-3">
+
+                <div className="flex items-center justify-end mt-8 space-x-3 pt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-gray-700 transition duration-200 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-6 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
                   >
-                    Cancel
+                    Discard
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-white transition duration-300 rounded-md bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:shadow-purple-300 active:scale-95 transition-all text-sm"
                   >
-                    {currentTestimonial ? 'Update' : 'Save'}
+                    {currentTestimonial ? 'Update Testimonial' : 'Create Testimonial'}
                   </button>
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Testimonial Photos Gallery Section */}
+      {testimonials.some(t => t.photo) && (
+        <div className="mt-16 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Testimonial Photos</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {testimonials.filter(t => t.photo).map((testimonial) => (
+              <div 
+                key={testimonial._id} 
+                className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                onClick={() => handleEdit(testimonial)}
+              >
+                <img 
+                  src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`} 
+                  alt={testimonial.fullName} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                  <p className="text-white text-xs font-bold truncate">{testimonial.fullName}</p>
+                  <p className="text-white/80 text-[10px] truncate">{testimonial.location}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

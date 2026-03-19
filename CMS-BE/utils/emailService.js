@@ -71,7 +71,7 @@ const emailTemplates = {
     const formattedDate = formatReceiptDate(donation.createdAt);
     // Get logo as base64 for inline embedding (fallback if CID doesn't work)
     const logoBase64 = getLogoBase64();
-    
+
     // Format full address from donation fields
     const formatAddress = (donation) => {
       const addressParts = [];
@@ -83,10 +83,10 @@ const emailTemplates = {
       if (donation.pinCode) addressParts.push(donation.pinCode);
       return addressParts.join(', ') || 'N/A';
     };
-    
+
     const fullAddress = formatAddress(donation);
     const donorName = donation.isAnonymous ? 'Anonymous Donor' : donation.donorName;
-    
+
     return {
       subject: `Donation Receipt ${receiptNumber} - Hare Krishna Movement`,
       html: `
@@ -363,18 +363,18 @@ const sendDonationReceipt = async (donation) => {
   try {
     console.log('Starting email sending process for donation:', donation._id || donation.id);
     console.log('Donation email:', donation.donorEmail);
-    
+
     const transporter = createTransporter();
-    
+
     // Verify transporter configuration
     await transporter.verify();
     console.log('Email service is ready to send emails');
-    
+
     // Generate PDF receipt - with better error handling
     console.log('Generating PDF receipt...');
     let pdfBuffer = null;
     let filename = null;
-    
+
     try {
       pdfBuffer = await generateDonationReceiptPDF(donation);
       const receiptNumber = generateReceiptNumber(donation);
@@ -389,7 +389,7 @@ const sendDonationReceipt = async (donation) => {
       });
       // Continue without PDF - email will still be sent
     }
-    
+
     // Generate email template
     let template;
     try {
@@ -399,7 +399,7 @@ const sendDonationReceipt = async (donation) => {
       console.error('Email template generation failed:', templateError.message);
       throw new Error('Failed to generate email template: ' + templateError.message);
     }
-    
+
     const mailOptions = {
       from: '"HARE KRISHNA MOVEMENT INDIA" <noreply_donations@harekrishnavidya.org>',
       to: donation.donorEmail,
@@ -413,17 +413,17 @@ const sendDonationReceipt = async (donation) => {
         'Importance': 'high'
       }
     };
-    
+
     // Debug: Log template info
     console.log('Email template info:');
     console.log('- Subject length:', template.subject.length);
     console.log('- HTML length:', template.html.length);
     console.log('- Text length:', template.text.length);
     console.log('- To:', donation.donorEmail);
-    
+
     // Prepare attachments array
     mailOptions.attachments = [];
-    
+
     // Add logo as inline attachment (CID) - ensures logo displays in all email clients
     const logoAttachment = getLogoAsAttachment();
     if (logoAttachment) {
@@ -436,7 +436,7 @@ const sendDonationReceipt = async (donation) => {
       });
       console.log('Logo attached as inline image (CID)');
     }
-    
+
     // Add PDF attachment only if PDF generation was successful
     if (pdfBuffer && filename) {
       mailOptions.attachments.push({
@@ -450,7 +450,7 @@ const sendDonationReceipt = async (donation) => {
     } else {
       console.log('No PDF attachment - PDF generation may have failed');
     }
-    
+
     // Send email
     console.log('Attempting to send email to:', donation.donorEmail);
     let result;
@@ -466,7 +466,7 @@ const sendDonationReceipt = async (donation) => {
       });
       throw sendError;
     }
-    
+
     if (pdfBuffer && filename) {
       console.log('Donation receipt email with PDF sent successfully:', result.messageId);
       return {
@@ -484,7 +484,7 @@ const sendDonationReceipt = async (donation) => {
         pdfFilename: null
       };
     }
-    
+
   } catch (error) {
     console.error('Error sending donation receipt email:', {
       message: error.message,
@@ -505,7 +505,7 @@ const testEmailConfiguration = async () => {
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    
+
     // Send a test email
     const testMailOptions = {
       from: '"HARE KRISHNA MOVEMENT INDIA" <noreply_donations@harekrishnavidya.org>',
@@ -519,16 +519,16 @@ const testEmailConfiguration = async () => {
       `,
       text: 'Email Service Test - HARE KRISHNA MOVEMENT INDIA\n\nThis is a test email to verify that the email service is working correctly.\n\nHare Krishna!'
     };
-    
+
     const result = await transporter.sendMail(testMailOptions);
     console.log('Test email sent successfully:', result.messageId);
-    
+
     return {
       success: true,
       messageId: result.messageId,
       message: 'Test email sent successfully'
     };
-    
+
   } catch (error) {
     console.error('Error testing email configuration:', error);
     return {
@@ -539,8 +539,78 @@ const testEmailConfiguration = async () => {
   }
 };
 
+// Send contact form submission as email
+const sendContactFormEmail = async (data, recipientEmail) => {
+  try {
+    const transporter = createTransporter();
+    const to = recipientEmail || process.env.CONTACT_RECIPIENT_EMAIL || 'aikyavidya@hkmhyderabad.org';
+    const { name, phone, email, message } = data;
+    const termsAccepted = data.terms ? 'Yes' : 'No';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+          h2 { color: #ea580c; margin-bottom: 20px; }
+          .field { margin-bottom: 16px; }
+          .label { font-weight: bold; color: #555; }
+          .value { margin-top: 4px; padding: 8px; background: #f8fafc; border-radius: 6px; }
+          .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }
+        </style>
+      </head>
+      <body>
+        <h2>New Contact Form Submission</h2>
+        <p>You have received a new message from the website contact form.</p>
+        <div class="field">
+          <span class="label">Name:</span>
+          <div class="value">${name || '-'}</div>
+        </div>
+        <div class="field">
+          <span class="label">Phone:</span>
+          <div class="value">${phone || '-'}</div>
+        </div>
+        <div class="field">
+          <span class="label">Email:</span>
+          <div class="value">${email || '-'}</div>
+        </div>
+        <div class="field">
+          <span class="label">Message:</span>
+          <div class="value">${message || '-'}</div>
+        </div>
+        <div class="field">
+          <span class="label">Terms accepted:</span>
+          <div class="value">${termsAccepted}</div>
+        </div>
+        <div class="footer">
+          Sent at ${new Date().toISOString()} from Hare Krishna Movement website contact form.
+        </div>
+      </body>
+      </html>
+    `;
+
+    const result = await transporter.sendMail({
+      from: '"HARE KRISHNA MOVEMENT" <noreply_donations@harekrishnavidya.org>',
+      to,
+      replyTo: email || undefined,
+      subject: `Contact Form: ${name || 'New message'} - ${email || 'No email'}`,
+      html,
+      text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nMessage: ${message}\nTerms: ${termsAccepted}`
+    });
+
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Error sending contact form email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendDonationReceipt,
+  sendContactFormEmail,
   testEmailConfiguration,
   createTransporter,
   emailTemplates

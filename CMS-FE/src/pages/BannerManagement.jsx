@@ -716,6 +716,7 @@ const BannerManagement = () => {
             </li>
           </ul>
         </div>
+
       </div>
     </div>
   );

@@ -19,7 +19,8 @@ import {
   FaUserFriends,
   FaHeart,
   FaEnvelopeOpenText,
-  FaBullhorn
+  FaBullhorn,
+  FaImage
 } from 'react-icons/fa';
 import logo from '../assets/DTG.png'
 import logo2 from '../../public/logo.png'
@@ -130,6 +131,12 @@ const Sidebar = () => {
       color: 'from-blue-300 to-blue-200'
     },
     {
+      path: '/statmanagement',
+      icon: <FaChartBar className="text-blue-900" />,
+      label: 'Statistics',
+      color: 'from-blue-300 to-blue-200'
+    },
+    {
       path: '/donation-management',
       icon: <FaHeart className="text-blue-900" />,
       label: 'Razorpay Donation Management',
@@ -172,6 +179,18 @@ const Sidebar = () => {
       label: 'Donation Kit Management',
       color: 'from-blue-300 to-blue-200'
     },
+    // {
+    //   path: '/banner',
+    //   icon: <FaImage className="text-blue-900" />,
+    //   label: 'Main Banner',
+    //   color: 'from-blue-300 to-blue-200'
+    // },
+    // {
+    //   path: '/home-banner',
+    //   icon: <FaImage className="text-blue-900" />,
+    //   label: 'Home Banner',
+    //   color: 'from-blue-300 to-blue-200'
+    // },
   ];
 
   // Mobile toggle button
