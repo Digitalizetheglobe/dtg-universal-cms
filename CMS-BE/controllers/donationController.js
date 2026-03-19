@@ -1045,7 +1045,7 @@ const submitDonationForm = async (req, res) => {
     // Create new Razorpay order if none exists
     if (!order) {
       const orderOptions = {
-        amount: parsedSevaAmount * 100, // Convert to paise (using parsed value)
+        amount: Math.round(parsedSevaAmount * 100), // Convert to paise (using parsed value) and ensure it's an integer
         currency: 'INR',
         receipt: `don_${donation._id.toString().slice(-8)}_${Date.now().toString().slice(-8)}`,
         notes: {
@@ -1064,19 +1064,17 @@ const submitDonationForm = async (req, res) => {
         donation.razorpayOrderId = order.id;
         await donation.save();
       } catch (razorpayError) {
-        console.error('Razorpay error:', razorpayError);
-        return res.status(500).json({
-          success: false,
-          message: 'Payment gateway error. Please try again later.',
-          error: razorpayError.message,
-          rawError: razorpayError
-        });
+        console.warn('⚠️ [submitDonationForm] Razorpay order creation failed:', razorpayError.message);
+        console.warn('   This might be due to invalid credentials (401) or other gateway issues.');
+        // We do NOT return error here, to allow PayU fallback if available
+        // BUT we must handle the absence of 'order' in the response below
       }
     }
 
     res.status(201).json({
       success: true,
       message: 'Donation form submitted successfully',
+      warning: !order ? 'Razorpay order could not be created' : undefined,
       donation: {
         id: donation._id,
         sevaName: donation.sevaName,
@@ -1086,12 +1084,12 @@ const submitDonationForm = async (req, res) => {
         donorEmail: donation.donorEmail,
         paymentStatus: donation.paymentStatus
       },
-      order: {
+      order: order ? {
         id: order.id,
         amount: order.amount,
         currency: order.currency,
         receipt: order.receipt
-      }
+      } : null
     });
   } catch (error) {
     console.error('Error submitting donation form:', error);
