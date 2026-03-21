@@ -21,7 +21,7 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_email_password
 
 # Razorpay Configuration
-RAZORPAY_KEY_ID=rzp_live_R7u0ddNSZ7PFCB
+RAZORPAY_KEY_ID=rzp_live_SRm4r1QeQbuoSE
 RAZORPAY_KEY_SECRET=pRsEm4Gp7Qk7J7Sj4AC8A8Es
 
 # Optional: Webhook Secret (if using Razorpay webhooks)

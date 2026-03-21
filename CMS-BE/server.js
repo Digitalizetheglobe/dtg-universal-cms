@@ -9,7 +9,11 @@ console.log("Environment variables loaded:");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "Set" : "Not set");
 console.log(
   "RAZORPAY_KEY_ID:",
-  process.env.RAZORPAY_KEY_ID ? "Set" : "Not set"
+  process.env.RAZORPAY_KEY_ID ? `${process.env.RAZORPAY_KEY_ID.slice(0, 4)}...${process.env.RAZORPAY_KEY_ID.slice(-4)}` : "Not set"
+);
+console.log(
+  "RAZORPAY_KEY_SECRET:",
+  process.env.RAZORPAY_KEY_SECRET ? `${process.env.RAZORPAY_KEY_SECRET.slice(0, 4)}...${process.env.RAZORPAY_KEY_SECRET.slice(-4)}` : "Not set"
 );
 console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Set" : "Not set");
 

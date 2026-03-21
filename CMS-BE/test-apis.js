@@ -36,7 +36,11 @@ async function testAPIs() {
         console.log('   Credentials status:', connection.credentials);
       }
     } else {
+      const errorData = await connectionResponse.json().catch(() => ({}));
       console.log('❌ Could not test Razorpay connection');
+      console.log('   Status:', connectionResponse.status);
+      console.log('   Error:', errorData.message || 'Unknown error');
+      console.log('   Details:', errorData.error || 'No details');
     }
 
     // Test 3: Test sync functionality
@@ -59,28 +63,22 @@ async function testAPIs() {
       console.log('❌ Could not test sync');
     }
 
-    // Test 4: Get all donations
-    console.log('\n4️⃣ Testing get all donations...');
-    const donationsResponse = await fetch(`${BASE_URL}?limit=5`);
-    if (donationsResponse.ok) {
-      const donations = await donationsResponse.json();
-      if (donations.success) {
-        console.log('✅ Donations API working');
-        console.log('   Total donations:', donations.pagination.totalDonations);
-        console.log('   Recent donations:', donations.donations.length);
-        if (donations.donations.length > 0) {
-          console.log('   Sample donation:', {
-            id: donations.donations[0]._id,
-            amount: donations.donations[0].amount,
-            status: donations.donations[0].paymentStatus,
-            paymentId: donations.donations[0].razorpayPaymentId
-          });
-        }
+    // Test 7: Get most recent completed Razorpay donation
+    console.log('\n7️⃣ Searching for most recent completed Razorpay donation...');
+    const rzpResponse = await fetch(`${BASE_URL}?status=completed&paymentMethod=razorpay&limit=1`);
+    if (rzpResponse.ok) {
+      const rzpData = await rzpResponse.json();
+      if (rzpData.success && rzpData.donations.length > 0) {
+        console.log('✅ Found Razorpay donation');
+        console.log('   ID:', rzpData.donations[0]._id);
+        console.log('   Amount:', rzpData.donations[0].amount);
+        console.log('   Razorpay Payment ID:', rzpData.donations[0].razorpayPaymentId);
+        console.log('   Created At:', rzpData.donations[0].createdAt);
       } else {
-        console.log('❌ Donations API failed');
+        console.log('❌ No Razorpay completed donations found');
       }
     } else {
-      console.log('❌ Could not fetch donations');
+      console.log('❌ Could not fetch Razorpay donations');
     }
 
   } catch (error) {
