@@ -207,6 +207,24 @@ const donorWallRoutes = require("./routes/donorWallRoutes");
 app.use("/api/donor-wall", donorWallRoutes);
 
 // ------------------------
+// Donation Gallery routes
+// ------------------------
+const donationGalleryRoutes = require("./routes/donationGalleryRoutes");
+app.use("/api/donation-gallery", donationGalleryRoutes);
+
+// ------------------------
+// Home Gallery routes
+// ------------------------
+const homeGalleryRoutes = require("./routes/homeGalleryRoutes");
+app.use("/api/home-gallery", homeGalleryRoutes);
+
+// ------------------------
+// About Gallery routes
+// ------------------------
+const aboutGalleryRoutes = require("./routes/aboutGalleryRoutes");
+app.use("/api/about-gallery", aboutGalleryRoutes);
+
+// ------------------------
 // Stat routes
 // ------------------------
 const statRoutes = require("./routes/statRoutes");

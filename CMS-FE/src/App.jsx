@@ -71,6 +71,20 @@ import DonorWallList from "./DonorWall/DonorWallList";
 // Event Management Components
 import EventManagementList from "./EventManagement/EventManagmentList";
 
+// Donation Gallery Components
+import DonationGalleryList from "./DonationGallery/DonationGalleryList";
+import DonationGalleryForm from "./DonationGallery/DonationGalleryForm";
+
+// Home Gallery Components
+import HomeGalleryList from "./HomeGallery/HomeGalleryList";
+import HomeGalleryForm from "./HomeGallery/HomeGalleryForm";
+
+// About Gallery Components
+import AboutGalleryList from "./AboutGallery/AboutGalleryList";
+import AboutGalleryForm from "./AboutGallery/AboutGalleryForm";
+
+import GalleryDashboard from "./pages/GalleryDashboard";
+
 // Banner Management & Career Components
 import BannerManagement from "./pages/BannerManagement";
 import HomeBannerManagement from "./pages/HomeBannerManagement";
@@ -306,6 +320,22 @@ function AppWrapper() {
               {/* Public Form Route - This would typically be in your frontend app */}
               <Route path="/forms/:page" element={<FormPreviewPage />} />
               <Route path="/events/list" element={<EventManagementList />} />
+
+              {/* Gallery Routes */}
+              <Route path="/gallery-management" element={<GalleryDashboard />} />
+              
+              <Route path="/donation-gallery" element={<DonationGalleryList />} />
+              <Route path="/donation-gallery/create" element={<DonationGalleryForm />} />
+              <Route path="/donation-gallery/edit/:id" element={<DonationGalleryForm />} />
+
+              <Route path="/home-gallery" element={<HomeGalleryList />} />
+              <Route path="/home-gallery/create" element={<HomeGalleryForm />} />
+              <Route path="/home-gallery/edit/:id" element={<HomeGalleryForm />} />
+
+              <Route path="/about-gallery" element={<AboutGalleryList />} />
+              <Route path="/about-gallery/create" element={<AboutGalleryForm />} />
+              <Route path="/about-gallery/edit/:id" element={<AboutGalleryForm />} />
+
               <Route path="/appliedstatus" element={<AppliedStatus />} />
             </>
           ) : (
@@ -324,5 +354,7 @@ function App() {
     </Router>
   );
 }
+
+
 
 export default App;

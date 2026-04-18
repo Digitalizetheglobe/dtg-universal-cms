@@ -825,7 +825,12 @@ const submitDonationForm = async (req, res) => {
 
     // Validate required fields
     // For campaign donations, donor info can be empty (will be collected by Razorpay)
-    const isCampaignDonation = campaign && (campaign === 'support-compaign' || campaign.includes('campaign'));
+    const isCampaignDonation = campaign && (
+      campaign === 'support-compaign' || 
+      campaign === 'support-campaign' || 
+      campaign.toLowerCase().includes('campaign') ||
+      /^[0-9a-fA-F]{24}$/.test(campaign)
+    );
 
     // Validate presence separately so we can report what is missing.
     const missing = {

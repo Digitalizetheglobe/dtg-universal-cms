@@ -86,7 +86,7 @@ const TestimonialManagement = () => {
       dataToSend.append('date', formData.date);
       dataToSend.append('companyName', formData.companyName);
       dataToSend.append('otherFields', JSON.stringify(formData.otherFields));
-      
+
       if (photoFile) {
         dataToSend.append('photo', photoFile);
       }
@@ -230,9 +230,9 @@ const TestimonialManagement = () => {
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-4">
                   {testimonial.photo ? (
-                    <img 
-                      src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`} 
-                      alt={testimonial.fullName} 
+                    <img
+                      src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`}
+                      alt={testimonial.fullName}
                       className="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-md"
                     />
                   ) : (
@@ -305,9 +305,9 @@ const TestimonialManagement = () => {
                   <div className="flex flex-col items-center pb-4 border-b border-gray-100">
                     <div className="relative mb-3 group">
                       {photoPreview ? (
-                        <img 
-                          src={photoPreview} 
-                          alt="Preview" 
+                        <img
+                          src={photoPreview}
+                          alt="Preview"
                           className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl group-hover:brightness-90 transition-all"
                         />
                       ) : (
@@ -318,8 +318,8 @@ const TestimonialManagement = () => {
                           <span className="text-[10px] font-bold">ADD PHOTO</span>
                         </div>
                       )}
-                      <label 
-                        htmlFor="photo-upload" 
+                      <label
+                        htmlFor="photo-upload"
                         className="absolute bottom-1 right-1 bg-purple-600 text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-purple-700 hover:scale-110 active:scale-95 transition-all"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -431,15 +431,15 @@ const TestimonialManagement = () => {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {testimonials.filter(t => t.photo).map((testimonial) => (
-              <div 
-                key={testimonial._id} 
+              <div
+                key={testimonial._id}
                 className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                 onClick={() => handleEdit(testimonial)}
               >
-                <img 
-                  src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`} 
-                  alt={testimonial.fullName} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                <img
+                  src={`https://api.harekrishnavidya.org/uploads/testimonials/${testimonial.photo}`}
+                  alt={testimonial.fullName}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                   <p className="text-white text-xs font-bold truncate">{testimonial.fullName}</p>

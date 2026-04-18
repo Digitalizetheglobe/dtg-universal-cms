@@ -4,6 +4,9 @@ const path = require('path');
 exports.getBanner = (req, res) => {
   const filePath = path.join(__dirname, '../uploads/banner.jpg');
 
+  console.log('[Banner Debug] Looking for file at:', filePath);
+  console.log('[Banner Debug] File exists:', fs.existsSync(filePath));
+
   if (fs.existsSync(filePath)) {
     return res.json({ url: "/uploads/banner.jpg" });
   }
@@ -12,6 +15,9 @@ exports.getBanner = (req, res) => {
 };
 
 exports.uploadBanner = (req, res) => {
+  const filePath = path.join(__dirname, '../uploads/banner.jpg');
+  console.log('[Banner Upload] File saved at:', filePath);
+  console.log('[Banner Upload] File exists after upload:', fs.existsSync(filePath));
   return res.json({ message: 'Banner uploaded', url: "/uploads/banner.jpg" });
 };
 

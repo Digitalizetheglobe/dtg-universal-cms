@@ -5,10 +5,17 @@ const { protect, admin } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 
+// Ensure upload directory exists
+const fs = require('fs');
+const uploadDir = path.join(__dirname, '../uploads/team/');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/team/');
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

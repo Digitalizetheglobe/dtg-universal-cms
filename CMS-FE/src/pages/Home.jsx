@@ -29,14 +29,14 @@ export const Home = () => {
           <Link to="/leads-management">
             <FeatureCard title="Lead Forms" icon="📩" />
           </Link>
-          <Link to="/form-management">
+          {/* <Link to="/form-management">
             <FeatureCard title="Form Builder" icon="🧩" />
-          </Link>
+          </Link> */}
           <Link to="/testimonialmanagement">
             <FeatureCard title="Testimonials" icon="⭐" />
           </Link>
-          <FeatureCard title="Careers Module" icon="💼" />
-          <FeatureCard title="Admin Panel" icon="⚙️" />
+          {/* <FeatureCard title="Careers Module" icon="💼" /> */}
+          {/* <FeatureCard title="Admin Panel" icon="⚙️" /> */}
           <Link to="/banner">
             <FeatureCard title="Main Banner" icon="🖼️" />
           </Link>
@@ -45,6 +45,9 @@ export const Home = () => {
           </Link>
           <Link to="/donation-amount">
             <FeatureCard title="Donation Amount Uploading" icon="💰"/>
+          </Link>
+          <Link to="/gallery-management">
+            <FeatureCard title="Gallery Sections" icon="🖼️" />
           </Link>
          {/* / <Link to="/donation-amount">
             <FeatureCard title="Donation Amount Uploading" icon="🖼️" />
